@@ -3,7 +3,7 @@ export interface Lead {
   firstName: string
   lastName: string
   cxpName: string // Full name for display
-  lineName: string
+  lineName?: string
   lineStatus: "joined" | "not-joined" // LINE 好友狀態
   avatarUrl?: string // LINE profile picture URL
   phone: string
@@ -46,7 +46,7 @@ export interface Account {
   firstName: string
   lastName: string
   cxpName: string // Full name for display
-  lineName: string
+  lineName?: string
   lineStatus: "joined" | "not-joined" // LINE 好友狀態
   avatarUrl?: string // LINE profile picture URL
   phone: string
