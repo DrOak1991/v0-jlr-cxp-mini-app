@@ -69,16 +69,29 @@ export interface Account {
   notes?: string
 }
 
-export interface Activity {
+export type TaskStatus = "not-started" | "in-progress" | "completed" | "waiting" | "deferred"
+
+export interface EventActivity {
   id: string
-  type: "call" | "email" | "note" | "meeting" | "task" // Added "task" type for new activities
-  content: string
+  type: "event"
+  subject: string
+  description?: string
+  startDateTime: Date
+  endDateTime: Date
   createdAt: Date
-  name?: string
-  dueDate?: Date
-  notes?: string
-  status?: "not-started" | "in-progress" | "completed"
 }
+
+export interface TaskActivity {
+  id: string
+  type: "task"
+  subject: string
+  description?: string
+  dueDate: Date
+  status: TaskStatus
+  createdAt: Date
+}
+
+export type Activity = EventActivity | TaskActivity
 
 export interface TestDriveConsent {
   id: string
