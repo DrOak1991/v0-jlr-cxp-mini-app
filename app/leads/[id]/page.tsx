@@ -45,10 +45,10 @@ import {
   Car,
   Eye,
 } from "lucide-react"
-import type { Lead, Activity, TestDriveConsent } from "@/types"
-import { formatDate } from "@/lib/utils"
+import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
+import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { DatePicker } from "@/components/date-picker"
+import { DatePicker, DateTimePicker } from "@/components/date-picker"
 import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
 
@@ -72,11 +72,11 @@ export default function LeadDetailPage() {
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
 
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false)
-  const [newActivity, setNewActivity] = useState({
-    name: "",
+  const [newTask, setNewTask] = useState({
+    subject: "",
+    description: "",
     dueDate: undefined as Date | undefined,
-    notes: "",
-    status: "not-started" as "not-started" | "in-progress" | "completed",
+    status: "not-started" as TaskStatus,
   })
 
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
@@ -310,13 +310,14 @@ export default function LeadDetailPage() {
   }
 
   const handleSaveCallRecord = () => {
-    // Add to activities
-    const activity: Activity = {
+    // Add to activities as a completed task
+    const activity: TaskActivity = {
       id: Date.now().toString(),
-      type: "call",
-      content: callRecordText,
+      type: "task",
+      subject: "通話紀錄",
+      description: callRecordText,
       createdAt: new Date(),
-      name: "通話紀錄",
+      dueDate: new Date(),
       status: "completed",
     }
     setActivities([activity, ...activities])
@@ -361,53 +362,46 @@ export default function LeadDetailPage() {
   }
 
   const handleCreateActivity = () => {
-    if (!newActivity.name || !newActivity.dueDate) {
+    if (!newTask.subject || !newTask.dueDate) {
       toast({
         title: "請填寫必填欄位",
-        description: "活動名稱和截止日期為必填",
+        description: "主題和到期日期為必填",
         variant: "destructive",
       })
       return
     }
 
-    const activity: Activity = {
+    const activity: TaskActivity = {
       id: Date.now().toString(),
       type: "task",
-      content: newActivity.name,
+      subject: newTask.subject,
+      description: newTask.description || undefined,
       createdAt: new Date(),
-      name: newActivity.name,
-      dueDate: newActivity.dueDate,
-      notes: newActivity.notes,
-      status: newActivity.status,
+      dueDate: newTask.dueDate,
+      status: newTask.status,
     }
 
     setActivities([activity, ...activities])
     setIsNewActivityOpen(false)
-    setNewActivity({
-      name: "",
+    setNewTask({
+      subject: "",
+      description: "",
       dueDate: undefined,
-      notes: "",
       status: "not-started",
     })
 
     toast({
-      title: "活動已新增",
-      description: "新活動已成功建立",
+      title: "工作已新增",
+      description: "新工作已成功建立",
     })
   }
 
-  const activityIcons = {
-    call: PhoneCall,
-    email: MailIcon,
-    note: MessageCircle,
-    meeting: Calendar,
-    task: Calendar,
-  }
-
-  const statusLabels = {
-    "not-started": "未開始",
+  const taskStatusLabels: Record<TaskStatus, string> = {
+    "not-started": "沒有開始",
     "in-progress": "進行中",
-    completed: "完成",
+    completed: "已完成",
+    waiting: "等待別人",
+    deferred: "延期",
   }
 
   const stageLabels = {
@@ -507,7 +501,7 @@ export default function LeadDetailPage() {
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold text-lg">商機詳情</h1>
+          <h1 className="font-semibold text-lg">商機詳��</h1>
           {!isEditing && (
             <Button variant="ghost" size="sm" onClick={handleEdit}>
               <Edit className="h-5 w-5" />
