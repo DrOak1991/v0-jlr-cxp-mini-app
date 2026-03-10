@@ -74,13 +74,14 @@ export default function AccountDetailPage() {
   const params = useParams()
   const { toast } = useToast()
 
+  const [isMounted, setIsMounted] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [account, setAccount] = useState<Account>(mockAccount)
-  const [originalAccount, setOriginalAccount] = useState<Account>(mockAccount)
-  const [activities, setActivities] = useState<Activity[]>(mockActivities)
+  const [account, setAccount] = useState<Account | null>(null)
+  const [originalAccount, setOriginalAccount] = useState<Account | null>(null)
+  const [activities, setActivities] = useState<Activity[]>([])
 
-  const [notes, setNotes] = useState(mockAccount.notes || "")
-  const [originalNotes, setOriginalNotes] = useState(mockAccount.notes || "")
+  const [notes, setNotes] = useState("")
+  const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
 
@@ -92,12 +93,24 @@ export default function AccountDetailPage() {
     status: "not-started" as "not-started" | "in-progress" | "completed",
   })
 
+  // Initialize data on client-side only to prevent hydration mismatch
   useEffect(() => {
-    setHasNotesChanged(notes !== originalNotes)
-  }, [notes, originalNotes])
+    setAccount(mockAccount)
+    setOriginalAccount(mockAccount)
+    setActivities(mockActivities)
+    setNotes(mockAccount.notes || "")
+    setOriginalNotes(mockAccount.notes || "")
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
-    if (isEditing) {
+    if (isMounted) {
+      setHasNotesChanged(notes !== originalNotes)
+    }
+  }, [notes, originalNotes, isMounted])
+
+  useEffect(() => {
+    if (isEditing && account && originalAccount) {
       setHasFieldsChanged(JSON.stringify(account) !== JSON.stringify(originalAccount))
     }
   }, [account, originalAccount, isEditing])
@@ -125,25 +138,31 @@ export default function AccountDetailPage() {
   }
 
   const handleEdit = () => {
-    setOriginalAccount({ ...account })
-    setIsEditing(true)
+    if (account) {
+      setOriginalAccount({ ...account })
+      setIsEditing(true)
+    }
   }
 
   const handleSave = () => {
-    console.log("[v0] Save account:", account)
-    setOriginalAccount({ ...account })
-    setIsEditing(false)
-    setHasFieldsChanged(false)
-    toast({
-      title: "資料已更新",
-      description: "客戶資訊已成功儲存",
-    })
+    if (account) {
+      console.log("[v0] Save account:", account)
+      setOriginalAccount({ ...account })
+      setIsEditing(false)
+      setHasFieldsChanged(false)
+      toast({
+        title: "資料已更新",
+        description: "客戶資訊已成功儲存",
+      })
+    }
   }
 
   const handleCancel = () => {
-    setAccount({ ...originalAccount })
-    setIsEditing(false)
-    setHasFieldsChanged(false)
+    if (originalAccount) {
+      setAccount({ ...originalAccount })
+      setIsEditing(false)
+      setHasFieldsChanged(false)
+    }
   }
 
   const handleBack = () => {
@@ -231,6 +250,15 @@ export default function AccountDetailPage() {
     "not-started": "未開始",
     "in-progress": "進行中",
     completed: "完成",
+  }
+
+  // Show loading state until client-side hydration is complete
+  if (!isMounted || !account) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">載入中...</div>
+      </div>
+    )
   }
 
   return (
