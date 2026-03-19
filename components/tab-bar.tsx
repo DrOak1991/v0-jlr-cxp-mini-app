@@ -31,7 +31,7 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
           )}
         >
           <Building2 className="h-5 w-5" />
-          <span className="text-xs font-medium">帳戶</span>
+          <span className="text-xs font-medium">帳戶/機會</span>
         </button>
       </div>
     </nav>

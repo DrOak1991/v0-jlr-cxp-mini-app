@@ -20,7 +20,7 @@ export function Header({ activeTab }: HeaderProps) {
             <Menu className="h-5 w-5" />
           </Button>
 
-          <h1 className="text-lg font-semibold text-foreground">{activeTab === "leads" ? "商機" : "帳戶 / Opportunity"}</h1>
+          <h1 className="text-lg font-semibold text-foreground">{activeTab === "leads" ? "商機" : "帳戶/機會"}</h1>
 
           <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setIsSearchOpen(true)}>
             <Search className="h-5 w-5" />
