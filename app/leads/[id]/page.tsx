@@ -501,7 +501,7 @@ export default function LeadDetailPage() {
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold text-lg">商機詳��</h1>
+          <h1 className="font-semibold text-lg">商機詳情</h1>
           {!isEditing && (
             <Button variant="ghost" size="sm" onClick={handleEdit}>
               <Edit className="h-5 w-5" />
