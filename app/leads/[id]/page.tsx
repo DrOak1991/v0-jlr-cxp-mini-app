@@ -223,10 +223,19 @@ export default function LeadDetailPage() {
       return
     }
 
-    console.log("[v0] Lost reason:", lostReason)
+    // 將流失原因存到 lead 物件
+    const updatedLead = { ...lead, lostReason: lostReason.trim() }
+    setLead(updatedLead)
+    setOriginalLead({ ...updatedLead })
     setIsLostDialogOpen(false)
     setLostReason("")
-    performSave()
+    setIsEditing(false)
+    setHasFieldsChanged(false)
+    setPendingSave(false)
+    toast({
+      title: "資料已更新",
+      description: "商機已標記為流失",
+    })
   }
 
   const handleLostCancel = () => {
@@ -501,7 +510,7 @@ export default function LeadDetailPage() {
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold text-lg">商機詳情</h1>
+          <h1 className="font-semibold text-lg">商��詳情</h1>
           {!isEditing && (
             <Button variant="ghost" size="sm" onClick={handleEdit}>
               <Edit className="h-5 w-5" />
@@ -1041,6 +1050,19 @@ export default function LeadDetailPage() {
             )}
           </div>
         </Card>
+
+        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
+        {lead.stage === "lost" && (
+          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+            <p className="text-sm text-red-600 dark:text-red-300">
+              {lead.lostReason || "未記錄流失原因"}
+            </p>
+          </Card>
+        )}
 
         <Card className="p-4">
           <h3 className="font-semibold text-base mb-3 flex items-center gap-2">

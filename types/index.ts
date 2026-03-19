@@ -10,6 +10,7 @@ export interface Lead {
   email: string
   createdAt: Date
   stage?: "new" | "follow-up" | "lost" | "converted"
+  lostReason?: string // 流失原因（僅當 stage = lost 時有值）
   // Detail page fields
   birthday?: Date
   gender?: "male" | "female" | "unknown"

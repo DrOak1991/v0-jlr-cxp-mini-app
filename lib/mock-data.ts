@@ -135,6 +135,7 @@ export const mockLeads: Lead[] = [
     createdAt: new Date("2024-02-15"),
     avatarUrl: "/asian-businessman-meeting.png",
     stage: "lost",
+    lostReason: "客戶表示預算有限，最後選擇購買其他品牌的車款。已建議客戶未來有需求時可再聯繫。",
     birthday: new Date("1987-07-08"),
     gender: "male",
     idNumber: "C345678901",
