@@ -78,13 +78,28 @@ export interface Account {
   lineStatus: "joined" | "not-joined" // LINE 好友狀態
   avatarUrl?: string // LINE profile picture URL
   phone: string
-  email: string
+  email?: string
   convertedAt: Date
-  // Detail page fields
+  // 基本資料
   birthday?: Date
+  gender?: "male" | "female" | "unknown"
+  language?: string
+  // 聯絡資訊
+  mobilePhone?: string
+  homePhone?: string
+  email2?: string
+  email3?: string
+  // 地址資訊
+  billingCity?: string
+  billingAddress?: string
+  shippingCity?: string
+  shippingAddress?: string
+  // 車輛偏好
   carType?: "new" | "certified-used"
-  interestedModel?: "defender-90" | "defender-110" | "range-rover" | "range-rover-sport" | "discovery" | "i-pace"
+  interestedModel?: string
   performancePreference?: boolean
+  brandPreferences?: string[] // Jaguar, Land Rover 偏好
+  // 來源與行銷
   leadSource?:
     | "walk-in"
     | "referral"
@@ -94,7 +109,15 @@ export interface Account {
     | "line-booking"
     | "field-visit"
   contactPreferences?: ("mail" | "email" | "sms" | "phone")[]
+  // 其他資訊
+  occupation?: string
+  industry?: string
+  familyMemberCount?: number
+  vehicleCount?: number
+  maintenanceStatus?: "purchased" | "interested" | "none"
   notes?: string
+  // 活動記錄
+  activities?: Activity[]
 }
 
 export type TaskStatus = "not-started" | "in-progress" | "completed" | "waiting" | "deferred"

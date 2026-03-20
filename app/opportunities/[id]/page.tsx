@@ -495,21 +495,26 @@ export default function OpportunityDetailPage() {
 
             {/* 帳戶聯絡資訊 */}
             {account && (
-              <div className="space-y-2 pt-3 border-t">
+              <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">帳戶聯絡資訊</span>
-                  <Button variant="link" size="sm" className="text-primary p-0 h-auto text-xs" onClick={navigateToAccount}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-transparent text-primary border-primary hover:bg-primary/10 h-7 px-3"
+                    onClick={navigateToAccount}
+                  >
                     查看帳戶詳情
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="truncate">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
+                    <span>{account.phone ? `886 ${account.phone}` : "未設定"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="truncate">{account.email || "未設定"}</span>
+                  <div className="flex items-start gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <span className="break-all">{account.email || "未設定"}</span>
                   </div>
                 </div>
               </div>
