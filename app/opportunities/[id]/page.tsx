@@ -47,11 +47,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { DatePicker } from "@/components/date-picker"
-import type { Opportunity, Account, Activity } from "@/types"
+import type { Opportunity, Account, Activity, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
+import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 
 const stageLabels: Record<string, string> = {
   "prospecting": "探索中",
@@ -96,6 +97,7 @@ export default function OpportunityDetailPage() {
   const [account, setAccount] = useState<Account | undefined>(accountData)
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
+  const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
@@ -806,6 +808,30 @@ export default function OpportunityDetailPage() {
             )}
           </div>
         </Card>
+
+        {/* 試駕同意書卡片 */}
+        <TestDriveConsentCard
+          consent={testDriveConsent}
+          onCreateConsent={() => {
+            // 建立試駕同意書後設定為 pending 狀態
+            setTestDriveConsent({
+              id: `tdc-${Date.now()}`,
+              leadId: opportunity.id,
+              status: "pending",
+              generatedAt: new Date(),
+              vehicleBrand: testDriveBrand || "Land Rover",
+              vehicleModel: testDriveModel || opportunity.interestedModel || "Defender 90",
+              testDriveDate: testDriveDate ? new Date(testDriveDate) : new Date(),
+              testDriveTime: testDriveTime || "14:00",
+            })
+          }}
+          onModifyInvite={() => {
+            // 開啟修改試駕邀請的對話框（可以擴展）
+          }}
+          onViewLicense={(index) => {
+            // 檢視駕照資料（可以擴展）
+          }}
+        />
 
         {/* 活動記錄卡片 */}
         <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
