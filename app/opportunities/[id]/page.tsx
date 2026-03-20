@@ -493,8 +493,30 @@ export default function OpportunityDetailPage() {
               </Button>
             </div>
 
+            {/* 帳戶聯絡資訊 */}
+            {account && (
+              <div className="space-y-2 pt-3 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">帳戶聯絡資訊</span>
+                  <Button variant="link" size="sm" className="text-primary p-0 h-auto text-xs" onClick={navigateToAccount}>
+                    查看帳戶詳情
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="truncate">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="truncate">{account.email || "未設定"}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 機會狀態 */}
-            <div className="space-y-3 pt-2 border-t">
+            <div className="space-y-3 pt-3 border-t">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
@@ -591,44 +613,6 @@ export default function OpportunityDetailPage() {
             <p className="text-sm text-red-600 dark:text-red-300">
               {opportunity.lostReason || "未記錄流失原因"}
             </p>
-          </Card>
-        )}
-
-        {/* 帳戶資訊卡片 */}
-        {account && (
-          <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-base flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                帳戶資訊
-              </h3>
-              <Button variant="link" size="sm" className="text-primary p-0 h-auto" onClick={navigateToAccount}>
-                查看帳戶詳情
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm text-muted-foreground">帳戶名稱</span>
-                <p className="text-foreground font-medium">{account.cxpName}</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <span className="text-sm text-muted-foreground">行動電話</span>
-                  <p className="text-foreground">886 {account.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <span className="text-sm text-muted-foreground">電子郵件</span>
-                  <p className="text-foreground">{account.email || "未設定"}</p>
-                </div>
-              </div>
-            </div>
           </Card>
         )}
 
