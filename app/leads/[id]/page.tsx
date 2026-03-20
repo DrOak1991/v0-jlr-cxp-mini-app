@@ -1302,6 +1302,11 @@ export default function LeadDetailPage() {
                           {formatDateTime(activity.startDateTime)}
                         </span>
                       )}
+                      {activity.type === "task" && activity.dueDate && (
+                        <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
+                      )}
+                      {activity.type === "task" && activity.status && (
+                        <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             activity.status === "completed"
                               ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
@@ -1531,7 +1536,7 @@ export default function LeadDetailPage() {
         <SheetContent side="bottom" className="h-[70vh] rounded-t-xl">
           <SheetHeader className="text-left pb-4">
             <SheetTitle>通話紀錄</SheetTitle>
-            <p className="text-sm text-muted-foreground">是否要針對本次通話做更新紀錄？</p>
+            <p className="text-sm text-muted-foreground">是否要針對本次通話做更新紀錄���</p>
           </SheetHeader>
 
           <div className="flex flex-col h-[calc(100%-140px)]">
