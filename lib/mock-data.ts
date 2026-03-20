@@ -1,4 +1,4 @@
-import type { Lead, Activity } from "@/types"
+import type { Lead, Activity, Opportunity, Account } from "@/types"
 
 export const mockLeads: Lead[] = [
   {
@@ -266,6 +266,244 @@ export const mockActivities: Record<string, Activity[]> = {
       status: "completed",
     },
   ],
+}
+
+// Mock Accounts (帳戶)
+export const mockAccounts: Account[] = [
+  {
+    id: "acc-1",
+    firstName: "小明",
+    lastName: "王",
+    cxpName: "王小明",
+    lineName: "小明的LINE",
+    lineStatus: "joined",
+    phone: "912345678",
+    email: "wang@example.com",
+    convertedAt: new Date("2024-03-01"),
+    avatarUrl: "/asian-man-profile.png",
+    birthday: new Date("1990-05-20"),
+  },
+  {
+    id: "acc-2",
+    firstName: "美華",
+    lastName: "李",
+    cxpName: "李美華",
+    lineName: "",
+    lineStatus: "not-joined",
+    phone: "923456789",
+    email: "lee.meihua@example.com",
+    convertedAt: new Date("2024-02-15"),
+  },
+  {
+    id: "acc-3",
+    firstName: "大偉",
+    lastName: "陳",
+    cxpName: "陳大偉",
+    lineName: "David Chen",
+    lineStatus: "joined",
+    phone: "934567890",
+    email: "david.chen@example.com",
+    convertedAt: new Date("2024-01-20"),
+    avatarUrl: "/asian-businessman-meeting.png",
+    birthday: new Date("1988-03-10"),
+  },
+]
+
+// Mock Opportunities (機會)
+export const mockOpportunities: Opportunity[] = [
+  {
+    id: "opp-1",
+    accountId: "acc-1",
+    accountName: "王小明",
+    name: "Range Rover Sport 購車",
+    stage: "negotiation",
+    probability: 75,
+    carType: "new-car",
+    detailCategory: "retail",
+    interestedModel: "Range Rover Sport",
+    powerType: "gasoline",
+    performancePreference: true,
+    leadSource: "walk-in",
+    existingCarBrand: "BMW",
+    existingCarModel: "X5",
+    createdAt: new Date("2024-03-01"),
+    updatedAt: new Date("2024-03-15"),
+  },
+  {
+    id: "opp-2",
+    accountId: "acc-1",
+    accountName: "王小明",
+    name: "Defender 110 換購",
+    stage: "prospecting",
+    probability: 30,
+    carType: "new-car",
+    detailCategory: "retail",
+    interestedModel: "Defender 110",
+    powerType: "diesel",
+    performancePreference: false,
+    leadSource: "existing-customer",
+    existingCarBrand: "BMW",
+    existingCarModel: "X5",
+    createdAt: new Date("2024-03-10"),
+  },
+  {
+    id: "opp-3",
+    accountId: "acc-2",
+    accountName: "李美華",
+    name: "Defender 90 認證中古車",
+    stage: "qualification",
+    probability: 50,
+    carType: "certified-used",
+    detailCategory: "approved-pre-owned",
+    interestedModel: "Defender 90",
+    powerType: "gasoline",
+    performancePreference: false,
+    leadSource: "referral",
+    createdAt: new Date("2024-02-20"),
+    updatedAt: new Date("2024-03-05"),
+  },
+  {
+    id: "opp-4",
+    accountId: "acc-3",
+    accountName: "陳大偉",
+    name: "I-PACE 電動車購入",
+    stage: "closed-won",
+    probability: 100,
+    carType: "new-car",
+    detailCategory: "retail",
+    interestedModel: "I-PACE",
+    powerType: "electric",
+    performancePreference: false,
+    leadSource: "retailer-experience",
+    existingCarBrand: "Tesla",
+    existingCarModel: "Model 3",
+    orderDate: new Date("2024-02-28"),
+    deliveryDate: new Date("2024-04-15"),
+    createdAt: new Date("2024-01-25"),
+    updatedAt: new Date("2024-02-28"),
+  },
+  {
+    id: "opp-5",
+    accountId: "acc-3",
+    accountName: "陳大偉",
+    name: "Range Rover 頂級車款",
+    stage: "closed-lost",
+    probability: 0,
+    carType: "new-car",
+    detailCategory: "retail",
+    interestedModel: "Range Rover",
+    powerType: "hybrid",
+    performancePreference: true,
+    leadSource: "retailer-experience",
+    existingCarBrand: "Tesla",
+    existingCarModel: "Model 3",
+    lostReason: "客戶預算調整，決定先購入 I-PACE，Range Rover 計畫延後。",
+    createdAt: new Date("2024-01-25"),
+    updatedAt: new Date("2024-02-20"),
+  },
+]
+
+// Mock Activities for Opportunities
+export const mockOpportunityActivities: Record<string, Activity[]> = {
+  "opp-1": [
+    {
+      id: "oa-1",
+      type: "event",
+      subject: "試駕 Range Rover Sport",
+      createdAt: new Date("2024-03-10"),
+      startDateTime: new Date("2024-03-10T14:00:00"),
+      endDateTime: new Date("2024-03-10T15:30:00"),
+    },
+    {
+      id: "oa-2",
+      type: "task",
+      subject: "報價單寄送",
+      description: "準備最終報價單並寄送給客戶",
+      createdAt: new Date("2024-03-12"),
+      dueDate: new Date("2024-03-14"),
+      status: "completed",
+    },
+    {
+      id: "oa-3",
+      type: "task",
+      subject: "跟進客戶決定",
+      createdAt: new Date("2024-03-15"),
+      dueDate: new Date("2024-03-20"),
+      status: "in-progress",
+    },
+  ],
+  "opp-2": [
+    {
+      id: "oa-4",
+      type: "event",
+      subject: "電話討論換購方案",
+      createdAt: new Date("2024-03-11"),
+      startDateTime: new Date("2024-03-11T10:00:00"),
+      endDateTime: new Date("2024-03-11T10:30:00"),
+    },
+  ],
+  "opp-3": [
+    {
+      id: "oa-5",
+      type: "event",
+      subject: "來店看車",
+      createdAt: new Date("2024-02-25"),
+      startDateTime: new Date("2024-02-25T15:00:00"),
+      endDateTime: new Date("2024-02-25T16:00:00"),
+    },
+    {
+      id: "oa-6",
+      type: "task",
+      subject: "準備車況報告",
+      createdAt: new Date("2024-03-01"),
+      dueDate: new Date("2024-03-05"),
+      status: "completed",
+    },
+  ],
+  "opp-4": [
+    {
+      id: "oa-7",
+      type: "event",
+      subject: "簽約完成",
+      createdAt: new Date("2024-02-28"),
+      startDateTime: new Date("2024-02-28T11:00:00"),
+      endDateTime: new Date("2024-02-28T12:00:00"),
+    },
+    {
+      id: "oa-8",
+      type: "task",
+      subject: "安排交車事宜",
+      createdAt: new Date("2024-03-01"),
+      dueDate: new Date("2024-04-10"),
+      status: "in-progress",
+    },
+  ],
+  "opp-5": [
+    {
+      id: "oa-9",
+      type: "event",
+      subject: "客戶告知暫緩",
+      createdAt: new Date("2024-02-20"),
+      startDateTime: new Date("2024-02-20T16:00:00"),
+      endDateTime: new Date("2024-02-20T16:30:00"),
+    },
+  ],
+}
+
+export function getOpportunityById(id: string): Opportunity | undefined {
+  return mockOpportunities.find((opp) => opp.id === id)
+}
+
+export function getOpportunitiesByAccountId(accountId: string): Opportunity[] {
+  return mockOpportunities.filter((opp) => opp.accountId === accountId)
+}
+
+export function getActivitiesByOpportunityId(opportunityId: string): Activity[] {
+  return mockOpportunityActivities[opportunityId] || []
+}
+
+export function getAccountById(id: string): Account | undefined {
+  return mockAccounts.find((account) => account.id === id)
 }
 
 export function getLeadById(id: string): Lead | undefined {

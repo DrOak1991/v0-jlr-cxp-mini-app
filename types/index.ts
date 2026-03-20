@@ -42,6 +42,33 @@ export interface Lead {
   testDriveConsent?: TestDriveConsent
 }
 
+export interface Opportunity {
+  id: string
+  accountId: string // 所屬帳戶 ID
+  accountName: string // 所屬帳戶名稱（用於列表顯示）
+  name: string // 機會名稱
+  stage: "prospecting" | "qualification" | "needs-analysis" | "proposal" | "negotiation" | "closed-won" | "closed-lost"
+  probability?: number // 可能性 %
+  // 車型選擇
+  carType?: "new-car" | "certified-used"
+  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
+  interestedModel?: string
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  performancePreference?: boolean // SV/V8 偏好
+  // 轉換資訊
+  leadSource?: string
+  existingCarBrand?: string
+  existingCarModel?: string
+  // 機會狀態
+  orderDate?: Date // 訂單日期
+  deliveryDate?: Date // 交車日期
+  lostReason?: string // 流失原因（僅當 stage = closed-lost）
+  // 活動記錄
+  activities?: Activity[]
+  createdAt: Date
+  updatedAt?: Date
+}
+
 export interface Account {
   id: string
   firstName: string
