@@ -36,6 +36,9 @@ import {
   CheckCircle2,
   Users,
   Building2,
+  AlertCircle,
+  FileText,
+  Heart,
 } from "lucide-react"
 import Image from "next/image"
 import type { Account, Activity } from "@/types"
@@ -51,6 +54,9 @@ export default function AccountDetailPage() {
   const [originalAccount, setOriginalAccount] = useState<Account | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])
+  const [notes, setNotes] = useState("")
+  const [originalNotes, setOriginalNotes] = useState("")
+  const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Invite sheet states
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -101,8 +107,14 @@ export default function AccountDetailPage() {
       setAccount(foundAccount)
       setOriginalAccount({ ...foundAccount })
       setActivities(foundAccount.activities || [])
+      setNotes(foundAccount.notes || "")
+      setOriginalNotes(foundAccount.notes || "")
     }
   }, [accountId])
+
+  useEffect(() => {
+    setHasNotesChanged(notes !== originalNotes)
+  }, [notes, originalNotes])
 
   useEffect(() => {
     if (isInviteSheetOpen) {
@@ -180,6 +192,22 @@ export default function AccountDetailPage() {
       title: "資料已更新",
       description: "帳戶資料已成功儲存",
     })
+  }
+
+  const handleSaveNotes = () => {
+    setOriginalNotes(notes)
+    setHasNotesChanged(false)
+    toast({
+      title: "備註已儲存",
+      description: "您的備註已成功更新",
+    })
+  }
+
+  const maritalStatusLabels: Record<string, string> = {
+    single: "單身",
+    married: "已婚",
+    divorced: "離婚",
+    widowed: "喪偶",
   }
 
   const handleCancel = () => {
@@ -468,6 +496,10 @@ export default function AccountDetailPage() {
                   <p className="font-medium">{account.language || "未設定"}</p>
                 </div>
                 <div>
+                  <span className="text-muted-foreground">身分證字號</span>
+                  <p className="font-medium">{account.nationalId || "未設定"}</p>
+                </div>
+                <div>
                   <span className="text-muted-foreground">商機來源</span>
                   <p className="font-medium">
                     {account.leadSource ? leadSourceLabels[account.leadSource] : "未設定"}
@@ -476,6 +508,32 @@ export default function AccountDetailPage() {
               </div>
             </div>
           </div>
+        </Card>
+
+        {/* 備註卡片 */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="h-5 w-5" />
+            <Label className="text-base font-semibold">備註</Label>
+          </div>
+
+          {hasNotesChanged && (
+            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
+            </div>
+          )}
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="新增備註..."
+            className="min-h-[100px] mb-3"
+          />
+
+          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
+            儲存備註
+          </Button>
         </Card>
 
         {/* 關聯機會卡片 */}
@@ -533,52 +591,58 @@ export default function AccountDetailPage() {
           </div>
         </Card>
 
-        {/* 地址資訊卡片 */}
-        <Card className="p-4 space-y-4">
-          <h3 className="font-semibold text-base flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            地址資訊
-          </h3>
-          <div className="space-y-3 text-sm">
-            <div>
-              <span className="text-muted-foreground">帳單地址</span>
-              <p className="font-medium">
-                {account.billingCity || account.billingAddress
-                  ? `${account.billingCity || ""} ${account.billingAddress || ""}`
-                  : "未設定"}
-              </p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">郵寄地址</span>
-              <p className="font-medium">
-                {account.shippingCity || account.shippingAddress
-                  ? `${account.shippingCity || ""} ${account.shippingAddress || ""}`
-                  : "未設定"}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* 其他資訊卡片 */}
+        {/* 其他資訊卡片（合併地址、婚姻家庭、興趣等） */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base flex items-center gap-2">
             <Users className="h-5 w-5" />
             其他資訊
           </h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">職業</span>
-              <p className="font-medium">{account.occupation || "未設定"}</p>
+          
+          {/* 婚姻家庭 */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Heart className="h-4 w-4" />
+              婚姻家庭
             </div>
-            <div>
-              <span className="text-muted-foreground">行業</span>
-              <p className="font-medium">{account.industry || "未設定"}</p>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">婚姻狀態</span>
+                <p className="font-medium">{account.maritalStatus ? maritalStatusLabels[account.maritalStatus] : "未設定"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">家庭成員數</span>
+                <p className="font-medium">{account.familyMemberCount ?? "未設定"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">有子女</span>
+                <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
+              </div>
+              {account.hasChildren && account.childrenCount && (
+                <div>
+                  <span className="text-muted-foreground">子女數</span>
+                  <p className="font-medium">{account.childrenCount}</p>
+                </div>
+              )}
             </div>
-            <div>
-              <span className="text-muted-foreground">家庭成員數</span>
-              <p className="font-medium">{account.familyMemberCount ?? "未設定"}</p>
+          </div>
+
+          {/* 職業與興趣 */}
+          <div className="space-y-3 pt-3 border-t">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">職業</span>
+                <p className="font-medium">{account.occupation || "未設定"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">行業</span>
+                <p className="font-medium">{account.industry || "未設定"}</p>
+              </div>
             </div>
-            <div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">興趣</span>
+              <p className="font-medium">{account.interests?.length ? account.interests.join("、") : "未設定"}</p>
+            </div>
+            <div className="text-sm">
               <span className="text-muted-foreground">聯絡偏好</span>
               <p className="font-medium">
                 {account.contactPreferences?.length
@@ -589,12 +653,32 @@ export default function AccountDetailPage() {
               </p>
             </div>
           </div>
-          {account.notes && (
-            <div className="pt-3 border-t">
-              <span className="text-sm text-muted-foreground">備註</span>
-              <p className="text-sm mt-1">{account.notes}</p>
+
+          {/* 地址資訊 */}
+          <div className="space-y-3 pt-3 border-t">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              地址資訊
             </div>
-          )}
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">帳單地址</span>
+                <p className="font-medium">
+                  {account.billingCity || account.billingAddress
+                    ? `${account.billingCity || ""} ${account.billingAddress || ""}`
+                    : "未設定"}
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">郵寄地址</span>
+                <p className="font-medium">
+                  {account.shippingCity || account.shippingAddress
+                    ? `${account.shippingCity || ""} ${account.shippingAddress || ""}`
+                    : "未設定"}
+                </p>
+              </div>
+            </div>
+          </div>
         </Card>
 
         {/* 活動記錄卡片 */}

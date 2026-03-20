@@ -1,8 +1,54 @@
 "use client"
 
-import React from "react"
-
+import type React from "react"
 import { useState, useEffect } from "react"
+import type { Activity } from "@/types"
+
+function ActivityItem({
+  activity,
+  formatDate,
+  formatDateTime,
+}: {
+  activity: Activity
+  formatDate: (date: Date) => string
+  formatDateTime: (date: Date) => string
+}) {
+  const isEvent = activity.type === "event"
+  const isTask = activity.type === "task"
+  
+  let statusBadgeClass = "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+  let statusLabel = "未開始"
+  
+  if (activity.status === "completed") {
+    statusBadgeClass = "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+    statusLabel = "已完成"
+  } else if (activity.status === "in-progress") {
+    statusBadgeClass = "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+    statusLabel = "進行中"
+  }
+
+  return (
+    <div className="flex gap-3">
+      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEvent ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
+        {isEvent ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-foreground">{activity.subject}</p>
+        {activity.description && <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>}
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          {isEvent && activity.startDateTime && <span className="text-xs text-muted-foreground">{formatDateTime(activity.startDateTime)}</span>}
+          {isTask && activity.dueDate && <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>}
+          {isTask && activity.status && <span className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}`}>{statusLabel}</span>}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
+      </div>
+    </div>
+  )
+}
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -1257,7 +1303,7 @@ export default function LeadDetailPage() {
           )}
         </Card>
 
-        {/* 活動記錄 */}
+        {/* 活動記錄區塊 */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-base flex items-center gap-2">
@@ -1273,46 +1319,9 @@ export default function LeadDetailPage() {
             <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
           ) : (
             <div className="space-y-4">
-              {activities.map((activity) => {
-                const isEventType = activity.type === "event"
-                const isTaskType = activity.type === "task"
-                const badgeClass = activity.status === "completed"
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                  : activity.status === "in-progress"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                const badgeText = activity.status === "completed" ? "已完成" : activity.status === "in-progress" ? "進行中" : "未開始"
-
-                return (
-                  <div key={activity.id} className="flex gap-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEventType ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
-                      {isEventType ? (
-                        <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{activity.subject}</p>
-                      {activity.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {isEventType && activity.startDateTime && (
-                          <span className="text-xs text-muted-foreground">{formatDateTime(activity.startDateTime)}</span>
-                        )}
-                        {isTaskType && activity.dueDate && (
-                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
-                        )}
-                        {isTaskType && activity.status && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>{badgeText}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
-                    </div>
-                  </div>
-                )
-              })}
+              {activities.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} formatDate={formatDate} formatDateTime={formatDateTime} />
+              ))}
             </div>
           )}
         </Card>

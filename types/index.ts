@@ -84,6 +84,7 @@ export interface Account {
   birthday?: Date
   gender?: "male" | "female" | "unknown"
   language?: string
+  nationalId?: string // 身分證字號
   // 聯絡資訊
   mobilePhone?: string
   homePhone?: string
@@ -109,12 +110,17 @@ export interface Account {
     | "line-booking"
     | "field-visit"
   contactPreferences?: ("mail" | "email" | "sms" | "phone")[]
+  // 婚姻家庭
+  maritalStatus?: "single" | "married" | "divorced" | "widowed"
+  hasChildren?: boolean
+  childrenCount?: number
   // 其他資訊
   occupation?: string
   industry?: string
   familyMemberCount?: number
   vehicleCount?: number
   maintenanceStatus?: "purchased" | "interested" | "none"
+  interests?: string[] // 興趣
   notes?: string
   // 活動記錄
   activities?: Activity[]
