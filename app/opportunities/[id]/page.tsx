@@ -38,11 +38,15 @@ import {
   Copy,
   Check,
   Upload,
+  Plus,
+  ClipboardList,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { DatePicker } from "@/components/date-picker"
 import type { Opportunity, Account, Activity } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -103,6 +107,19 @@ export default function OpportunityDetailPage() {
   const defaultInviteMessage = `歡迎點擊以下連結，加入 Jaguar Land Rover 的官方帳號，獲得專屬活動資訊、並享受完整的體驗與支援服務。`
   const [inviteMessage, setInviteMessage] = useState(defaultInviteMessage)
   
+  // Activity sheet states
+  const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
+  const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [newActivity, setNewActivity] = useState({
+    subject: "",
+    description: "",
+    startDate: undefined as Date | undefined,
+    startTime: "",
+    endTime: "",
+    dueDate: undefined as Date | undefined,
+    status: "not-started" as "not-started" | "in-progress" | "completed",
+  })
+
   // Test drive invite states
   const [testDriveStep, setTestDriveStep] = useState<"form" | "qrcode">("form")
   const [testDriveDate, setTestDriveDate] = useState("")
@@ -130,6 +147,21 @@ export default function OpportunityDetailPage() {
       setLicenseBackPreview(null)
     }
   }, [isInviteSheetOpen, defaultInviteMessage])
+
+  useEffect(() => {
+    if (isNewActivitySheetOpen) {
+      setActivityType("event")
+      setNewActivity({
+        subject: "",
+        description: "",
+        startDate: undefined,
+        startTime: "",
+        endTime: "",
+        dueDate: undefined,
+        status: "not-started",
+      })
+    }
+  }, [isNewActivitySheetOpen])
 
   useEffect(() => {
     const newOpportunityData = getOpportunityById(params.id as string)
@@ -275,6 +307,62 @@ export default function OpportunityDetailPage() {
       .join("")
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  const handleSaveActivity = () => {
+    if (!newActivity.subject.trim()) {
+      toast({
+        title: "請輸入主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "event" && (!newActivity.startDate || !newActivity.startTime)) {
+      toast({
+        title: "請選擇日期與時間",
+        description: "請選擇事件的開始日期與時間",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "task" && !newActivity.dueDate) {
+      toast({
+        title: "請選擇截止日期",
+        description: "請選擇工作的截止日期",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Create new activity (mock)
+    const activity: Activity = {
+      id: `new-${Date.now()}`,
+      type: activityType,
+      subject: newActivity.subject,
+      description: newActivity.description || undefined,
+      createdAt: new Date(),
+      ...(activityType === "event"
+        ? {
+            startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+            endDateTime: newActivity.endTime
+              ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+              : undefined,
+          }
+        : {
+            dueDate: newActivity.dueDate,
+            status: newActivity.status,
+          }),
+    }
+
+    setActivities([activity, ...activities])
+    setIsNewActivitySheetOpen(false)
+    toast({
+      title: activityType === "event" ? "事件已新增" : "工作已新增",
+      description: `已新增${activityType === "event" ? "事件" : "工作"}：${newActivity.subject}`,
+    })
   }
 
   const navigateToAccount = () => {
@@ -506,6 +594,44 @@ export default function OpportunityDetailPage() {
           </Card>
         )}
 
+        {/* 帳戶資訊卡片 */}
+        {account && (
+          <Card className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-base flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                帳戶資訊
+              </h3>
+              <Button variant="link" size="sm" className="text-primary p-0 h-auto" onClick={navigateToAccount}>
+                查看帳戶詳情
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <span className="text-sm text-muted-foreground">帳戶名稱</span>
+                <p className="text-foreground font-medium">{account.cxpName}</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <span className="text-sm text-muted-foreground">行動電話</span>
+                  <p className="text-foreground">886 {account.phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <span className="text-sm text-muted-foreground">電子郵件</span>
+                  <p className="text-foreground">{account.email || "未設定"}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* 車型選擇卡片 */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base flex items-center gap-2">
@@ -691,47 +817,23 @@ export default function OpportunityDetailPage() {
           </div>
         </Card>
 
-        {/* 帳戶資訊卡片 */}
-        {account && (
-          <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-base flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                帳戶資訊
-              </h3>
-              <Button variant="link" size="sm" className="text-primary p-0 h-auto" onClick={navigateToAccount}>
-                查看帳戶詳情
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm text-muted-foreground">帳戶名稱</span>
-                <p className="text-foreground font-medium">{account.cxpName}</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <span className="text-sm text-muted-foreground">行動電話</span>
-                  <p className="text-foreground">886 {account.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <span className="text-sm text-muted-foreground">電子郵件</span>
-                  <p className="text-foreground">{account.email || "未設定"}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
         {/* 活動記錄卡片 */}
         <Card className="p-4">
-          <h3 className="font-semibold text-base mb-4">活動記錄</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-base flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              活動記錄
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-transparent"
+              onClick={() => setIsNewActivitySheetOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              新增活動
+            </Button>
+          </div>
           {activities.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
           ) : (
@@ -781,6 +883,157 @@ export default function OpportunityDetailPage() {
           )}
         </Card>
       </div>
+
+      {/* New Activity Sheet */}
+      <Sheet open={isNewActivitySheetOpen} onOpenChange={setIsNewActivitySheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left pb-4">
+            <SheetTitle>新增活動</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-6 pb-8">
+            {/* Activity Type Selection */}
+            <div className="space-y-3">
+              <Label>活動類型</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${
+                    activityType === "event"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                  }`}
+                  onClick={() => setActivityType("event")}
+                >
+                  <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                  <span className="font-medium">事件</span>
+                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
+                </button>
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${
+                    activityType === "task"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                  }`}
+                  onClick={() => setActivityType("task")}
+                >
+                  <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                  <span className="font-medium">工作</span>
+                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Common Fields */}
+            <div className="space-y-2">
+              <Label>
+                主題 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                value={newActivity.subject}
+                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>說明</Label>
+              <Textarea
+                value={newActivity.description}
+                onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                placeholder="輸入詳細說明..."
+                className="min-h-[80px]"
+              />
+            </div>
+
+            {/* Event-specific fields */}
+            {activityType === "event" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    日期 <span className="text-destructive">*</span>
+                  </Label>
+                  <DatePicker
+                    date={newActivity.startDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, startDate: date })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>
+                      開始時間 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="time"
+                      value={newActivity.startTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>結束時間</Label>
+                    <Input
+                      type="time"
+                      value={newActivity.endTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Task-specific fields */}
+            {activityType === "task" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    截止日期 <span className="text-destructive">*</span>
+                  </Label>
+                  <DatePicker
+                    date={newActivity.dueDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, dueDate: date })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>狀態</Label>
+                  <RadioGroup
+                    value={newActivity.status}
+                    onValueChange={(value) =>
+                      setNewActivity({
+                        ...newActivity,
+                        status: value as "not-started" | "in-progress" | "completed",
+                      })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="not-started" id="opp-not-started" />
+                      <Label htmlFor="opp-not-started" className="font-normal">
+                        未開始
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="in-progress" id="opp-in-progress" />
+                      <Label htmlFor="opp-in-progress" className="font-normal">
+                        進行中
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="completed" id="opp-completed" />
+                      <Label htmlFor="opp-completed" className="font-normal">
+                        已完成
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+
+            <Button className="w-full" onClick={handleSaveActivity}>
+              {activityType === "event" ? "新增事件" : "新增工作"}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Lost Dialog */}
       <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
