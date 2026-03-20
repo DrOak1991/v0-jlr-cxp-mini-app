@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { formatDate } from "@/lib/utils"
 import Link from "next/link"
+import { OfficialAccountSelector } from "@/components/official-account-selector"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -29,6 +30,9 @@ export function LeadCard({ lead }: LeadCardProps) {
   const inviteUrl = `https://example.com/invite/${lead.id}`
   const defaultInviteMessage = `歡迎點擊以下連結，加入 Jaguar Land Rover 的官方帳號，獲得專屬活動資訊、並享受完整的體驗與支援服務。`
   const [inviteMessage, setInviteMessage] = useState(defaultInviteMessage)
+
+  // Official account selection
+  const [selectedOfficialAccount, setSelectedOfficialAccount] = useState("oa-1")
 
   // Test drive invite states
   const [testDriveStep, setTestDriveStep] = useState<"form" | "qrcode">("form")
@@ -239,6 +243,12 @@ export function LeadCard({ lead }: LeadCardProps) {
             <TabsContent value="test-drive" className="space-y-4">
               {testDriveStep === "form" ? (
                 <div className="space-y-4">
+                  {/* Official Account Selection */}
+                  <OfficialAccountSelector
+                    value={selectedOfficialAccount}
+                    onChange={setSelectedOfficialAccount}
+                  />
+
                   {/* Test Drive Date */}
                   <div className="space-y-2">
                     <Label>試駕日期</Label>
@@ -409,6 +419,12 @@ export function LeadCard({ lead }: LeadCardProps) {
 
             {/* Direct Invite Tab */}
             <TabsContent value="direct" className="space-y-6">
+              {/* Official Account Selection */}
+              <OfficialAccountSelector
+                value={selectedOfficialAccount}
+                onChange={setSelectedOfficialAccount}
+              />
+
               {/* QR Code section */}
               <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-muted-foreground">掃描 QR Code 加入</p>

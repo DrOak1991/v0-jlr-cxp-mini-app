@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Image from "next/image"
 import { getAccountById } from "@/lib/mock-data"
+import { OfficialAccountSelector } from "@/components/official-account-selector"
 
 interface OpportunityCardProps {
   opportunity: Opportunity
@@ -59,6 +60,9 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
   const defaultInviteMessage = `歡迎點擊以下連結，加入 Jaguar Land Rover 的官方帳號，獲得專屬活動資訊、並享受完整的體驗與支援服務。`
   const [inviteMessage, setInviteMessage] = useState(defaultInviteMessage)
   
+  // Official account selection
+  const [selectedOfficialAccount, setSelectedOfficialAccount] = useState("oa-1")
+
   // Test drive invite states
   const [testDriveStep, setTestDriveStep] = useState<"form" | "qrcode">("form")
   const [testDriveDate, setTestDriveDate] = useState("")
@@ -261,6 +265,12 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
               <TabsContent value="test-drive" className="space-y-4">
                 {testDriveStep === "form" ? (
                   <div className="space-y-4">
+                    {/* Official Account Selection */}
+                    <OfficialAccountSelector
+                      value={selectedOfficialAccount}
+                      onChange={setSelectedOfficialAccount}
+                    />
+
                     <div className="space-y-2">
                       <Label>試駕日期</Label>
                       <Input type="date" value={testDriveDate} onChange={(e) => setTestDriveDate(e.target.value)} />
@@ -358,6 +368,12 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
 
               {/* Direct Invite Tab */}
               <TabsContent value="direct" className="space-y-6">
+                {/* Official Account Selection */}
+                <OfficialAccountSelector
+                  value={selectedOfficialAccount}
+                  onChange={setSelectedOfficialAccount}
+                />
+
                 <div className="flex flex-col items-center gap-3">
                   <p className="text-sm text-muted-foreground">掃描 QR Code 加入</p>
                   <div className="bg-white p-4 rounded-lg border w-[60%] aspect-square flex items-center justify-center">
