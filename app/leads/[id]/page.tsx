@@ -44,6 +44,8 @@ import {
   Upload,
   Car,
   Eye,
+  CheckCircle2,
+  ClipboardList,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
@@ -72,9 +74,13 @@ export default function LeadDetailPage() {
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
 
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false)
-  const [newTask, setNewTask] = useState({
+  const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
+    startDate: undefined as Date | undefined,
+    startTime: "",
+    endTime: "",
     dueDate: undefined as Date | undefined,
     status: "not-started" as TaskStatus,
   })
@@ -168,8 +174,79 @@ export default function LeadDetailPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
   }, [hasNotesChanged, isEditing, hasFieldsChanged])
 
+  // Reset new activity form when sheet opens
+  useEffect(() => {
+    if (isNewActivityOpen) {
+      setActivityType("event")
+      setNewActivity({
+        subject: "",
+        description: "",
+        startDate: undefined,
+        startTime: "",
+        endTime: "",
+        dueDate: undefined,
+        status: "not-started",
+      })
+    }
+  }, [isNewActivityOpen])
+
+  const handleSaveActivity = () => {
+    if (!newActivity.subject.trim()) {
+      toast({
+        title: "請輸入主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "event" && (!newActivity.startDate || !newActivity.startTime)) {
+      toast({
+        title: "請選擇日期與時間",
+        description: "請選擇事件的開始日期與時間",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "task" && !newActivity.dueDate) {
+      toast({
+        title: "請選擇截止日期",
+        description: "請選擇工作的截止日期",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Create new activity
+    const activity: Activity = {
+      id: `new-${Date.now()}`,
+      type: activityType,
+      subject: newActivity.subject,
+      description: newActivity.description || undefined,
+      createdAt: new Date(),
+      ...(activityType === "event"
+        ? {
+            startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+            endDateTime: newActivity.endTime
+              ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+              : undefined,
+          }
+        : {
+            dueDate: newActivity.dueDate,
+            status: newActivity.status,
+          }),
+    }
+
+    setActivities([activity, ...activities])
+    setIsNewActivityOpen(false)
+    toast({
+      title: activityType === "event" ? "事件已新增" : "工作已新增",
+      description: `已新增${activityType === "event" ? "事件" : "工作"}：${newActivity.subject}`,
+    })
+  }
+
   const handleSaveNotes = () => {
-    console.log("[v0] Save notes:", notes)
     setOriginalNotes(notes)
     setHasNotesChanged(false)
     toast({
@@ -1180,57 +1257,70 @@ export default function LeadDetailPage() {
           )}
         </Card>
 
-        {/* TODO: 活動記錄 - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
-        {/*
+        {/* 活動記錄 */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-base">活動記錄</h3>
-            <Button variant="outline" size="sm" onClick={() => setIsNewActivityOpen(true)}>
+            <h3 className="font-semibold text-base flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              活動記錄
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-transparent"
+              onClick={() => setIsNewActivityOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-1" />
               新增活動
             </Button>
           </div>
-          <div className="space-y-4">
-            {activities.map((activity) => {
-              const Icon = activityIcons[activity.type]
-              return (
+          {activities.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
+          ) : (
+            <div className="space-y-4">
+              {activities.map((activity) => (
                 <div key={activity.id} className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  <div
+                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      activity.type === "event" ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"
+                    }`}
+                  >
+                    {activity.type === "event" ? (
+                      <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    )}
                   </div>
-                  <div className="flex-1">
-                    {activity.type === "task" && activity.name && (
-                      <p className="text-sm font-medium text-foreground">{activity.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{activity.subject}</p>
+                    {activity.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
                     )}
-                    <p className="text-sm text-foreground">{activity.content}</p>
-                    {activity.type === "task" && (
-                      <div className="flex items-center gap-2 mt-1">
-                        {activity.dueDate && (
-                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
-                        )}
-                        {activity.status && (
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${
-                              activity.status === "completed"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                                : activity.status === "in-progress"
-                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                                  : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                            }`}
-                          >
-                            {statusLabels[activity.status]}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {activity.type === "event" && activity.startDateTime && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatDateTime(activity.startDateTime)}
+                        </span>
+                      )}
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            activity.status === "completed"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                              : activity.status === "in-progress"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
+                          {activity.status === "completed" ? "已完成" : activity.status === "in-progress" ? "進行中" : "未開始"}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
-        */}
 
         {/* TODO: 轉換為帳戶按鈕 - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
         {/*
@@ -1240,93 +1330,156 @@ export default function LeadDetailPage() {
         */}
       </div>
 
-      {/* TODO: 新增活動 Sheet - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
-      {/*
+      {/* 新增活動 Sheet */}
       <Sheet open={isNewActivityOpen} onOpenChange={setIsNewActivityOpen}>
-        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-          <SheetHeader>
+        <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left pb-4">
             <SheetTitle>新增活動</SheetTitle>
           </SheetHeader>
 
-          <div className="p-4 space-y-4">
-            <div>
-              <Label htmlFor="activity-name">
-                活動名稱 <span className="text-destructive">*</span>
+          <div className="space-y-6 pb-8">
+            {/* Activity Type Selection */}
+            <div className="space-y-3">
+              <Label>活動類型</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${
+                    activityType === "event"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                  }`}
+                  onClick={() => setActivityType("event")}
+                >
+                  <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                  <span className="font-medium">事件</span>
+                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
+                </button>
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${
+                    activityType === "task"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                  }`}
+                  onClick={() => setActivityType("task")}
+                >
+                  <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                  <span className="font-medium">工作</span>
+                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Common Fields */}
+            <div className="space-y-2">
+              <Label>
+                主題 <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="activity-name"
-                value={newActivity.name}
-                onChange={(e) => setNewActivity({ ...newActivity, name: e.target.value })}
-                placeholder="輸入活動名稱"
-                className="mt-1"
+                value={newActivity.subject}
+                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
               />
             </div>
 
-            <div>
-              <Label>
-                截止日期 <span className="text-destructive">*</span>
-              </Label>
-              <DatePicker
-                date={newActivity.dueDate}
-                onDateChange={(date) => setNewActivity({ ...newActivity, dueDate: date })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="activity-notes">備註</Label>
+            <div className="space-y-2">
+              <Label>說明</Label>
               <Textarea
-                id="activity-notes"
-                value={newActivity.notes}
-                onChange={(e) => setNewActivity({ ...newActivity, notes: e.target.value })}
-                placeholder="輸入備註..."
-                className="mt-1 min-h-[100px]"
+                value={newActivity.description}
+                onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                placeholder="輸入詳細說明..."
+                className="min-h-[80px]"
               />
             </div>
 
-            <div>
-              <Label className="mb-2 block">狀態</Label>
-              <RadioGroup
-                value={newActivity.status}
-                onValueChange={(value) =>
-                  setNewActivity({
-                    ...newActivity,
-                    status: value as "not-started" | "in-progress" | "completed",
-                  })
-                }
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="not-started" id="not-started" />
-                  <Label htmlFor="not-started" className="font-normal">
-                    未開始
+            {/* Event-specific fields */}
+            {activityType === "event" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    日期 <span className="text-destructive">*</span>
                   </Label>
+                  <DatePicker
+                    date={newActivity.startDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, startDate: date })}
+                  />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="in-progress" id="in-progress" />
-                  <Label htmlFor="in-progress" className="font-normal">
-                    進行中
-                  </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>
+                      開始時間 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="time"
+                      value={newActivity.startTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>結束時間</Label>
+                    <Input
+                      type="time"
+                      value={newActivity.endTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, endTime: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="completed" id="completed" />
-                  <Label htmlFor="completed" className="font-normal">
-                    完成
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
+              </>
+            )}
 
-          <SheetFooter>
-            <Button variant="outline" onClick={() => setIsNewActivityOpen(false)} className="flex-1">
-              取消
+            {/* Task-specific fields */}
+            {activityType === "task" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    截止日期 <span className="text-destructive">*</span>
+                  </Label>
+                  <DatePicker
+                    date={newActivity.dueDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, dueDate: date })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>狀態</Label>
+                  <RadioGroup
+                    value={newActivity.status}
+                    onValueChange={(value) =>
+                      setNewActivity({
+                        ...newActivity,
+                        status: value as "not-started" | "in-progress" | "completed",
+                      })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="not-started" id="lead-not-started" />
+                      <Label htmlFor="lead-not-started" className="font-normal">
+                        未開始
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="in-progress" id="lead-in-progress" />
+                      <Label htmlFor="lead-in-progress" className="font-normal">
+                        進行中
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="completed" id="lead-completed" />
+                      <Label htmlFor="lead-completed" className="font-normal">
+                        已完成
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+
+            <Button className="w-full" onClick={handleSaveActivity}>
+              {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
-            <Button onClick={handleCreateActivity} className="flex-1">
-              建立活動
-            </Button>
-          </SheetFooter>
+          </div>
         </SheetContent>
       </Sheet>
-      */}
 
       <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
         <DialogContent>
