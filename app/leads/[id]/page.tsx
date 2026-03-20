@@ -1,81 +1,7 @@
 "use client"
 
-// Activity records with filter tabs - Updated 2026-03-20
 import type React from "react"
 import { useState, useEffect } from "react"
-import type { Activity } from "@/types"
-import { Calendar as CalendarIcon, ClipboardList as TaskIcon, ChevronRight } from "lucide-react"
-
-function ActivityItemCard({
-  activity,
-  formatDate,
-  formatDateTime,
-}: {
-  activity: Activity
-  formatDate: (date: Date) => string
-  formatDateTime: (date: Date) => string
-}) {
-  const isEvent = activity.type === "event"
-  const isTask = activity.type === "task"
-
-  // Status badge styling
-  let statusBadgeClass = "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-  let statusLabel = "未開始"
-
-  if (activity.status === "completed") {
-    statusBadgeClass = "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-    statusLabel = "已完成"
-  } else if (activity.status === "in-progress") {
-    statusBadgeClass = "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
-    statusLabel = "進行中"
-  } else if (activity.status === "waiting") {
-    statusBadgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
-    statusLabel = "等待別人"
-  }
-
-  // Format date range for events
-  const getEventDateRange = () => {
-    if (!activity.startDateTime) return ""
-    const start = formatDateTime(activity.startDateTime)
-    if (activity.endDateTime) {
-      const end = formatDateTime(activity.endDateTime)
-      return `${start} - ${end}`
-    }
-    return start
-  }
-
-  return (
-    <div className="flex items-center gap-3 p-3 border rounded-lg bg-background hover:bg-accent/30 transition-colors cursor-pointer">
-      {/* Left Icon */}
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-        {isEvent ? (
-          <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-        ) : (
-          <TaskIcon className="h-5 w-5 text-muted-foreground" />
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-sm">{activity.subject}</span>
-          {isEvent && (
-            <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">事件</span>
-          )}
-          {isTask && activity.status && (
-            <span className={`text-xs px-2 py-0.5 rounded ${statusBadgeClass}`}>{statusLabel}</span>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {isEvent ? getEventDateRange() : activity.dueDate ? `到期：${formatDate(activity.dueDate)}` : ""}
-        </p>
-      </div>
-
-      {/* Right Arrow */}
-      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-    </div>
-  )
-}
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -119,7 +45,6 @@ import {
   Eye,
   CheckCircle2,
   ClipboardList,
-  ChevronRight,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
@@ -127,6 +52,7 @@ import { useToast } from "@/hooks/use-toast"
 import { DatePicker, DateTimePicker } from "@/components/date-picker"
 import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
+import { ActivityRecord } from "@/components/activity-record"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -140,7 +66,6 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<Lead>(leadData || ({} as Lead))
   const [originalLead, setOriginalLead] = useState<Lead>(leadData || ({} as Lead))
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
-  const [activityFilter, setActivityFilter] = useState<"all" | "event" | "task">("all")
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(leadData?.testDriveConsent || null)
 
   const [notes, setNotes] = useState(leadData?.notes || "")
@@ -887,7 +812,7 @@ export default function LeadDetailPage() {
               </div>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未設定"}
+                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未���定"}
               </p>
             )}
           </div>
@@ -1333,61 +1258,7 @@ export default function LeadDetailPage() {
         </Card>
 
         {/* 活動記錄區塊 */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-base">活動紀錄</h3>
-            <Button variant="outline" size="sm" className="bg-transparent" onClick={() => setIsNewActivityOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              新增活動
-            </Button>
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="flex bg-muted rounded-lg p-1 mb-4">
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                activityFilter === "all" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActivityFilter("all")}
-            >
-              全部
-            </button>
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                activityFilter === "event" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActivityFilter("event")}
-            >
-              事件
-            </button>
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                activityFilter === "task" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActivityFilter("task")}
-            >
-              工作
-            </button>
-          </div>
-
-          {/* Activity List */}
-          {activities.filter((a) => activityFilter === "all" || a.type === activityFilter).length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              {activityFilter === "all" ? "目前沒有活動記錄" : activityFilter === "event" ? "目前沒有事件" : "目前沒有工作"}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {activities
-                .filter((a) => activityFilter === "all" || a.type === activityFilter)
-                .map((activity) => (
-                  <ActivityItemCard key={activity.id} activity={activity} formatDate={formatDate} formatDateTime={formatDateTime} />
-                ))}
-            </div>
-          )}
-        </Card>
+        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivityOpen(true)} />
 
         {/* TODO: 轉換為帳戶按鈕 - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
         {/*
@@ -1619,7 +1490,7 @@ export default function LeadDetailPage() {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mb-4">
-              {isRecording ? "錄音中..." : "點擊麥克風開始語音輸入"}
+              {isRecording ? "錄音中..." : "點擊麥克風開始��音輸入"}
             </p>
 
             {/* Text area */}

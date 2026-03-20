@@ -43,6 +43,7 @@ import {
 import Image from "next/image"
 import type { Account, Activity } from "@/types"
 import { getAccountById, getOpportunitiesByAccountId } from "@/lib/mock-data"
+import { ActivityRecord } from "@/components/activity-record"
 
 export default function AccountDetailPage() {
   const params = useParams()
@@ -682,79 +683,7 @@ export default function AccountDetailPage() {
         </Card>
 
         {/* 活動記錄卡片 */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-base flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" />
-              活動記錄
-            </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent"
-              onClick={() => setIsNewActivitySheetOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              新增活動
-            </Button>
-          </div>
-          {activities.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
-          ) : (
-            <div className="space-y-4">
-              {activities.map((activity) => {
-                const isEventType = activity.type === "event"
-                const isTaskType = activity.type === "task"
-                const badgeClass =
-                  activity.status === "completed"
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                    : activity.status === "in-progress"
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                      : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                const badgeText =
-                  activity.status === "completed"
-                    ? "已完成"
-                    : activity.status === "in-progress"
-                      ? "進行中"
-                      : "未開始"
-
-                return (
-                  <div key={activity.id} className="flex gap-3">
-                    <div
-                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEventType ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"}`}
-                    >
-                      {isEventType ? (
-                        <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{activity.subject}</p>
-                      {activity.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {isEventType && activity.startDateTime && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatDateTime(activity.startDateTime)}
-                          </span>
-                        )}
-                        {isTaskType && activity.dueDate && (
-                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
-                        )}
-                        {isTaskType && activity.status && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>{badgeText}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </Card>
+        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
       </main>
 
       {/* New Activity Sheet */}
