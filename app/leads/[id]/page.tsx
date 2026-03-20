@@ -587,7 +587,7 @@ export default function LeadDetailPage() {
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold text-lg">商��詳情</h1>
+          <h1 className="font-semibold text-lg">商機詳情</h1>
           {!isEditing && (
             <Button variant="ghost" size="sm" onClick={handleEdit}>
               <Edit className="h-5 w-5" />
@@ -1264,12 +1264,7 @@ export default function LeadDetailPage() {
               <ClipboardList className="h-5 w-5" />
               活動記錄
             </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent"
-              onClick={() => setIsNewActivityOpen(true)}
-            >
+            <Button variant="outline" size="sm" className="bg-transparent" onClick={() => setIsNewActivityOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
               新增活動
             </Button>
@@ -1278,51 +1273,46 @@ export default function LeadDetailPage() {
             <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
           ) : (
             <div className="space-y-4">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex gap-3">
-                  <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.type === "event" ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"
-                    }`}
-                  >
-                    {activity.type === "event" ? (
-                      <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    ) : (
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{activity.subject}</p>
-                    {activity.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      {activity.type === "event" && activity.startDateTime && (
-                        <span className="text-xs text-muted-foreground">
-                          {formatDateTime(activity.startDateTime)}
-                        </span>
-                      )}
-                      {activity.type === "task" && activity.dueDate && (
-                        <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
-                      )}
-                      {activity.type === "task" && activity.status && (
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            activity.status === "completed"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                              : activity.status === "in-progress"
-                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                          }`}
-                        >
-                          {activity.status === "completed" ? "已完成" : activity.status === "in-progress" ? "進行中" : "未開始"}
-                        </span>
+              {activities.map((activity) => {
+                const isEvent = activity.type === "event"
+                const isTask = activity.type === "task"
+                const statusClass = activity.status === "completed"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                  : activity.status === "in-progress"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                const statusText = activity.status === "completed" ? "已完成" : activity.status === "in-progress" ? "進行中" : "未開始"
+
+                return (
+                  <div key={activity.id} className="flex gap-3">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEvent ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
+                      {isEvent ? (
+                        <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{activity.subject}</p>
+                      {activity.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {isEvent && activity.startDateTime && (
+                          <span className="text-xs text-muted-foreground">{formatDateTime(activity.startDateTime)}</span>
+                        )}
+                        {isTask && activity.dueDate && (
+                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
+                        )}
+                        {isTask && activity.status && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${statusClass}`}>{statusText}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </Card>
@@ -1536,7 +1526,7 @@ export default function LeadDetailPage() {
         <SheetContent side="bottom" className="h-[70vh] rounded-t-xl">
           <SheetHeader className="text-left pb-4">
             <SheetTitle>通話紀錄</SheetTitle>
-            <p className="text-sm text-muted-foreground">是否要針對本次通話做更新紀錄���</p>
+            <p className="text-sm text-muted-foreground">是否要針對本次通話做更新紀錄？</p>
           </SheetHeader>
 
           <div className="flex flex-col h-[calc(100%-140px)]">
