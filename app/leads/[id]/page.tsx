@@ -1299,19 +1299,13 @@ export default function LeadDetailPage() {
                       )}
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {isEventType && activity.startDateTime && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatDateTime(activity.startDateTime)}
-                          </span>
+                          <span className="text-xs text-muted-foreground">{formatDateTime(activity.startDateTime)}</span>
                         )}
                         {isTaskType && activity.dueDate && (
-                          <span className="text-xs text-muted-foreground">
-                            截止：{formatDate(activity.dueDate)}
-                          </span>
+                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
                         )}
                         {isTaskType && activity.status && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>
-                            {badgeText}
-                          </span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>{badgeText}</span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>

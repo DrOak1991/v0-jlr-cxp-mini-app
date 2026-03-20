@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Phone, Mail, Calendar, MessageCircle, ArrowRight, UserX, FileCheck, Copy, Check, Upload, Car } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { formatDate } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -23,7 +23,6 @@ interface AccountCardProps {
 }
 
 export function AccountCard({ account }: AccountCardProps) {
-  const router = useRouter()
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -126,10 +125,6 @@ export function AccountCard({ account }: AccountCardProps) {
     }
   }
 
-  const handleCardClick = () => {
-    router.push(`/accounts/${account.id}`)
-  }
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -141,7 +136,8 @@ export function AccountCard({ account }: AccountCardProps) {
 
   return (
     <>
-      <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={handleCardClick}>
+      <Link href={`/accounts/${account.id}`} className="block">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors">
         <div className="flex gap-3 mb-3">
           <div className="flex flex-col items-center gap-1 shrink-0">
             <Avatar className="h-12 w-12">
@@ -225,6 +221,7 @@ export function AccountCard({ account }: AccountCardProps) {
           </div>
         </div>
       </Card>
+      </Link>
 
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>
         <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">

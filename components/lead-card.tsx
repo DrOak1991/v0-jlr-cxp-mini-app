@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { formatDate } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -23,7 +23,6 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead }: LeadCardProps) {
-  const router = useRouter()
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -126,10 +125,6 @@ export function LeadCard({ lead }: LeadCardProps) {
     }
   }
 
-  const handleCardClick = () => {
-    router.push(`/leads/${lead.id}`)
-  }
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -141,7 +136,8 @@ export function LeadCard({ lead }: LeadCardProps) {
 
   return (
     <>
-      <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={handleCardClick}>
+      <Link href={`/leads/${lead.id}`} className="block">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors">
         <div className="flex gap-3 mb-3">
           {/* Avatar section with test drive status */}
           <div className="flex flex-col items-center gap-1 shrink-0">
@@ -222,6 +218,7 @@ export function LeadCard({ lead }: LeadCardProps) {
           </div>
         </div>
       </Card>
+      </Link>
 
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>
         <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">

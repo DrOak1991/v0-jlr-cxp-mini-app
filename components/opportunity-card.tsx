@@ -7,7 +7,7 @@ import type { Opportunity, Account } from "@/types"
 import { Card } from "@/components/ui/card"
 import { ArrowRight, Car, Building2, TrendingUp, CheckCircle2, XCircle, MessageCircle, UserX, Copy, Check, Upload } from "lucide-react"
 import { formatDate } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -50,7 +50,6 @@ const brandModels: Record<string, string[]> = {
 }
 
 export function OpportunityCard({ opportunity }: OpportunityCardProps) {
-  const router = useRouter()
   const account = getAccountById(opportunity.accountId)
   
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -138,10 +137,6 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
     }
   }
 
-  const handleCardClick = () => {
-    router.push(`/opportunities/${opportunity.id}`)
-  }
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -163,7 +158,8 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
 
   return (
     <>
-      <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={handleCardClick}>
+      <Link href={`/opportunities/${opportunity.id}`} className="block">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors">
         <div className="flex gap-3">
           {/* Avatar section with LINE status */}
           <div className="flex flex-col items-center gap-1 shrink-0">
@@ -243,6 +239,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
           </div>
         </div>
       </Card>
+      </Link>
 
       {/* Invite Sheet */}
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>
