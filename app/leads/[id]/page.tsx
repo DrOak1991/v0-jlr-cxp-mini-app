@@ -1,10 +1,12 @@
 "use client"
 
+// Activity records with filter tabs - Updated 2026-03-20
 import type React from "react"
 import { useState, useEffect } from "react"
 import type { Activity } from "@/types"
+import { Calendar as CalendarIcon, ClipboardList as TaskIcon, ChevronRight } from "lucide-react"
 
-function ActivityItem({
+function ActivityItemCard({
   activity,
   formatDate,
   formatDateTime,
@@ -15,37 +17,62 @@ function ActivityItem({
 }) {
   const isEvent = activity.type === "event"
   const isTask = activity.type === "task"
-  
+
+  // Status badge styling
   let statusBadgeClass = "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
   let statusLabel = "未開始"
-  
+
   if (activity.status === "completed") {
     statusBadgeClass = "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
     statusLabel = "已完成"
   } else if (activity.status === "in-progress") {
-    statusBadgeClass = "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+    statusBadgeClass = "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
     statusLabel = "進行中"
+  } else if (activity.status === "waiting") {
+    statusBadgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
+    statusLabel = "等待別人"
+  }
+
+  // Format date range for events
+  const getEventDateRange = () => {
+    if (!activity.startDateTime) return ""
+    const start = formatDateTime(activity.startDateTime)
+    if (activity.endDateTime) {
+      const end = formatDateTime(activity.endDateTime)
+      return `${start} - ${end}`
+    }
+    return start
   }
 
   return (
-    <div className="flex gap-3">
-      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEvent ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
+    <div className="flex items-center gap-3 p-3 border rounded-lg bg-background hover:bg-accent/30 transition-colors cursor-pointer">
+      {/* Left Icon */}
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center">
         {isEvent ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <CalendarIcon className="h-5 w-5 text-muted-foreground" />
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <TaskIcon className="h-5 w-5 text-muted-foreground" />
         )}
       </div>
+
+      {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">{activity.subject}</p>
-        {activity.description && <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>}
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          {isEvent && activity.startDateTime && <span className="text-xs text-muted-foreground">{formatDateTime(activity.startDateTime)}</span>}
-          {isTask && activity.dueDate && <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>}
-          {isTask && activity.status && <span className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}`}>{statusLabel}</span>}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium text-sm">{activity.subject}</span>
+          {isEvent && (
+            <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">事件</span>
+          )}
+          {isTask && activity.status && (
+            <span className={`text-xs px-2 py-0.5 rounded ${statusBadgeClass}`}>{statusLabel}</span>
+          )}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {isEvent ? getEventDateRange() : activity.dueDate ? `到期：${formatDate(activity.dueDate)}` : ""}
+        </p>
       </div>
+
+      {/* Right Arrow */}
+      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
     </div>
   )
 }
@@ -92,6 +119,7 @@ import {
   Eye,
   CheckCircle2,
   ClipboardList,
+  ChevronRight,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
@@ -112,6 +140,7 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<Lead>(leadData || ({} as Lead))
   const [originalLead, setOriginalLead] = useState<Lead>(leadData || ({} as Lead))
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
+  const [activityFilter, setActivityFilter] = useState<"all" | "event" | "task">("all")
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(leadData?.testDriveConsent || null)
 
   const [notes, setNotes] = useState(leadData?.notes || "")
@@ -1306,22 +1335,56 @@ export default function LeadDetailPage() {
         {/* 活動記錄區塊 */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-base flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" />
-              活動記錄
-            </h3>
+            <h3 className="font-semibold text-base">活動紀錄</h3>
             <Button variant="outline" size="sm" className="bg-transparent" onClick={() => setIsNewActivityOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
               新增活動
             </Button>
           </div>
-          {activities.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">目前沒有活動記錄</p>
+
+          {/* Filter Tabs */}
+          <div className="flex bg-muted rounded-lg p-1 mb-4">
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                activityFilter === "all" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setActivityFilter("all")}
+            >
+              全部
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                activityFilter === "event" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setActivityFilter("event")}
+            >
+              事件
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                activityFilter === "task" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setActivityFilter("task")}
+            >
+              工作
+            </button>
+          </div>
+
+          {/* Activity List */}
+          {activities.filter((a) => activityFilter === "all" || a.type === activityFilter).length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {activityFilter === "all" ? "目前沒有活動記錄" : activityFilter === "event" ? "目前沒有事件" : "目前沒有工作"}
+            </p>
           ) : (
-            <div className="space-y-4">
-              {activities.map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} formatDate={formatDate} formatDateTime={formatDateTime} />
-              ))}
+            <div className="space-y-3">
+              {activities
+                .filter((a) => activityFilter === "all" || a.type === activityFilter)
+                .map((activity) => (
+                  <ActivityItemCard key={activity.id} activity={activity} formatDate={formatDate} formatDateTime={formatDateTime} />
+                ))}
             </div>
           )}
         </Card>
