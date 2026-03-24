@@ -88,6 +88,7 @@ export default function LeadDetailPage() {
   })
 
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
+  const [lostCategory, setLostCategory] = useState("")
   const [lostReason, setLostReason] = useState("")
   const [isConvertedDialogOpen, setIsConvertedDialogOpen] = useState(false)
   const [pendingSave, setPendingSave] = useState(false)
@@ -320,6 +321,7 @@ export default function LeadDetailPage() {
   const handleLostCancel = () => {
     setLead({ ...lead, stage: originalLead.stage })
     setIsLostDialogOpen(false)
+    setLostCategory("")
     setLostReason("")
     setPendingSave(false)
 
@@ -860,7 +862,7 @@ export default function LeadDetailPage() {
               <Select value={lead.workStatus || ""} onValueChange={(value) => setLead({ ...lead, workStatus: value })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇工作狀態" /></SelectTrigger>
                 <SelectContent>
-                  {["全職", "兼職", "自營", "退休", "待業", "學生"].map((w) => (
+                  {["全職", "兼職", "自營", "��休", "待業", "學生"].map((w) => (
                     <SelectItem key={w} value={w}>{w}</SelectItem>
                   ))}
                 </SelectContent>
@@ -1008,7 +1010,7 @@ export default function LeadDetailPage() {
                   {lead.leadSource === "walk-in" ? "來店客 (Walk-in)"
                     : lead.leadSource === "referral" ? "轉介 (Referral)"
                     : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
-                    : lead.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
+                    : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
                     : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
                     : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
                     : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
@@ -1319,20 +1321,40 @@ export default function LeadDetailPage() {
             <DialogDescription>請說明此商機流失的原因</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
-            <Textarea
-              value={lostReason}
-              onChange={(e) => setLostReason(e.target.value)}
-              placeholder="輸入流失原因..."
-              className="min-h-[120px]"
-            />
+          <div className="space-y-4 py-4">
+            {/* 戰敗原因下拉選單 */}
+            <div className="space-y-2">
+              <Label>戰敗原因</Label>
+              <Select value={lostCategory} onValueChange={setLostCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇戰敗原因" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="competitor">購買競牌</SelectItem>
+                  <SelectItem value="duplicate">重複資料</SelectItem>
+                  <SelectItem value="no-interest">沒有意願購買</SelectItem>
+                  <SelectItem value="unreachable">無法聯繫</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 詳細說明 */}
+            <div className="space-y-2">
+              <Label>詳細說明（選填）</Label>
+              <Textarea
+                value={lostReason}
+                onChange={(e) => setLostReason(e.target.value)}
+                placeholder="輸入流失原因的詳細說明..."
+                className="min-h-[100px]"
+              />
+            </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleLostCancel}>
               取消
             </Button>
-            <Button onClick={handleLostSave}>儲存</Button>
+            <Button onClick={handleLostSave} disabled={!lostCategory}>儲存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
