@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { formatDate } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { OfficialAccountSelector } from "@/components/official-account-selector"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -23,13 +24,15 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead }: LeadCardProps) {
-  const router = useRouter()
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const inviteUrl = `https://example.com/invite/${lead.id}`
   const defaultInviteMessage = `歡迎點擊以下連結，加入 Jaguar Land Rover 的官方帳號，獲得專屬活動資訊、並享受完整的體驗與支援服務。`
   const [inviteMessage, setInviteMessage] = useState(defaultInviteMessage)
+
+  // Official account selection
+  const [selectedOfficialAccount, setSelectedOfficialAccount] = useState("oa-1")
 
   // Test drive invite states
   const [testDriveStep, setTestDriveStep] = useState<"form" | "qrcode">("form")
@@ -126,10 +129,6 @@ export function LeadCard({ lead }: LeadCardProps) {
     }
   }
 
-  const handleCardClick = () => {
-    router.push(`/leads/${lead.id}`)
-  }
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -141,7 +140,8 @@ export function LeadCard({ lead }: LeadCardProps) {
 
   return (
     <>
-      <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={handleCardClick}>
+      <Link href={`/leads/${lead.id}`} className="block">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors">
         <div className="flex gap-3 mb-3">
           {/* Avatar section with test drive status */}
           <div className="flex flex-col items-center gap-1 shrink-0">
@@ -222,6 +222,7 @@ export function LeadCard({ lead }: LeadCardProps) {
           </div>
         </div>
       </Card>
+      </Link>
 
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>
         <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">
@@ -242,6 +243,12 @@ export function LeadCard({ lead }: LeadCardProps) {
             <TabsContent value="test-drive" className="space-y-4">
               {testDriveStep === "form" ? (
                 <div className="space-y-4">
+                  {/* Official Account Selection */}
+                  <OfficialAccountSelector
+                    value={selectedOfficialAccount}
+                    onChange={setSelectedOfficialAccount}
+                  />
+
                   {/* Test Drive Date */}
                   <div className="space-y-2">
                     <Label>試駕日期</Label>
@@ -412,6 +419,12 @@ export function LeadCard({ lead }: LeadCardProps) {
 
             {/* Direct Invite Tab */}
             <TabsContent value="direct" className="space-y-6">
+              {/* Official Account Selection */}
+              <OfficialAccountSelector
+                value={selectedOfficialAccount}
+                onChange={setSelectedOfficialAccount}
+              />
+
               {/* QR Code section */}
               <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-muted-foreground">掃描 QR Code 加入</p>

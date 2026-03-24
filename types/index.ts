@@ -10,6 +10,7 @@ export interface Lead {
   email: string
   createdAt: Date
   stage?: "new" | "follow-up" | "lost" | "converted"
+  lostReason?: string // 流失原因（僅當 stage = lost 時有值）
   // Detail page fields
   birthday?: Date
   gender?: "male" | "female" | "unknown"
@@ -41,6 +42,33 @@ export interface Lead {
   testDriveConsent?: TestDriveConsent
 }
 
+export interface Opportunity {
+  id: string
+  accountId: string // 所屬帳戶 ID
+  accountName: string // 所屬帳戶名稱（用於列表顯示）
+  name: string // 機會名稱
+  stage: "prospecting" | "qualification" | "needs-analysis" | "proposal" | "negotiation" | "closed-won" | "closed-lost"
+  probability?: number // 可能性 %
+  // 車型選擇
+  carType?: "new-car" | "certified-used"
+  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
+  interestedModel?: string
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  performancePreference?: boolean // SV/V8 偏好
+  // 轉換資訊
+  leadSource?: string
+  existingCarBrand?: string
+  existingCarModel?: string
+  // 機會狀態
+  orderDate?: Date // 訂單日期
+  deliveryDate?: Date // 交車日期
+  lostReason?: string // 流失原因（僅當 stage = closed-lost）
+  // 活動記錄
+  activities?: Activity[]
+  createdAt: Date
+  updatedAt?: Date
+}
+
 export interface Account {
   id: string
   firstName: string
@@ -50,13 +78,29 @@ export interface Account {
   lineStatus: "joined" | "not-joined" // LINE 好友狀態
   avatarUrl?: string // LINE profile picture URL
   phone: string
-  email: string
+  email?: string
   convertedAt: Date
-  // Detail page fields
+  // 基本資料
   birthday?: Date
+  gender?: "male" | "female" | "unknown"
+  language?: string
+  nationalId?: string // 身分證字號
+  // 聯絡資訊
+  mobilePhone?: string
+  homePhone?: string
+  email2?: string
+  email3?: string
+  // 地址資訊
+  billingCity?: string
+  billingAddress?: string
+  shippingCity?: string
+  shippingAddress?: string
+  // 車輛偏好
   carType?: "new" | "certified-used"
-  interestedModel?: "defender-90" | "defender-110" | "range-rover" | "range-rover-sport" | "discovery" | "i-pace"
+  interestedModel?: string
   performancePreference?: boolean
+  brandPreferences?: string[] // Jaguar, Land Rover 偏好
+  // 來源與行銷
   leadSource?:
     | "walk-in"
     | "referral"
@@ -66,7 +110,20 @@ export interface Account {
     | "line-booking"
     | "field-visit"
   contactPreferences?: ("mail" | "email" | "sms" | "phone")[]
+  // 婚姻家庭
+  maritalStatus?: "single" | "married" | "divorced" | "widowed"
+  hasChildren?: boolean
+  childrenCount?: number
+  // 其他資訊
+  occupation?: string
+  industry?: string
+  familyMemberCount?: number
+  vehicleCount?: number
+  maintenanceStatus?: "purchased" | "interested" | "none"
+  interests?: string[] // 興趣
   notes?: string
+  // 活動記錄
+  activities?: Activity[]
 }
 
 export type TaskStatus = "not-started" | "in-progress" | "completed" | "waiting" | "deferred"

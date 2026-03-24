@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-
+// Lead detail page - using shared ActivityRecord and TestDriveConsentCard components
+import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -44,6 +44,8 @@ import {
   Upload,
   Car,
   Eye,
+  CheckCircle2,
+  ClipboardList,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
@@ -51,6 +53,8 @@ import { useToast } from "@/hooks/use-toast"
 import { DatePicker, DateTimePicker } from "@/components/date-picker"
 import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
+import { ActivityRecord } from "@/components/activity-record"
+import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -72,14 +76,19 @@ export default function LeadDetailPage() {
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
 
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false)
-  const [newTask, setNewTask] = useState({
+  const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
+    startDate: undefined as Date | undefined,
+    startTime: "",
+    endTime: "",
     dueDate: undefined as Date | undefined,
     status: "not-started" as TaskStatus,
   })
 
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
+  const [lostCategory, setLostCategory] = useState("")
   const [lostReason, setLostReason] = useState("")
   const [isConvertedDialogOpen, setIsConvertedDialogOpen] = useState(false)
   const [pendingSave, setPendingSave] = useState(false)
@@ -108,7 +117,7 @@ export default function LeadDetailPage() {
   const [testDriveModel, setTestDriveModel] = useState("")
   const [licenseFrontPreview, setLicenseFrontPreview] = useState<string | null>(null)
   const [licenseBackPreview, setLicenseBackPreview] = useState<string | null>(null)
-  
+
   // License lightbox states
   const [isLicenseLightboxOpen, setIsLicenseLightboxOpen] = useState(false)
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0)
@@ -144,7 +153,7 @@ export default function LeadDetailPage() {
     })
   }
 
-  useEffect(() => {}, [params.id, router])
+  useEffect(() => { }, [params.id, router])
 
   useEffect(() => {
     setHasNotesChanged(notes !== originalNotes)
@@ -168,8 +177,79 @@ export default function LeadDetailPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
   }, [hasNotesChanged, isEditing, hasFieldsChanged])
 
+  // Reset new activity form when sheet opens
+  useEffect(() => {
+    if (isNewActivityOpen) {
+      setActivityType("event")
+      setNewActivity({
+        subject: "",
+        description: "",
+        startDate: undefined,
+        startTime: "",
+        endTime: "",
+        dueDate: undefined,
+        status: "not-started",
+      })
+    }
+  }, [isNewActivityOpen])
+
+  const handleSaveActivity = () => {
+    if (!newActivity.subject.trim()) {
+      toast({
+        title: "請輸入主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "event" && (!newActivity.startDate || !newActivity.startTime)) {
+      toast({
+        title: "請選擇日期與時間",
+        description: "請選擇事件的開始日期與時間",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (activityType === "task" && !newActivity.dueDate) {
+      toast({
+        title: "請選擇截止日期",
+        description: "請選擇工作的截止日期",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Create new activity
+    const activity: Activity = {
+      id: `new-${Date.now()}`,
+      type: activityType,
+      subject: newActivity.subject,
+      description: newActivity.description || undefined,
+      createdAt: new Date(),
+      ...(activityType === "event"
+        ? {
+          startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+          endDateTime: newActivity.endTime
+            ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+            : undefined,
+        }
+        : {
+          dueDate: newActivity.dueDate,
+          status: newActivity.status,
+        }),
+    }
+
+    setActivities([activity, ...activities])
+    setIsNewActivityOpen(false)
+    toast({
+      title: activityType === "event" ? "事件已新增" : "工作已新增",
+      description: `已新增${activityType === "event" ? "事件" : "工作"}：${newActivity.subject}`,
+    })
+  }
+
   const handleSaveNotes = () => {
-    console.log("[v0] Save notes:", notes)
     setOriginalNotes(notes)
     setHasNotesChanged(false)
     toast({
@@ -223,15 +303,25 @@ export default function LeadDetailPage() {
       return
     }
 
-    console.log("[v0] Lost reason:", lostReason)
+    // 將流失原因存到 lead 物件
+    const updatedLead = { ...lead, lostReason: lostReason.trim() }
+    setLead(updatedLead)
+    setOriginalLead({ ...updatedLead })
     setIsLostDialogOpen(false)
     setLostReason("")
-    performSave()
+    setIsEditing(false)
+    setHasFieldsChanged(false)
+    setPendingSave(false)
+    toast({
+      title: "資料已更新",
+      description: "商機已標記為流失",
+    })
   }
 
   const handleLostCancel = () => {
     setLead({ ...lead, stage: originalLead.stage })
     setIsLostDialogOpen(false)
+    setLostCategory("")
     setLostReason("")
     setPendingSave(false)
 
@@ -501,7 +591,7 @@ export default function LeadDetailPage() {
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold text-lg">商機詳��</h1>
+          <h1 className="font-semibold text-lg">商機詳情</h1>
           {!isEditing && (
             <Button variant="ghost" size="sm" onClick={handleEdit}>
               <Edit className="h-5 w-5" />
@@ -726,7 +816,7 @@ export default function LeadDetailPage() {
               </div>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未設定"}
+                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未���定"}
               </p>
             )}
           </div>
@@ -772,7 +862,7 @@ export default function LeadDetailPage() {
               <Select value={lead.workStatus || ""} onValueChange={(value) => setLead({ ...lead, workStatus: value })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇工作狀態" /></SelectTrigger>
                 <SelectContent>
-                  {["全職", "兼職", "自營", "退休", "待業", "學生"].map((w) => (
+                  {["全職", "兼職", "自營", "��休", "待業", "學生"].map((w) => (
                     <SelectItem key={w} value={w}>{w}</SelectItem>
                   ))}
                 </SelectContent>
@@ -844,11 +934,11 @@ export default function LeadDetailPage() {
               <p className="text-foreground">
                 {lead.interestedModel === "defender-90" ? "Defender 90"
                   : lead.interestedModel === "defender-110" ? "Defender 110"
-                  : lead.interestedModel === "range-rover" ? "Range Rover"
-                  : lead.interestedModel === "range-rover-sport" ? "Range Rover Sport"
-                  : lead.interestedModel === "discovery" ? "Discovery"
-                  : lead.interestedModel === "i-pace" ? "I-PACE"
-                  : "未設定"}
+                    : lead.interestedModel === "range-rover" ? "Range Rover"
+                      : lead.interestedModel === "range-rover-sport" ? "Range Rover Sport"
+                        : lead.interestedModel === "discovery" ? "Discovery"
+                          : lead.interestedModel === "i-pace" ? "I-PACE"
+                            : "未設定"}
               </p>
             )}
           </div>
@@ -919,12 +1009,12 @@ export default function LeadDetailPage() {
                 <p className="text-foreground">
                   {lead.leadSource === "walk-in" ? "來店客 (Walk-in)"
                     : lead.leadSource === "referral" ? "轉介 (Referral)"
-                    : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
-                    : lead.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
-                    : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
-                    : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                    : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
-                    : "未設定"}
+                      : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
+                        : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
+                          : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
+                            : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
+                              : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
+                                : "未設定"}
                 </p>
                 {lead.leadSource === "referral" && lead.referrer && (
                   <p className="text-sm text-muted-foreground mt-1">轉介者：{lead.referrer}</p>
@@ -1026,189 +1116,44 @@ export default function LeadDetailPage() {
               <p className="text-foreground">
                 {lead.contactPreferences && lead.contactPreferences.length > 0
                   ? lead.contactPreferences
-                      .map((p) => {
-                        const labels: Record<string, string> = {
-                          mail: "郵寄",
-                          email: "電子郵件",
-                          sms: "簡訊",
-                          phone: "電話",
-                        }
-                        return labels[p] || p
-                      })
-                      .join("、")
+                    .map((p) => {
+                      const labels: Record<string, string> = {
+                        mail: "郵寄",
+                        email: "電子郵件",
+                        sms: "簡訊",
+                        phone: "電話",
+                      }
+                      return labels[p] || p
+                    })
+                    .join("、")
                   : "未設定"}
               </p>
             )}
           </div>
         </Card>
 
-        <Card className="p-4">
-          <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            試駕同意書狀態
-          </h3>
+        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
+        {lead.stage === "lost" && (
+          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+            <p className="text-sm text-red-600 dark:text-red-300">
+              {lead.lostReason || "未記錄流失原因"}
+            </p>
+          </Card>
+        )}
 
-          {!testDriveConsent && (
-            // State 1: Empty - no test drive consent yet
-            <div className="text-center py-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-                <FileText className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground mb-4">尚未建立試駕同意書</p>
-              <Button onClick={handleStartTestDrive} className="w-full">
-                <Car className="h-4 w-4 mr-2" />
-                建立試駕同意書
-              </Button>
-            </div>
-          )}
+        <TestDriveConsentCard
+          consent={testDriveConsent}
+          onCreateConsent={handleStartTestDrive}
+          onModifyInvite={handleModifyTestDriveInvite}
+          onViewLicense={handleViewLicense}
+        />
 
-          {testDriveConsent && testDriveConsent.status === "pending" && (
-            // State 2: Pending - QR code generated, waiting for customer
-            <div className="space-y-4">
-              {/* Test drive info */}
-              <div className="bg-muted rounded-lg p-3 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">試駕車款</span>
-                  <span className="text-sm font-medium">{testDriveConsent.vehicleModel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">試駕時間</span>
-                  <span className="text-sm font-medium">{formatTestDriveDateTime(testDriveConsent.testDriveDate, testDriveConsent.testDriveTime)}</span>
-                </div>
-              </div>
-
-              <p className="text-sm font-medium text-muted-foreground">客戶邀請 QR Code</p>
-              <p className="text-sm text-muted-foreground">
-                QR Code 生成時間：{formatDate(testDriveConsent.generatedAt)}
-              </p>
-              <div className="flex justify-center">
-                <div className="p-4 bg-white border border-border rounded-lg">
-                  <div className="w-40 h-40 bg-muted rounded flex items-center justify-center">
-                    <QrCode className="h-20 w-20 text-muted-foreground" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleModifyTestDriveInvite} className="flex-1 bg-transparent">
-                  修改邀請資料
-                </Button>
-                <Button variant="outline" onClick={() => handleViewLicense(0)} className="flex-1 bg-transparent">
-                  <Eye className="h-4 w-4 mr-2" />
-                  檢視駕照資料
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {testDriveConsent && testDriveConsent.status === "completed" && (
-            // State 3: Completed - customer confirmed and uploaded license
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-green-600">
-                <Check className="h-5 w-5" />
-                <span className="font-medium">已完成填寫</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                填寫時間：{testDriveConsent.submittedAt ? formatDate(testDriveConsent.submittedAt) : "未知"}
-              </p>
-
-              {/* Test drive info */}
-              <div className="bg-muted rounded-lg p-3 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">試駕車款</span>
-                  <span className="text-sm font-medium">{testDriveConsent.vehicleModel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">試駕時間</span>
-                  <span className="text-sm font-medium">{formatTestDriveDateTime(testDriveConsent.testDriveDate, testDriveConsent.testDriveTime)}</span>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium mb-2">駕照照片</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    type="button"
-                    className="border border-border rounded-lg p-3 flex flex-col items-center cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => handleViewLicense(0)}
-                  >
-                    <div className="w-full h-20 bg-muted rounded flex items-center justify-center mb-2">
-                      <CreditCard className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <span className="text-xs text-muted-foreground">正面</span>
-                  </button>
-                  <button 
-                    type="button"
-                    className="border border-border rounded-lg p-3 flex flex-col items-center cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => handleViewLicense(1)}
-                  >
-                    <div className="w-full h-20 bg-muted rounded flex items-center justify-center mb-2">
-                      <CreditCard className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <span className="text-xs text-muted-foreground">反面</span>
-                  </button>
-                </div>
-              </div>
-
-              <Button onClick={handleStartTestDrive} className="w-full">
-                <Car className="h-4 w-4 mr-2" />
-                重新填寫試駕同意書
-              </Button>
-            </div>
-          )}
-        </Card>
-
-        {/* TODO: 活動記錄 - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
-        {/*
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-base">活動記錄</h3>
-            <Button variant="outline" size="sm" onClick={() => setIsNewActivityOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              新增活動
-            </Button>
-          </div>
-          <div className="space-y-4">
-            {activities.map((activity) => {
-              const Icon = activityIcons[activity.type]
-              return (
-                <div key={activity.id} className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    {activity.type === "task" && activity.name && (
-                      <p className="text-sm font-medium text-foreground">{activity.name}</p>
-                    )}
-                    <p className="text-sm text-foreground">{activity.content}</p>
-                    {activity.type === "task" && (
-                      <div className="flex items-center gap-2 mt-1">
-                        {activity.dueDate && (
-                          <span className="text-xs text-muted-foreground">截止：{formatDate(activity.dueDate)}</span>
-                        )}
-                        {activity.status && (
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${
-                              activity.status === "completed"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                                : activity.status === "in-progress"
-                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                                  : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                            }`}
-                          >
-                            {statusLabels[activity.status]}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">{formatDate(activity.createdAt)}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </Card>
-        */}
+        {/* 活動記錄區塊 */}
+        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivityOpen(true)} />
 
         {/* TODO: 轉換為帳戶按鈕 - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
         {/*
@@ -1218,93 +1163,154 @@ export default function LeadDetailPage() {
         */}
       </div>
 
-      {/* TODO: 新增活動 Sheet - 暫時隱藏，之後會重新啟用，請勿刪除此段程式碼 */}
-      {/*
+      {/* 新增活動 Sheet */}
       <Sheet open={isNewActivityOpen} onOpenChange={setIsNewActivityOpen}>
-        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-          <SheetHeader>
+        <SheetContent side="bottom" className="rounded-t-xl px-4 h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left pb-4">
             <SheetTitle>新增活動</SheetTitle>
           </SheetHeader>
 
-          <div className="p-4 space-y-4">
-            <div>
-              <Label htmlFor="activity-name">
-                活動名稱 <span className="text-destructive">*</span>
+          <div className="space-y-6 pb-8">
+            {/* Activity Type Selection */}
+            <div className="space-y-3">
+              <Label>活動類型</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${activityType === "event"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                    }`}
+                  onClick={() => setActivityType("event")}
+                >
+                  <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                  <span className="font-medium">事件</span>
+                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
+                </button>
+                <button
+                  type="button"
+                  className={`p-4 border rounded-lg text-center transition-colors ${activityType === "task"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                    }`}
+                  onClick={() => setActivityType("task")}
+                >
+                  <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                  <span className="font-medium">工作</span>
+                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Common Fields */}
+            <div className="space-y-2">
+              <Label>
+                主題 <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="activity-name"
-                value={newActivity.name}
-                onChange={(e) => setNewActivity({ ...newActivity, name: e.target.value })}
-                placeholder="輸入活動名稱"
-                className="mt-1"
+                value={newActivity.subject}
+                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
               />
             </div>
 
-            <div>
-              <Label>
-                截止日期 <span className="text-destructive">*</span>
-              </Label>
-              <DatePicker
-                date={newActivity.dueDate}
-                onDateChange={(date) => setNewActivity({ ...newActivity, dueDate: date })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="activity-notes">備註</Label>
+            <div className="space-y-2">
+              <Label>說明</Label>
               <Textarea
-                id="activity-notes"
-                value={newActivity.notes}
-                onChange={(e) => setNewActivity({ ...newActivity, notes: e.target.value })}
-                placeholder="輸入備註..."
-                className="mt-1 min-h-[100px]"
+                value={newActivity.description}
+                onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                placeholder="輸入詳細說明..."
+                className="min-h-[80px]"
               />
             </div>
 
-            <div>
-              <Label className="mb-2 block">狀態</Label>
-              <RadioGroup
-                value={newActivity.status}
-                onValueChange={(value) =>
-                  setNewActivity({
-                    ...newActivity,
-                    status: value as "not-started" | "in-progress" | "completed",
-                  })
-                }
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="not-started" id="not-started" />
-                  <Label htmlFor="not-started" className="font-normal">
-                    未開始
+            {/* Event-specific fields */}
+            {activityType === "event" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    日期 <span className="text-destructive">*</span>
                   </Label>
+                  <DatePicker
+                    date={newActivity.startDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, startDate: date })}
+                  />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="in-progress" id="in-progress" />
-                  <Label htmlFor="in-progress" className="font-normal">
-                    進行中
-                  </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>
+                      開始時間 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="time"
+                      value={newActivity.startTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>結束時間</Label>
+                    <Input
+                      type="time"
+                      value={newActivity.endTime}
+                      onChange={(e) => setNewActivity({ ...newActivity, endTime: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="completed" id="completed" />
-                  <Label htmlFor="completed" className="font-normal">
-                    完成
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
+              </>
+            )}
 
-          <SheetFooter>
-            <Button variant="outline" onClick={() => setIsNewActivityOpen(false)} className="flex-1">
-              取消
+            {/* Task-specific fields */}
+            {activityType === "task" && (
+              <>
+                <div className="space-y-2">
+                  <Label>
+                    截止日期 <span className="text-destructive">*</span>
+                  </Label>
+                  <DatePicker
+                    date={newActivity.dueDate}
+                    onDateChange={(date) => setNewActivity({ ...newActivity, dueDate: date })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>狀態</Label>
+                  <RadioGroup
+                    value={newActivity.status}
+                    onValueChange={(value) =>
+                      setNewActivity({
+                        ...newActivity,
+                        status: value as "not-started" | "in-progress" | "completed",
+                      })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="not-started" id="lead-not-started" />
+                      <Label htmlFor="lead-not-started" className="font-normal">
+                        未開始
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="in-progress" id="lead-in-progress" />
+                      <Label htmlFor="lead-in-progress" className="font-normal">
+                        進行中
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="completed" id="lead-completed" />
+                      <Label htmlFor="lead-completed" className="font-normal">
+                        已完成
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+
+            <Button className="w-full" onClick={handleSaveActivity}>
+              {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
-            <Button onClick={handleCreateActivity} className="flex-1">
-              建立活動
-            </Button>
-          </SheetFooter>
+          </div>
         </SheetContent>
       </Sheet>
-      */}
 
       <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
         <DialogContent>
@@ -1313,20 +1319,40 @@ export default function LeadDetailPage() {
             <DialogDescription>請說明此商機流失的原因</DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
-            <Textarea
-              value={lostReason}
-              onChange={(e) => setLostReason(e.target.value)}
-              placeholder="輸入流失原因..."
-              className="min-h-[120px]"
-            />
+          <div className="space-y-4 py-4">
+            {/* 戰敗原因下拉選單 */}
+            <div className="space-y-2">
+              <Label>戰敗原因</Label>
+              <Select value={lostCategory} onValueChange={setLostCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇戰敗原因" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="competitor">購買競牌</SelectItem>
+                  <SelectItem value="duplicate">重複資料</SelectItem>
+                  <SelectItem value="no-interest">沒有意願購買</SelectItem>
+                  <SelectItem value="unreachable">無法聯繫</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 詳細說明 */}
+            <div className="space-y-2">
+              <Label>商機戰敗原因備註</Label>
+              <Textarea
+                value={lostReason}
+                onChange={(e) => setLostReason(e.target.value)}
+                placeholder="輸入流失原因的詳細說明..."
+                className="min-h-[100px]"
+              />
+            </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleLostCancel}>
               取消
             </Button>
-            <Button onClick={handleLostSave}>儲存</Button>
+            <Button onClick={handleLostSave} disabled={!lostCategory}>儲存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1377,7 +1403,7 @@ export default function LeadDetailPage() {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mb-4">
-              {isRecording ? "錄音中..." : "點擊麥克風開始語音輸入"}
+              {isRecording ? "錄音中..." : "點擊麥克風開始��音輸入"}
             </p>
 
             {/* Text area */}
@@ -1414,15 +1440,15 @@ export default function LeadDetailPage() {
           </div>
 
           <SheetFooter className="flex-row gap-3 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              className="flex-1 bg-transparent" 
+            <Button
+              variant="outline"
+              className="flex-1 bg-transparent"
               onClick={handleSkipCallRecord}
             >
               略過
             </Button>
-            <Button 
-              className="flex-1" 
+            <Button
+              className="flex-1"
               onClick={handleSaveCallRecord}
               disabled={!callRecordText}
             >
