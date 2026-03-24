@@ -553,25 +553,6 @@ export default function OpportunityDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <span className="text-sm text-muted-foreground">可能性</span>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={opportunity.probability || 0}
-                      onChange={(e) => setOpportunity({ ...opportunity, probability: parseInt(e.target.value) || 0 })}
-                      className="mt-1"
-                    />
-                  ) : (
-                    <p className="text-foreground font-medium">{opportunity.probability ?? 0}%</p>
-                  )}
-                </div>
-              </div>
-
               {/* 訂單日期 */}
               <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -795,7 +776,7 @@ export default function OpportunityDetailPage() {
 
           {/* 現有車輛 */}
           <div>
-            <Label className="text-sm text-muted-foreground">現有車輛</Label>
+            <Label className="text-sm text-muted-foreground">現有��輛</Label>
             {isEditing ? (
               <Input
                 value={opportunity.existingCarModel || ""}

@@ -222,22 +222,8 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
               </Badge>
             </div>
 
-            {/* 可能性 + 日期 */}
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <div className="flex items-center gap-4">
-                {opportunity.probability !== undefined && (
-                  <div className="flex items-center gap-1.5 text-sm">
-                    {getStageIcon()}
-                    <span className={`font-medium ${
-                      opportunity.stage === "closed-won" ? "text-green-600" :
-                      opportunity.stage === "closed-lost" ? "text-red-600" :
-                      "text-foreground"
-                    }`}>
-                      {opportunity.probability}%
-                    </span>
-                  </div>
-                )}
-              </div>
+            {/* 底部列 */}
+            <div className="flex items-center justify-end pt-2 border-t border-border">
               <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
           </div>
