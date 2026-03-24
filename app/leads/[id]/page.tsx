@@ -117,7 +117,7 @@ export default function LeadDetailPage() {
   const [testDriveModel, setTestDriveModel] = useState("")
   const [licenseFrontPreview, setLicenseFrontPreview] = useState<string | null>(null)
   const [licenseBackPreview, setLicenseBackPreview] = useState<string | null>(null)
-  
+
   // License lightbox states
   const [isLicenseLightboxOpen, setIsLicenseLightboxOpen] = useState(false)
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0)
@@ -153,7 +153,7 @@ export default function LeadDetailPage() {
     })
   }
 
-  useEffect(() => {}, [params.id, router])
+  useEffect(() => { }, [params.id, router])
 
   useEffect(() => {
     setHasNotesChanged(notes !== originalNotes)
@@ -230,15 +230,15 @@ export default function LeadDetailPage() {
       createdAt: new Date(),
       ...(activityType === "event"
         ? {
-            startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
-            endDateTime: newActivity.endTime
-              ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
-              : undefined,
-          }
+          startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+          endDateTime: newActivity.endTime
+            ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+            : undefined,
+        }
         : {
-            dueDate: newActivity.dueDate,
-            status: newActivity.status,
-          }),
+          dueDate: newActivity.dueDate,
+          status: newActivity.status,
+        }),
     }
 
     setActivities([activity, ...activities])
@@ -934,11 +934,11 @@ export default function LeadDetailPage() {
               <p className="text-foreground">
                 {lead.interestedModel === "defender-90" ? "Defender 90"
                   : lead.interestedModel === "defender-110" ? "Defender 110"
-                  : lead.interestedModel === "range-rover" ? "Range Rover"
-                  : lead.interestedModel === "range-rover-sport" ? "Range Rover Sport"
-                  : lead.interestedModel === "discovery" ? "Discovery"
-                  : lead.interestedModel === "i-pace" ? "I-PACE"
-                  : "未設定"}
+                    : lead.interestedModel === "range-rover" ? "Range Rover"
+                      : lead.interestedModel === "range-rover-sport" ? "Range Rover Sport"
+                        : lead.interestedModel === "discovery" ? "Discovery"
+                          : lead.interestedModel === "i-pace" ? "I-PACE"
+                            : "未設定"}
               </p>
             )}
           </div>
@@ -1009,12 +1009,12 @@ export default function LeadDetailPage() {
                 <p className="text-foreground">
                   {lead.leadSource === "walk-in" ? "來店客 (Walk-in)"
                     : lead.leadSource === "referral" ? "轉介 (Referral)"
-                    : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
-                    : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
-                    : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
-                    : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                    : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
-                    : "未設定"}
+                      : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
+                        : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
+                          : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
+                            : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
+                              : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
+                                : "未設定"}
                 </p>
                 {lead.leadSource === "referral" && lead.referrer && (
                   <p className="text-sm text-muted-foreground mt-1">轉介者：{lead.referrer}</p>
@@ -1116,16 +1116,16 @@ export default function LeadDetailPage() {
               <p className="text-foreground">
                 {lead.contactPreferences && lead.contactPreferences.length > 0
                   ? lead.contactPreferences
-                      .map((p) => {
-                        const labels: Record<string, string> = {
-                          mail: "郵寄",
-                          email: "電子郵件",
-                          sms: "簡訊",
-                          phone: "電話",
-                        }
-                        return labels[p] || p
-                      })
-                      .join("、")
+                    .map((p) => {
+                      const labels: Record<string, string> = {
+                        mail: "郵寄",
+                        email: "電子郵件",
+                        sms: "簡訊",
+                        phone: "電話",
+                      }
+                      return labels[p] || p
+                    })
+                    .join("、")
                   : "未設定"}
               </p>
             )}
@@ -1177,11 +1177,10 @@ export default function LeadDetailPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  className={`p-4 border rounded-lg text-center transition-colors ${
-                    activityType === "event"
+                  className={`p-4 border rounded-lg text-center transition-colors ${activityType === "event"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
-                  }`}
+                    }`}
                   onClick={() => setActivityType("event")}
                 >
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
@@ -1190,11 +1189,10 @@ export default function LeadDetailPage() {
                 </button>
                 <button
                   type="button"
-                  className={`p-4 border rounded-lg text-center transition-colors ${
-                    activityType === "task"
+                  className={`p-4 border rounded-lg text-center transition-colors ${activityType === "task"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
-                  }`}
+                    }`}
                   onClick={() => setActivityType("task")}
                 >
                   <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
@@ -1340,7 +1338,7 @@ export default function LeadDetailPage() {
 
             {/* 詳細說明 */}
             <div className="space-y-2">
-              <Label>詳細說明（選填）</Label>
+              <Label>商機戰敗原因備註</Label>
               <Textarea
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
@@ -1442,15 +1440,15 @@ export default function LeadDetailPage() {
           </div>
 
           <SheetFooter className="flex-row gap-3 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              className="flex-1 bg-transparent" 
+            <Button
+              variant="outline"
+              className="flex-1 bg-transparent"
               onClick={handleSkipCallRecord}
             >
               略過
             </Button>
-            <Button 
-              className="flex-1" 
+            <Button
+              className="flex-1"
               onClick={handleSaveCallRecord}
               disabled={!callRecordText}
             >
