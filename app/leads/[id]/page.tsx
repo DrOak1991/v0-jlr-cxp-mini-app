@@ -722,22 +722,22 @@ export default function LeadDetailPage() {
 
         {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
         {lead.stage === "lost" && (
-          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               流失原因
             </h3>
-            
+
             <div className="space-y-4">
               {/* 戰敗原因 */}
               <div className="space-y-2">
-                <Label className="text-sm text-red-700 dark:text-red-400">戰敗原因</Label>
+                <Label className="text-sm text-muted-foreground">戰敗原因</Label>
                 {isEditing ? (
-                  <Select 
-                    value={lead.lostCategory || ""} 
+                  <Select
+                    value={lead.lostCategory || ""}
                     onValueChange={(value) => setLead({ ...lead, lostCategory: value as Lead["lostCategory"] })}
                   >
-                    <SelectTrigger className="bg-white dark:bg-gray-900">
+                    <SelectTrigger>
                       <SelectValue placeholder="請選擇戰敗原因" />
                     </SelectTrigger>
                     <SelectContent>
@@ -748,29 +748,29 @@ export default function LeadDetailPage() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="text-sm text-red-600 dark:text-red-300">
+                  <p className="text-sm font-medium">
                     {lead.lostCategory === "competitor" && "購買競牌"}
                     {lead.lostCategory === "duplicate" && "重複資料"}
                     {lead.lostCategory === "no-interest" && "沒有意願購買"}
                     {lead.lostCategory === "unreachable" && "無法聯繫"}
-                    {!lead.lostCategory && "未選擇"}
+                    {!lead.lostCategory && <span className="text-muted-foreground">未選擇</span>}
                   </p>
                 )}
               </div>
 
               {/* 詳細說明 */}
               <div className="space-y-2">
-                <Label className="text-sm text-red-700 dark:text-red-400">詳細說明</Label>
+                <Label className="text-sm text-muted-foreground">詳細說明</Label>
                 {isEditing ? (
                   <Textarea
                     value={lead.lostReason || ""}
                     onChange={(e) => setLead({ ...lead, lostReason: e.target.value })}
                     placeholder="輸入流失原因的詳細說明..."
-                    className="min-h-[80px] bg-white dark:bg-gray-900"
+                    className="min-h-[80px]"
                   />
                 ) : (
-                  <p className="text-sm text-red-600 dark:text-red-300">
-                    {lead.lostReason || "未記錄詳細說明"}
+                  <p className="text-sm font-medium">
+                    {lead.lostReason || <span className="text-muted-foreground font-normal">未記錄詳細說明</span>}
                   </p>
                 )}
               </div>
