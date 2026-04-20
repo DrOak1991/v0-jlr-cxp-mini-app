@@ -304,10 +304,15 @@ export default function LeadDetailPage() {
     }
 
     // 將流失原因存到 lead 物件
-    const updatedLead = { ...lead, lostReason: lostReason.trim() }
+    const updatedLead = { 
+      ...lead, 
+      lostCategory: lostCategory as Lead["lostCategory"],
+      lostReason: lostReason.trim() 
+    }
     setLead(updatedLead)
     setOriginalLead({ ...updatedLead })
     setIsLostDialogOpen(false)
+    setLostCategory("")
     setLostReason("")
     setIsEditing(false)
     setHasFieldsChanged(false)
@@ -714,6 +719,64 @@ export default function LeadDetailPage() {
             </div>
           </div>
         </Card>
+
+        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
+        {lead.stage === "lost" && (
+          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+            
+            <div className="space-y-4">
+              {/* 戰敗原因 */}
+              <div className="space-y-2">
+                <Label className="text-sm text-red-700 dark:text-red-400">戰敗原因</Label>
+                {isEditing ? (
+                  <Select 
+                    value={lead.lostCategory || ""} 
+                    onValueChange={(value) => setLead({ ...lead, lostCategory: value as Lead["lostCategory"] })}
+                  >
+                    <SelectTrigger className="bg-white dark:bg-gray-900">
+                      <SelectValue placeholder="請選擇戰敗原因" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="competitor">購買競牌</SelectItem>
+                      <SelectItem value="duplicate">重複資料</SelectItem>
+                      <SelectItem value="no-interest">沒有意願購買</SelectItem>
+                      <SelectItem value="unreachable">無法聯繫</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-red-600 dark:text-red-300">
+                    {lead.lostCategory === "competitor" && "購買競牌"}
+                    {lead.lostCategory === "duplicate" && "重複資料"}
+                    {lead.lostCategory === "no-interest" && "沒有意願購買"}
+                    {lead.lostCategory === "unreachable" && "無法聯繫"}
+                    {!lead.lostCategory && "未選擇"}
+                  </p>
+                )}
+              </div>
+
+              {/* 詳細說明 */}
+              <div className="space-y-2">
+                <Label className="text-sm text-red-700 dark:text-red-400">詳細說明</Label>
+                {isEditing ? (
+                  <Textarea
+                    value={lead.lostReason || ""}
+                    onChange={(e) => setLead({ ...lead, lostReason: e.target.value })}
+                    placeholder="輸入流失原因的詳細說明..."
+                    className="min-h-[80px] bg-white dark:bg-gray-900"
+                  />
+                ) : (
+                  <p className="text-sm text-red-600 dark:text-red-300">
+                    {lead.lostReason || "未記錄詳細說明"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
 
         <Card className="p-4">
           <Label className="text-base font-semibold mb-2 block">描述</Label>
@@ -1131,19 +1194,6 @@ export default function LeadDetailPage() {
             )}
           </div>
         </Card>
-
-        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
-        {lead.stage === "lost" && (
-          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
-              <AlertCircle className="h-5 w-5" />
-              流失原因
-            </h3>
-            <p className="text-sm text-red-600 dark:text-red-300">
-              {lead.lostReason || "未記錄流失原因"}
-            </p>
-          </Card>
-        )}
 
         <TestDriveConsentCard
           consent={testDriveConsent}
