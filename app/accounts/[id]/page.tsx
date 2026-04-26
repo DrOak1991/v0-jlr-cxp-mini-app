@@ -508,12 +508,23 @@ export default function AccountDetailPage() {
         </Card>
 
         {/* 關聯機會卡片 */}
-        {opportunities.length > 0 && (
-          <Card className="p-4">
-            <h3 className="font-semibold text-base flex items-center gap-2 mb-3">
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-base flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               關聯機會 ({opportunities.length})
             </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-transparent"
+              onClick={() => router.push(`/opportunity-create?accountId=${account.id}`)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              新增
+            </Button>
+          </div>
+          {opportunities.length > 0 ? (
             <div className="space-y-2">
               {opportunities.map((opp) => (
                 <div
@@ -531,8 +542,10 @@ export default function AccountDetailPage() {
                 </div>
               ))}
             </div>
-          </Card>
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">目前沒有關聯機會</p>
+          )}
+        </Card>
 
         {/* 車輛偏好卡片 */}
         <Card className="p-4 space-y-4">
