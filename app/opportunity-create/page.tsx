@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { getAccountById } from "@/lib/mock-data"
 
@@ -43,6 +44,8 @@ export default function NewOpportunityPage() {
   const [powerType, setPowerType] = useState<string>("")
   const [orderDate, setOrderDate] = useState<string>("")
   const [deliveryDate, setDeliveryDate] = useState<string>("")
+  const [leadSource, setLeadSource] = useState<string>("")
+  const [interestedSvV8, setInterestedSvV8] = useState(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -119,6 +122,25 @@ export default function NewOpportunityPage() {
                 className={errors.name ? "border-red-500" : ""}
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+            </div>
+
+            {/* 商機來源 */}
+            <div className="space-y-2">
+              <Label>商機來源</Label>
+              <Select value={leadSource} onValueChange={setLeadSource}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇來源" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="walk-in">來店客 (Walk-in)</SelectItem>
+                  <SelectItem value="referral">轉介 (Referral)</SelectItem>
+                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動</SelectItem>
+                  <SelectItem value="existing-customer">既有客戶</SelectItem>
+                  <SelectItem value="phone-in">來電客</SelectItem>
+                  <SelectItem value="line-booking">網路客預約 (LINE)</SelectItem>
+                  <SelectItem value="field-visit">陌生開發</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 機會階段 */}
@@ -207,6 +229,18 @@ export default function NewOpportunityPage() {
                 onChange={(e) => setInterestedModel(e.target.value)}
                 placeholder="請輸入車款"
               />
+            </div>
+
+            {/* 有意購買 SV / V8 */}
+            <div className="flex items-center gap-3 py-1">
+              <Checkbox
+                id="interestedSvV8"
+                checked={interestedSvV8}
+                onCheckedChange={(checked) => setInterestedSvV8(checked === true)}
+              />
+              <Label htmlFor="interestedSvV8" className="cursor-pointer font-normal">
+                有意購買 SV / V8
+              </Label>
             </div>
 
             {/* 動力型式 */}
