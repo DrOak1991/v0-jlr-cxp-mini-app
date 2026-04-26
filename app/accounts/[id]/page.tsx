@@ -493,10 +493,6 @@ export default function AccountDetailPage() {
                   <p className="font-medium">{account.gender ? genderLabels[account.gender] : "未設定"}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">語言</span>
-                  <p className="font-medium">{account.language || "未設定"}</p>
-                </div>
-                <div>
                   <span className="text-muted-foreground">身分證字號</span>
                   <p className="font-medium">{account.nationalId || "未設定"}</p>
                 </div>
