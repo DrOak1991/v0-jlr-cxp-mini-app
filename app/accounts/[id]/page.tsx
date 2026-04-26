@@ -199,8 +199,8 @@ export default function AccountDetailPage() {
     setOriginalNotes(notes)
     setHasNotesChanged(false)
     toast({
-      title: "備註已儲存",
-      description: "您的備註已成功更新",
+      title: "描述已儲存",
+      description: "您的描述已成功更新",
     })
   }
 
@@ -507,32 +507,6 @@ export default function AccountDetailPage() {
           </div>
         </Card>
 
-        {/* 備註卡片 */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="h-5 w-5" />
-            <Label className="text-base font-semibold">備註</Label>
-          </div>
-
-          {hasNotesChanged && (
-            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
-              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
-              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
-            </div>
-          )}
-
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="新增備註..."
-            className="min-h-[100px] mb-3"
-          />
-
-          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
-            儲存備註
-          </Button>
-        </Card>
-
         {/* 關聯機會卡片 */}
         {opportunities.length > 0 && (
           <Card className="p-4">
@@ -644,7 +618,7 @@ export default function AccountDetailPage() {
               <p className="font-medium">
                 {account.contactPreferences?.length
                   ? account.contactPreferences
-                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
+                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "��寄"))
                       .join(", ")
                   : "未設定"}
               </p>
@@ -676,6 +650,29 @@ export default function AccountDetailPage() {
               </div>
             </div>
           </div>
+        </Card>
+
+        {/* 描述卡片 */}
+        <Card className="p-4">
+          <Label className="text-base font-semibold mb-2 block">描述</Label>
+
+          {hasNotesChanged && (
+            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
+            </div>
+          )}
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="新增描述..."
+            className="min-h-[120px] mb-3"
+          />
+
+          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
+            儲存描述
+          </Button>
         </Card>
 
         {/* 活動記錄卡片 */}
