@@ -98,6 +98,9 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
+  const [notes, setNotes] = useState(opportunityData?.notes || "")
+  const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
+  const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
@@ -165,6 +168,19 @@ export default function OpportunityDetailPage() {
       })
     }
   }, [isNewActivitySheetOpen])
+
+  useEffect(() => {
+    setHasNotesChanged(notes !== originalNotes)
+  }, [notes, originalNotes])
+
+  const handleSaveNotes = () => {
+    setOriginalNotes(notes)
+    setHasNotesChanged(false)
+    toast({
+      title: "描述已儲存",
+      description: "您的描述已成功更新",
+    })
+  }
 
   useEffect(() => {
     const newOpportunityData = getOpportunityById(params.id as string)
@@ -605,6 +621,29 @@ export default function OpportunityDetailPage() {
           </Card>
         )}
 
+        {/* 描述區塊 */}
+        <Card className="p-4">
+          <Label className="text-base font-semibold mb-2 block">描述</Label>
+
+          {hasNotesChanged && (
+            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
+            </div>
+          )}
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="新增描述..."
+            className="min-h-[120px] mb-3"
+          />
+
+          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
+            儲存描述
+          </Button>
+        </Card>
+
         {/* 車型選擇卡片 */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base flex items-center gap-2">
@@ -612,7 +651,7 @@ export default function OpportunityDetailPage() {
             車型選擇
           </h3>
 
-          {/* 購車方式 */}
+          {/* 購���方式 */}
           <div>
             <Label className="text-sm text-muted-foreground">購車方式</Label>
             {isEditing ? (
