@@ -35,7 +35,6 @@ const stageLabels: Record<string, string> = {
   "won": "Won",
   "lost": "Lost",
 }
-}
 
 const brandModels: Record<string, string[]> = {
   "Jaguar": ["F-PACE", "E-PACE", "I-PACE", "F-TYPE", "XF", "XE"],
