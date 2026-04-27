@@ -211,19 +211,15 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
               </Button>
             </div>
 
-            {/* 車型資訊 + 階段 */}
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 text-sm">
-                <Car className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-foreground truncate">{opportunity.interestedModel || "未指定車款"}</span>
-              </div>
-              <Badge variant="secondary" className={`shrink-0 text-xs ${stageColors[opportunity.stage]}`}>
-                {stageLabels[opportunity.stage]}
-              </Badge>
+            {/* 車型資訊 */}
+            <div className="flex items-center gap-2 text-sm mb-2">
+              <Car className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-foreground truncate">{opportunity.interestedModel || "未指定車款"}</span>
             </div>
 
-            {/* 底部列 */}
-            <div className="flex items-center justify-end pt-2 border-t border-border">
+            {/* 底部列：階段 + 箭頭 */}
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <span className="text-xs text-muted-foreground">{stageLabels[opportunity.stage]}</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
           </div>
