@@ -66,7 +66,6 @@ const stageLabels: Record<string, string> = {
   "won": "Won",
   "lost": "Lost",
 }
-}
 
 const taskStatusLabels: Record<string, string> = {
   "not-started": "未開始",
