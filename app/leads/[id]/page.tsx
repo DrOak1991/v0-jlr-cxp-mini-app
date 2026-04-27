@@ -55,6 +55,7 @@ import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
+import { LeadConversionDialog } from "@/components/lead-conversion-dialog"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -341,14 +342,38 @@ export default function LeadDetailPage() {
     })
   }
 
-  const handleConvertedSave = () => {
-    console.log("[v0] Convert to account")
+  const handleConversion = (data: {
+    accountMode: "new" | "existing"
+    accountId?: string
+    newAccountFirstName?: string
+    newAccountLastName?: string
+    updateLeadSource: boolean
+    opportunityMode: "new" | "existing"
+    opportunityId?: string
+    newOpportunityName?: string
+  }) => {
+    console.log("[v0] Convert lead with data:", data)
+    
+    // Update lead stage to converted
+    const updatedLead = { ...lead, stage: "converted" as const }
+    setLead(updatedLead)
+    setOriginalLead({ ...updatedLead })
     setIsConvertedDialogOpen(false)
-    performSave()
+    setIsEditing(false)
+    setHasFieldsChanged(false)
+    setPendingSave(false)
+    
     toast({
-      title: "已轉換為帳戶",
-      description: "商機已成功轉換為帳戶",
+      title: "商機已轉換",
+      description: "正在導向機會頁面...",
     })
+
+    // Navigate to opportunity page
+    // In real implementation, this would be the newly created/selected opportunity ID
+    const opportunityId = data.opportunityMode === "existing" ? data.opportunityId : "new-opp-1"
+    setTimeout(() => {
+      router.push(`/opportunities/${opportunityId}`)
+    }, 500)
   }
 
   const handleConvertedCancel = () => {
@@ -1407,25 +1432,13 @@ export default function LeadDetailPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isConvertedDialogOpen} onOpenChange={setIsConvertedDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>轉換為帳戶</DialogTitle>
-            <DialogDescription>確認將此商機轉換為帳戶</DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <p className="text-center text-muted-foreground">待定</p>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleConvertedCancel}>
-              取消
-            </Button>
-            <Button onClick={handleConvertedSave}>儲存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LeadConversionDialog
+        open={isConvertedDialogOpen}
+        onOpenChange={setIsConvertedDialogOpen}
+        lead={lead}
+        onConvert={handleConversion}
+        onCancel={handleConvertedCancel}
+      />
 
       {/* Call Record Modal */}
       <Sheet open={isCallRecordOpen} onOpenChange={setIsCallRecordOpen}>
@@ -1571,7 +1584,7 @@ export default function LeadDetailPage() {
 
               {/* License Front */}
               <div className="space-y-2">
-                <Label>駕照正面</Label>
+                <Label>駕���正面</Label>
                 <div className="border-2 border-dashed rounded-lg p-4 text-center">
                   {licenseFrontPreview ? (
                     <div className="relative">
