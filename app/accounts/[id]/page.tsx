@@ -449,8 +449,8 @@ export default function AccountDetailPage() {
                 撥打
               </Button>
               <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MailIcon className="h-4 w-4 mr-2" />
-                郵件
+                <MessageCircle className="h-4 w-4 mr-2" />
+                簡訊
               </Button>
               <Button
                 variant="outline"
@@ -829,7 +829,7 @@ export default function AccountDetailPage() {
             )}
 
             <Button className="w-full" onClick={handleSaveActivity}>
-              {activityType === "event" ? "新增事件" : "新增工作"}
+              {activityType === "event" ? "���增事件" : "新增工作"}
             </Button>
           </div>
         </SheetContent>
