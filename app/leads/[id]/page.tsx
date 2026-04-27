@@ -56,6 +56,7 @@ import { MultiSelect } from "@/components/multi-select"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 import { LeadConversionDialog } from "@/components/lead-conversion-dialog"
+import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -92,6 +93,7 @@ export default function LeadDetailPage() {
   const [lostCategory, setLostCategory] = useState("")
   const [lostReason, setLostReason] = useState("")
   const [isConvertedDialogOpen, setIsConvertedDialogOpen] = useState(false)
+  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [pendingSave, setPendingSave] = useState(false)
 
   // Call record modal states
@@ -1764,6 +1766,16 @@ export default function LeadDetailPage() {
               </div>
             </div>
           )}
+          <div className="px-4 py-2 border-b border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() => setIsOwnerTransferOpen(true)}
+            >
+              擁有者變更
+            </Button>
+          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1776,6 +1788,21 @@ export default function LeadDetailPage() {
           </div>
         </div>
       )}
+
+      <OwnerTransferDialog
+        open={isOwnerTransferOpen}
+        onOpenChange={setIsOwnerTransferOpen}
+        entityType="lead"
+        entityName={lead.cxpName}
+        currentOwner="目前使用者"
+        onTransfer={(newOwnerId, newOwnerName) => {
+          toast({
+            title: "擁有者已變更",
+            description: `此商機已轉移給 ${newOwnerName}`,
+          })
+          router.push("/leads")
+        }}
+      />
     </div>
   )
 }

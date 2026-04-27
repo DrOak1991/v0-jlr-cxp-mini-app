@@ -53,6 +53,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
+import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
   "prospecting": "探索中",
@@ -98,6 +99,7 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
+  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [notes, setNotes] = useState(opportunityData?.notes || "")
   const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
@@ -433,9 +435,12 @@ export default function OpportunityDetailPage() {
 
       {/* Cancel bar when editing */}
       {isEditing && (
-        <div className="px-4 py-2 bg-muted/50 border-b">
+        <div className="px-4 py-2 bg-muted/50 border-b flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={handleCancel} className="text-muted-foreground">
             取消編輯
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setIsOwnerTransferOpen(true)} className="text-muted-foreground">
+            擁有者變更
           </Button>
         </div>
       )}
@@ -1234,6 +1239,21 @@ export default function OpportunityDetailPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      <OwnerTransferDialog
+        open={isOwnerTransferOpen}
+        onOpenChange={setIsOwnerTransferOpen}
+        entityType="opportunity"
+        entityName={opportunity.name}
+        currentOwner="目前使用者"
+        onTransfer={(newOwnerId, newOwnerName) => {
+          toast({
+            title: "擁有者已變更",
+            description: `此機會已轉移給 ${newOwnerName}`,
+          })
+          router.push("/opportunities")
+        }}
+      />
     </div>
   )
 }
