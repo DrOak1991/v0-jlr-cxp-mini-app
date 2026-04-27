@@ -37,6 +37,7 @@ import {
   UserX,
   Copy,
   Check,
+  X,
   Upload,
   Plus,
   ClipboardList,
@@ -433,20 +434,8 @@ export default function OpportunityDetailPage() {
         </Button>
       </header>
 
-      {/* Cancel bar when editing */}
-      {isEditing && (
-        <div className="px-4 py-2 bg-muted/50 border-b flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={handleCancel} className="text-muted-foreground">
-            取消編輯
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setIsOwnerTransferOpen(true)} className="text-muted-foreground">
-            擁有者變更
-          </Button>
-        </div>
-      )}
-
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
         {/* 基本資訊卡片 */}
         <Card className="p-4">
           <div className="space-y-4">
@@ -1239,6 +1228,34 @@ export default function OpportunityDetailPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
+          {hasFieldsChanged && (
+            <div className="px-4 py-2 bg-yellow-50 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-900">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+                <span className="text-sm text-yellow-800 dark:text-yellow-200">您有未儲存的變更</span>
+              </div>
+            </div>
+          )}
+          <div className="px-4 py-2 border-b border-border">
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
+              擁有者變更
+            </Button>
+          </div>
+          <div className="p-4 flex gap-3">
+            <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
+              <X className="h-5 w-5 mr-2" />
+              取消
+            </Button>
+            <Button size="lg" className="flex-1" onClick={handleSave}>
+              <Check className="h-5 w-5 mr-2" />
+              儲存
+            </Button>
+          </div>
+        </div>
+      )}
 
       <OwnerTransferDialog
         open={isOwnerTransferOpen}

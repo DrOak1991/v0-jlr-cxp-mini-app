@@ -30,6 +30,7 @@ import {
   MailIcon,
   Copy,
   Check,
+  X,
   Upload,
   Plus,
   ClipboardList,
@@ -384,19 +385,7 @@ export default function AccountDetailPage() {
           <h1 className="font-semibold text-lg">帳戶詳情</h1>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => setIsOwnerTransferOpen(true)} className="text-muted-foreground">
-                擁有者變更
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCancel} className="bg-transparent">
-                取消
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                儲存
-              </Button>
-            </>
-          ) : (
+          {!isEditing && (
             <Button variant="outline" size="sm" onClick={handleEdit} className="bg-transparent">
               <Edit className="h-4 w-4 mr-1" />
               編輯
@@ -406,7 +395,7 @@ export default function AccountDetailPage() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 p-4 space-y-4 pb-24">
+      <main className="flex-1 p-4 space-y-4 pb-36">
         {/* 基本資訊卡片 */}
         <Card className="p-4">
           <div className="space-y-4">
@@ -1139,6 +1128,26 @@ export default function AccountDetailPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
+          <div className="px-4 py-2 border-b border-border">
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
+              擁有者變更
+            </Button>
+          </div>
+          <div className="p-4 flex gap-3">
+            <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
+              <X className="h-5 w-5 mr-2" />
+              取消
+            </Button>
+            <Button size="lg" className="flex-1" onClick={handleSave}>
+              <Check className="h-5 w-5 mr-2" />
+              儲存
+            </Button>
+          </div>
+        </div>
+      )}
 
       <OwnerTransferDialog
         open={isOwnerTransferOpen}
