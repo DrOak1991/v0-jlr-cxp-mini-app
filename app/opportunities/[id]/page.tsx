@@ -57,23 +57,15 @@ import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
-  "prospecting": "探索中",
-  "qualification": "資格確認",
-  "needs-analysis": "需求分析",
-  "proposal": "提案中",
-  "negotiation": "議價中",
-  "closed-won": "已成交",
-  "closed-lost": "已流失",
+  "qualify": "Qualify",
+  "test-drive-demo": "Test Drive Demo",
+  "select-vehicle": "Select Vehicle",
+  "appraise": "Appraise",
+  "negotiate": "Negotiate",
+  "take-order": "Take Order",
+  "won": "Won",
+  "lost": "Lost",
 }
-
-const stageColors: Record<string, string> = {
-  "prospecting": "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  "qualification": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "needs-analysis": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  "proposal": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  "negotiation": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  "closed-won": "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  "closed-lost": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 }
 
 const taskStatusLabels: Record<string, string> = {
@@ -548,13 +540,14 @@ export default function OpportunityDetailPage() {
                         <SelectValue placeholder="選擇階段" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="prospecting">探索中</SelectItem>
-                        <SelectItem value="qualification">資格確認</SelectItem>
-                        <SelectItem value="needs-analysis">需求分析</SelectItem>
-                        <SelectItem value="proposal">提案中</SelectItem>
-                        <SelectItem value="negotiation">議價中</SelectItem>
-                        <SelectItem value="closed-won">已成交</SelectItem>
-                        <SelectItem value="closed-lost">已流失</SelectItem>
+                        <SelectItem value="qualify">Qualify</SelectItem>
+                        <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
+                        <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
+                        <SelectItem value="appraise">Appraise</SelectItem>
+                        <SelectItem value="negotiate">Negotiate</SelectItem>
+                        <SelectItem value="take-order">Take Order</SelectItem>
+                        <SelectItem value="won">Won</SelectItem>
+                        <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (

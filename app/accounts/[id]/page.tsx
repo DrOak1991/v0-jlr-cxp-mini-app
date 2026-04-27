@@ -365,13 +365,14 @@ export default function AccountDetailPage() {
   }
 
   const stageLabels: Record<string, string> = {
-    prospecting: "探索中",
-    qualification: "資格確認",
-    "needs-analysis": "需求分析",
-    proposal: "提案中",
-    negotiation: "議價中",
-    "closed-won": "已成交",
-    "closed-lost": "已流失",
+    "qualify": "Qualify",
+    "test-drive-demo": "Test Drive Demo",
+    "select-vehicle": "Select Vehicle",
+    "appraise": "Appraise",
+    "negotiate": "Negotiate",
+    "take-order": "Take Order",
+    "won": "Won",
+    "lost": "Lost",
   }
 
   return (

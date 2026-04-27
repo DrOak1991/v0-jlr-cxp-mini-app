@@ -151,13 +151,14 @@ export default function NewOpportunityPage() {
                   <SelectValue placeholder="選擇階段" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="prospecting">探索中</SelectItem>
-                  <SelectItem value="qualification">資格確認</SelectItem>
-                  <SelectItem value="needs-analysis">需求分析</SelectItem>
-                  <SelectItem value="proposal">提案中</SelectItem>
-                  <SelectItem value="negotiation">議價中</SelectItem>
-                  <SelectItem value="closed-won">已成交</SelectItem>
-                  <SelectItem value="closed-lost">已流失</SelectItem>
+                  <SelectItem value="qualify">Qualify</SelectItem>
+                  <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
+                  <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
+                  <SelectItem value="appraise">Appraise</SelectItem>
+                  <SelectItem value="negotiate">Negotiate</SelectItem>
+                  <SelectItem value="take-order">Take Order</SelectItem>
+                  <SelectItem value="won">Won</SelectItem>
+                  <SelectItem value="lost">Lost</SelectItem>
                 </SelectContent>
               </Select>
             </div>

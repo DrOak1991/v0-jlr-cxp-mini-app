@@ -26,23 +26,15 @@ interface OpportunityCardProps {
 }
 
 const stageLabels: Record<string, string> = {
-  "prospecting": "探索中",
-  "qualification": "資格確認",
-  "needs-analysis": "需求分析",
-  "proposal": "提案中",
-  "negotiation": "議價中",
-  "closed-won": "已成交",
-  "closed-lost": "已流失",
+  "qualify": "Qualify",
+  "test-drive-demo": "Test Drive Demo",
+  "select-vehicle": "Select Vehicle",
+  "appraise": "Appraise",
+  "negotiate": "Negotiate",
+  "take-order": "Take Order",
+  "won": "Won",
+  "lost": "Lost",
 }
-
-const stageColors: Record<string, string> = {
-  "prospecting": "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  "qualification": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "needs-analysis": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  "proposal": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  "negotiation": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  "closed-won": "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  "closed-lost": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 }
 
 const brandModels: Record<string, string[]> = {
@@ -331,7 +323,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
                     </div>
                     <div className="bg-muted rounded-lg p-4 space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">賞車客戶名稱</span>
+                        <span className="text-sm text-muted-foreground">賞車客戶名���</span>
                         <span className="text-sm font-medium">{opportunity.accountName}</span>
                       </div>
                       <div className="flex justify-between">
