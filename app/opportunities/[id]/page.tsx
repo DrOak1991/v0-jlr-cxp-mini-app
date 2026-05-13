@@ -1160,7 +1160,7 @@ export default function OpportunityDetailPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>JLR Loss 說��</Label>
+                <Label>JLR Loss 說明</Label>
                 <Textarea
                   value={jlrLossDescription}
                   onChange={(e) => setJlrLossDescription(e.target.value)}
