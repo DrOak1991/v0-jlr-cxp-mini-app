@@ -431,26 +431,28 @@ export default function AccountDetailPage() {
               </div>
             </div>
 
-            {/* 快速操作按鈕 */}
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
-                <PhoneCall className="h-4 w-4 mr-2" />
-                撥打
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MessageCircle className="h-4 w-4 mr-2" />
-                簡訊
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
-                onClick={handleInvite}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                邀請
-              </Button>
-            </div>
+            {/* 快速操作按鈕 - 編輯模式下隱藏 */}
+            {!isEditing && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
+                  <PhoneCall className="h-4 w-4 mr-2" />
+                  撥打
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  簡訊
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
+                  onClick={handleInvite}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  邀請
+                </Button>
+              </div>
+            )}
 
             {/* 聯絡資訊 */}
             <div className="space-y-3 pt-3 border-t">
@@ -483,23 +485,6 @@ export default function AccountDetailPage() {
                   <span className="break-all mt-0.5">{account.email || "未設定"}</span>
                 )}
               </div>
-              {/* Email 2 */}
-              {(isEditing || account.email2) && (
-                <div className="flex items-start gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
-                  {isEditing ? (
-                    <Input
-                      value={account.email2 || ""}
-                      onChange={(e) => setAccount({ ...account, email2: e.target.value })}
-                      placeholder="請輸入備用 Email"
-                      type="email"
-                      className="flex-1"
-                    />
-                  ) : (
-                    <span className="break-all mt-0.5">{account.email2}</span>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* 基本資料 */}
@@ -602,45 +587,47 @@ export default function AccountDetailPage() {
           </div>
         </Card>
 
-        {/* 關聯機會卡片 */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-base flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              關聯機會 ({opportunities.length})
-            </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent"
-              onClick={() => router.push(`/opportunity-create?accountId=${account.id}`)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              新增
-            </Button>
-          </div>
-          {opportunities.length > 0 ? (
-            <div className="space-y-2">
-              {opportunities.map((opp) => (
-                <div
-                  key={opp.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted"
-                  onClick={() => router.push(`/opportunities/${opp.id}`)}
-                >
-                  <div>
-                    <p className="font-medium text-sm">{opp.name}</p>
-                    <p className="text-xs text-muted-foreground">{opp.interestedModel}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {stageLabels[opp.stage] || opp.stage}
-                  </Badge>
-                </div>
-              ))}
+        {/* 關聯機會卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-base flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                關聯機會 ({opportunities.length})
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-transparent"
+                onClick={() => router.push(`/opportunity-create?accountId=${account.id}`)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                新增
+              </Button>
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">目前沒有關聯機會</p>
-          )}
-        </Card>
+            {opportunities.length > 0 ? (
+              <div className="space-y-2">
+                {opportunities.map((opp) => (
+                  <div
+                    key={opp.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted"
+                    onClick={() => router.push(`/opportunities/${opp.id}`)}
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{opp.name}</p>
+                      <p className="text-xs text-muted-foreground">{opp.interestedModel}</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {stageLabels[opp.stage] || opp.stage}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">目前沒有關聯機會</p>
+            )}
+          </Card>
+        )}
 
         {/* 車輛偏好卡片 */}
         <Card className="p-4 space-y-4">
@@ -909,17 +896,26 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">帳單地址</span>
                 {isEditing ? (
-                  <div className="mt-1 space-y-1">
-                    <Input
-                      value={account.billingCity || ""}
-                      onChange={(e) => setAccount({ ...account, billingCity: e.target.value })}
-                      placeholder="城市"
-                    />
-                    <Input
-                      value={account.billingAddress || ""}
-                      onChange={(e) => setAccount({ ...account, billingAddress: e.target.value })}
-                      placeholder="詳細地址"
-                    />
+                  <div className="bg-muted/50 border rounded-lg p-4 mt-1 space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">縣市</Label>
+                      <Select value={account.billingCity || ""} onValueChange={(value) => setAccount({ ...account, billingCity: value })}>
+                        <SelectTrigger><SelectValue placeholder="請選擇縣市" /></SelectTrigger>
+                        <SelectContent>
+                          {["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市", "基隆市", "新竹市", "新竹縣", "苗栗縣", "彰化縣", "南投縣", "雲林縣", "嘉義市", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣", "台東縣", "澎湖縣", "金門縣", "連江縣"].map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">地址</Label>
+                      <Input
+                        value={account.billingAddress || ""}
+                        onChange={(e) => setAccount({ ...account, billingAddress: e.target.value })}
+                        placeholder="請輸入地址"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <p className="font-medium">
@@ -932,17 +928,26 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">郵寄地址</span>
                 {isEditing ? (
-                  <div className="mt-1 space-y-1">
-                    <Input
-                      value={account.shippingCity || ""}
-                      onChange={(e) => setAccount({ ...account, shippingCity: e.target.value })}
-                      placeholder="城市"
-                    />
-                    <Input
-                      value={account.shippingAddress || ""}
-                      onChange={(e) => setAccount({ ...account, shippingAddress: e.target.value })}
-                      placeholder="詳細地址"
-                    />
+                  <div className="bg-muted/50 border rounded-lg p-4 mt-1 space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">縣市</Label>
+                      <Select value={account.shippingCity || ""} onValueChange={(value) => setAccount({ ...account, shippingCity: value })}>
+                        <SelectTrigger><SelectValue placeholder="請選擇縣市" /></SelectTrigger>
+                        <SelectContent>
+                          {["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市", "基隆市", "新竹市", "新竹縣", "苗栗縣", "彰化縣", "南投縣", "雲林縣", "嘉義市", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣", "台東縣", "澎湖縣", "金門縣", "連江縣"].map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">地址</Label>
+                      <Input
+                        value={account.shippingAddress || ""}
+                        onChange={(e) => setAccount({ ...account, shippingAddress: e.target.value })}
+                        placeholder="請輸入地址"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <p className="font-medium">
@@ -979,8 +984,10 @@ export default function AccountDetailPage() {
           </Button>
         </Card>
 
-        {/* 活動記錄卡片 */}
-        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+        {/* 活動記錄卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+        )}
       </main>
 
       {/* New Activity Sheet */}
