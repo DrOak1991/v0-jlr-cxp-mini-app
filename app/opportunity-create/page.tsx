@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, Car } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { getAccountById } from "@/lib/mock-data"
 
-export default function NewOpportunityPage() {
+function NewOpportunityContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -278,5 +278,13 @@ export default function NewOpportunityPage() {
         </form>
       </main>
     </div>
+  )
+}
+
+export default function NewOpportunityPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">載入中...</div>}>
+      <NewOpportunityContent />
+    </Suspense>
   )
 }
