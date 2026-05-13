@@ -262,7 +262,7 @@ export function LeadConversionDialog({
               </p>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 pl-7">
               <Label className="text-sm text-muted-foreground">機會名稱</Label>
               <Input
                 value={newOpportunityName}
