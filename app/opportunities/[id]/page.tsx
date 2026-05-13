@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { detailCategoryLabels } from "@/lib/field-definitions"
 
 import {
   Dialog,
@@ -54,16 +55,15 @@ import { useToast } from "@/hooks/use-toast"
 import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
-import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
-  "qualify": "Qualify",
-  "test-drive-demo": "Test Drive Demo",
-  "select-vehicle": "Select Vehicle",
-  "appraise": "Appraise",
-  "negotiate": "Negotiate",
-  "take-order": "Take Order",
-  "won": "Won",
+  "contact": "聯繫",
+  "test-drive": "試駕",
+  "vehicle-selection": "車型選擇",
+  "trade-in": "舊車處理",
+  "negotiation": "談判",
+  "order": "訂購",
+  "delivery": "交車",
   "lost": "Lost",
 }
 
@@ -91,7 +91,6 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
-  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [notes, setNotes] = useState(opportunityData?.notes || "")
   const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
@@ -195,8 +194,8 @@ export default function OpportunityDetailPage() {
   }, [opportunity, originalOpportunity])
 
   const handleSave = () => {
-    // Check if stage changed to closed-lost
-    if (opportunity.stage === "closed-lost" && originalOpportunity.stage !== "closed-lost") {
+    // Check if stage changed to lost
+    if (opportunity.stage === "lost" && originalOpportunity.stage !== "lost") {
       setIsLostDialogOpen(true)
       return
     }
@@ -539,13 +538,13 @@ export default function OpportunityDetailPage() {
                         <SelectValue placeholder="選擇階段" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="qualify">Qualify</SelectItem>
-                        <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
-                        <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
-                        <SelectItem value="appraise">Appraise</SelectItem>
-                        <SelectItem value="negotiate">Negotiate</SelectItem>
-                        <SelectItem value="take-order">Take Order</SelectItem>
-                        <SelectItem value="won">Won</SelectItem>
+                        <SelectItem value="contact">聯繫</SelectItem>
+                        <SelectItem value="test-drive">試駕</SelectItem>
+                        <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                        <SelectItem value="trade-in">舊車處理</SelectItem>
+                        <SelectItem value="negotiation">談判</SelectItem>
+                        <SelectItem value="order">訂購</SelectItem>
+                        <SelectItem value="delivery">交車</SelectItem>
                         <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
@@ -555,11 +554,11 @@ export default function OpportunityDetailPage() {
                 </div>
               </div>
 
-              {/* 訂單日期 */}
+              {/* 訂購日期 */}
               <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <span className="text-sm text-muted-foreground">訂單日期</span>
+                  <span className="text-sm text-muted-foreground">訂購日期</span>
                   {isEditing ? (
                     <input
                       type="date"
@@ -595,7 +594,7 @@ export default function OpportunityDetailPage() {
         </Card>
 
         {/* 流失原因區塊 */}
-        {opportunity.stage === "closed-lost" && (
+        {opportunity.stage === "lost" && (
           <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertCircle className="h-5 w-5" />
@@ -637,7 +636,7 @@ export default function OpportunityDetailPage() {
             車型選擇
           </h3>
 
-          {/* 購���方式 */}
+          {/* 購車方式 */}
           <div>
             <Label className="text-sm text-muted-foreground">購車方式</Label>
             {isEditing ? (
@@ -660,9 +659,9 @@ export default function OpportunityDetailPage() {
             )}
           </div>
 
-          {/* 詳細分類 */}
+          {/* 次要形式 */}
           <div>
-            <Label className="text-sm text-muted-foreground">詳細分類</Label>
+            <Label className="text-sm text-muted-foreground">次要形式</Label>
             {isEditing ? (
               <Select
                 value={opportunity.detailCategory || ""}
@@ -672,17 +671,18 @@ export default function OpportunityDetailPage() {
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
-                {opportunity.detailCategory === "retail" ? "Retail"
-                  : opportunity.detailCategory === "fleet" ? "Fleet"
-                  : opportunity.detailCategory === "approved-pre-owned" ? "Approved Pre-Owned"
-                  : "未設定"}
+                {opportunity.detailCategory ? detailCategoryLabels[opportunity.detailCategory] || opportunity.detailCategory : "未設定"}
               </p>
             )}
           </div>
@@ -718,6 +718,7 @@ export default function OpportunityDetailPage() {
                   <SelectItem value="diesel">柴油</SelectItem>
                   <SelectItem value="electric">純電</SelectItem>
                   <SelectItem value="hybrid">混合動力</SelectItem>
+                  <SelectItem value="mild-hybrid">高效輕油電</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -726,8 +727,24 @@ export default function OpportunityDetailPage() {
                   : opportunity.powerType === "diesel" ? "柴油"
                   : opportunity.powerType === "electric" ? "純電"
                   : opportunity.powerType === "hybrid" ? "混合動力"
+                  : opportunity.powerType === "mild-hybrid" ? "高效輕油電"
                   : "未設定"}
               </p>
+            )}
+          </div>
+
+          {/* Vista 訂單號碼 */}
+          <div>
+            <Label className="text-sm text-muted-foreground">Vista 訂單號碼</Label>
+            {isEditing ? (
+              <Input
+                value={opportunity.vistaOrderNumber || ""}
+                onChange={(e) => setOpportunity({ ...opportunity, vistaOrderNumber: e.target.value })}
+                placeholder="請輸入 Vista 訂單號碼"
+                className="mt-1"
+              />
+            ) : (
+              <p className="text-foreground mt-1">{opportunity.vistaOrderNumber || "未設定"}</p>
             )}
           </div>
 
@@ -801,7 +818,7 @@ export default function OpportunityDetailPage() {
 
           {/* 現有車輛 */}
           <div>
-            <Label className="text-sm text-muted-foreground">現有��輛</Label>
+            <Label className="text-sm text-muted-foreground">現有車輛</Label>
             {isEditing ? (
               <Input
                 value={opportunity.existingCarModel || ""}
@@ -866,7 +883,6 @@ export default function OpportunityDetailPage() {
                 >
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                   <span className="font-medium">事件</span>
-                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
                 </button>
                 <button
                   type="button"
@@ -879,8 +895,19 @@ export default function OpportunityDetailPage() {
                 >
                   <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
                   <span className="font-medium">工作</span>
-                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
                 </button>
+              </div>
+              {/* Activity Type Description */}
+              <div className="bg-muted/50 rounded-lg p-3">
+                {activityType === "event" ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    一般行程、雜事，例如電話聯繫跟進、活動邀約、生日祝福...等等，請將行程建立成工作。
+                  </p>
+                )}
               </div>
             </div>
 
@@ -1231,11 +1258,6 @@ export default function OpportunityDetailPage() {
               </div>
             </div>
           )}
-          <div className="px-4 py-2 border-b border-border">
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
-              擁有者變更
-            </Button>
-          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1248,21 +1270,6 @@ export default function OpportunityDetailPage() {
           </div>
         </div>
       )}
-
-      <OwnerTransferDialog
-        open={isOwnerTransferOpen}
-        onOpenChange={setIsOwnerTransferOpen}
-        entityType="opportunity"
-        entityName={opportunity.name}
-        currentOwner="目前使用者"
-        onTransfer={(newOwnerId, newOwnerName) => {
-          toast({
-            title: "擁有者已變更",
-            description: `此機會已轉移給 ${newOwnerName}`,
-          })
-          router.push("/opportunities")
-        }}
-      />
     </div>
   )
 }

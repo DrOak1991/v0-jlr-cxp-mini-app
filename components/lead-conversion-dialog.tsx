@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Search, User, Building2, ChevronRight } from "lucide-react"
 import type { Lead, Account, Opportunity } from "@/types"
-import { mockAccounts, getOpportunitiesByAccountId } from "@/lib/mock-data"
+import { mockAccounts } from "@/lib/mock-data"
 
 // Vehicle model display names
 const vehicleModelNames: Record<string, string> = {
@@ -57,9 +57,7 @@ export function LeadConversionDialog({
   const [updateLeadSource, setUpdateLeadSource] = useState(false)
 
   // Opportunity selection state
-  const [opportunityMode, setOpportunityMode] = useState<"new" | "existing">("new")
   const [newOpportunityName, setNewOpportunityName] = useState("")
-  const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null)
 
   // Get model display name
   const modelDisplayName = lead.interestedModel ? vehicleModelNames[lead.interestedModel] || lead.interestedModel : ""
@@ -87,17 +85,13 @@ export function LeadConversionDialog({
       setSearchQuery("")
       setSelectedAccountId(null)
       setUpdateLeadSource(false)
-      setOpportunityMode("new")
-      setSelectedOpportunityId(null)
+      setNewOpportunityName("")
     }
   }, [open, lead])
 
-  // When account mode changes to new, reset opportunity mode to new
+  // When account mode changes to new, reset opportunity state
   useEffect(() => {
-    if (accountMode === "new") {
-      setOpportunityMode("new")
-      setSelectedOpportunityId(null)
-    }
+    // No need to reset opportunity mode anymore since we're always creating new
   }, [accountMode])
 
   // Filter accounts by search query (name or phone)
@@ -111,12 +105,6 @@ export function LeadConversionDialog({
     }).slice(0, 10)
   }, [searchQuery])
 
-  // Get opportunities for selected account
-  const accountOpportunities = useMemo(() => {
-    if (!selectedAccountId) return []
-    return getOpportunitiesByAccountId(selectedAccountId)
-  }, [selectedAccountId])
-
   // Validation
   const isValid = useMemo(() => {
     // Account validation
@@ -126,15 +114,11 @@ export function LeadConversionDialog({
       if (!selectedAccountId) return false
     }
 
-    // Opportunity validation
-    if (opportunityMode === "new") {
-      if (!newOpportunityName.trim()) return false
-    } else {
-      if (!selectedOpportunityId) return false
-    }
+    // Opportunity validation - always creating new
+    if (!newOpportunityName.trim()) return false
 
     return true
-  }, [accountMode, newAccountFirstName, newAccountLastName, selectedAccountId, opportunityMode, newOpportunityName, selectedOpportunityId])
+  }, [accountMode, newAccountFirstName, newAccountLastName, selectedAccountId, newOpportunityName])
 
   const handleConfirm = () => {
     if (!isValid) return
@@ -145,9 +129,8 @@ export function LeadConversionDialog({
       newAccountFirstName: accountMode === "new" ? newAccountFirstName : undefined,
       newAccountLastName: accountMode === "new" ? newAccountLastName : undefined,
       updateLeadSource: accountMode === "existing" ? updateLeadSource : false,
-      opportunityMode,
-      opportunityId: opportunityMode === "existing" ? selectedOpportunityId! : undefined,
-      newOpportunityName: opportunityMode === "new" ? newOpportunityName : undefined,
+      opportunityMode: "new",
+      newOpportunityName: newOpportunityName,
     })
   }
 
@@ -269,83 +252,24 @@ export function LeadConversionDialog({
 
           {/* Opportunity Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold">機會</h3>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">機會</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed pl-7">
+                若買車人（車主）與用車人（駕駛）為不同人，則帳戶姓名與資料請以用車人（駕駛）為主；機會名稱則輸入買車人姓名。
+              </p>
             </div>
 
-            <RadioGroup 
-              value={opportunityMode} 
-              onValueChange={(v) => setOpportunityMode(v as "new" | "existing")}
-            >
-              {/* New Opportunity Option */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="new" id="opportunity-new" />
-                  <Label htmlFor="opportunity-new" className="font-medium cursor-pointer">建立新機會</Label>
-                </div>
-                
-                {opportunityMode === "new" && (
-                  <div className="ml-6 space-y-1">
-                    <Label className="text-sm text-muted-foreground">機會名稱</Label>
-                    <Input
-                      value={newOpportunityName}
-                      onChange={(e) => setNewOpportunityName(e.target.value)}
-                      placeholder="機會名稱"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Existing Opportunity Option - Only available when existing account selected */}
-              <div className="space-y-3 mt-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value="existing" 
-                    id="opportunity-existing" 
-                    disabled={accountMode === "new"}
-                  />
-                  <Label 
-                    htmlFor="opportunity-existing" 
-                    className={`font-medium cursor-pointer ${accountMode === "new" ? "text-muted-foreground" : ""}`}
-                  >
-                    選擇既有機會
-                  </Label>
-                  {accountMode === "new" && (
-                    <span className="text-xs text-muted-foreground">(需先選擇既有帳戶)</span>
-                  )}
-                </div>
-                
-                {opportunityMode === "existing" && accountMode === "existing" && (
-                  <div className="ml-6">
-                    {accountOpportunities.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-2">此帳戶目前沒有機會</p>
-                    ) : (
-                      <div className="border rounded-lg max-h-32 overflow-y-auto">
-                        {accountOpportunities.map((opportunity) => (
-                          <button
-                            key={opportunity.id}
-                            type="button"
-                            className={`w-full flex items-center justify-between p-3 text-left hover:bg-accent/50 transition-colors border-b last:border-b-0 ${
-                              selectedOpportunityId === opportunity.id ? "bg-accent" : ""
-                            }`}
-                            onClick={() => setSelectedOpportunityId(opportunity.id)}
-                          >
-                            <div>
-                              <p className="font-medium text-sm">{opportunity.name}</p>
-                              <p className="text-xs text-muted-foreground">{opportunity.interestedModel || "未指定車款"}</p>
-                            </div>
-                            {selectedOpportunityId === opportunity.id && (
-                              <ChevronRight className="h-4 w-4 text-primary" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </RadioGroup>
+            <div className="space-y-1 pl-7">
+              <Label className="text-sm text-muted-foreground">機會名稱</Label>
+              <Input
+                value={newOpportunityName}
+                onChange={(e) => setNewOpportunityName(e.target.value)}
+                placeholder="機會名稱"
+              />
+            </div>
           </div>
         </div>
 

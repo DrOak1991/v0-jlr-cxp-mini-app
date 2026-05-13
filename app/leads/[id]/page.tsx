@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { detailCategoryLabels } from "@/lib/field-definitions"
 import {
   ArrowLeft,
   Phone,
@@ -56,7 +57,6 @@ import { MultiSelect } from "@/components/multi-select"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 import { LeadConversionDialog } from "@/components/lead-conversion-dialog"
-import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -93,7 +93,6 @@ export default function LeadDetailPage() {
   const [lostCategory, setLostCategory] = useState("")
   const [lostReason, setLostReason] = useState("")
   const [isConvertedDialogOpen, setIsConvertedDialogOpen] = useState(false)
-  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [pendingSave, setPendingSave] = useState(false)
 
   // Call record modal states
@@ -275,7 +274,7 @@ export default function LeadDetailPage() {
       return
     }
 
-    if (stageChanged && lead.stage === "converted") {
+    if (stageChanged && lead.stage === "qualified") {
       setPendingSave(true)
       setIsConvertedDialogOpen(true)
       return
@@ -356,8 +355,8 @@ export default function LeadDetailPage() {
   }) => {
     console.log("[v0] Convert lead with data:", data)
     
-    // Update lead stage to converted
-    const updatedLead = { ...lead, stage: "converted" as const }
+    // Update lead stage to qualified
+    const updatedLead = { ...lead, stage: "qualified" as const }
     setLead(updatedLead)
     setOriginalLead({ ...updatedLead })
     setIsConvertedDialogOpen(false)
@@ -527,10 +526,10 @@ export default function LeadDetailPage() {
   }
 
   const stageLabels = {
-    new: "New",
-    "follow-up": "Follow up",
-    lost: "Lost",
-    converted: "Converted",
+    new: "新增（尚未聯繫）",
+    "follow-up": "已聯繫並持續跟進",
+    qualified: "合格",
+    lost: "戰敗",
   }
 
   const handleStartTestDrive = () => {
@@ -671,10 +670,10 @@ export default function LeadDetailPage() {
                       <SelectValue placeholder="選擇商機狀態" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="follow-up">Follow up</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                      <SelectItem value="converted">Converted</SelectItem>
+                      <SelectItem value="new">新增（尚未聯繫）</SelectItem>
+                      <SelectItem value="follow-up">已聯繫並持續跟進</SelectItem>
+                      <SelectItem value="qualified">合格</SelectItem>
+                      <SelectItem value="lost">戰敗</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -906,7 +905,7 @@ export default function LeadDetailPage() {
               </div>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未���定"}
+                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未設定"}
               </p>
             )}
           </div>
@@ -952,7 +951,7 @@ export default function LeadDetailPage() {
               <Select value={lead.workStatus || ""} onValueChange={(value) => setLead({ ...lead, workStatus: value })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇工作狀態" /></SelectTrigger>
                 <SelectContent>
-                  {["全職", "兼職", "自營", "��休", "待業", "學生"].map((w) => (
+                  {["全職", "兼職", "自營", "退休", "待業", "學生"].map((w) => (
                     <SelectItem key={w} value={w}>{w}</SelectItem>
                   ))}
                 </SelectContent>
@@ -993,14 +992,21 @@ export default function LeadDetailPage() {
               <Select value={lead.detailCategory || ""} onValueChange={(value) => setLead({ ...lead, detailCategory: value as any })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇詳細分類" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="service">服務/維修</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="parts">原廠零件</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="evhc">EVHC</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.detailCategory === "retail" ? "Retail" : lead.detailCategory === "fleet" ? "Fleet" : lead.detailCategory === "approved-pre-owned" ? "Approved Pre-Owned" : "未設定"}
+                {lead.detailCategory ? detailCategoryLabels[lead.detailCategory] || lead.detailCategory : "未設定"}
               </p>
             )}
           </div>
@@ -1100,7 +1106,7 @@ export default function LeadDetailPage() {
                   {lead.leadSource === "walk-in" ? "來店客 (Walk-in)"
                     : lead.leadSource === "referral" ? "轉介 (Referral)"
                       : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
-                        : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
+                        : lead.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
                           : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
                             : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
                               : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
@@ -1262,7 +1268,6 @@ export default function LeadDetailPage() {
                 >
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                   <span className="font-medium">事件</span>
-                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
                 </button>
                 <button
                   type="button"
@@ -1274,8 +1279,19 @@ export default function LeadDetailPage() {
                 >
                   <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
                   <span className="font-medium">工作</span>
-                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
                 </button>
+              </div>
+              {/* Activity Type Description */}
+              <div className="bg-muted/50 rounded-lg p-3">
+                {activityType === "event" ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    一般行程、雜事，例如電話聯繫跟進、活動邀約、生日祝福...等等，請將行程建立成工作。
+                  </p>
+                )}
               </div>
             </div>
 
@@ -1468,7 +1484,7 @@ export default function LeadDetailPage() {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mb-4">
-              {isRecording ? "錄音中..." : "點擊麥克風開始��音輸入"}
+              {isRecording ? "錄音中..." : "點擊麥克風開始語音輸入"}
             </p>
 
             {/* Text area */}
@@ -1586,7 +1602,7 @@ export default function LeadDetailPage() {
 
               {/* License Front */}
               <div className="space-y-2">
-                <Label>駕���正面</Label>
+                <Label>駕照正面</Label>
                 <div className="border-2 border-dashed rounded-lg p-4 text-center">
                   {licenseFrontPreview ? (
                     <div className="relative">
@@ -1766,16 +1782,6 @@ export default function LeadDetailPage() {
               </div>
             </div>
           )}
-          <div className="px-4 py-2 border-b border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              onClick={() => setIsOwnerTransferOpen(true)}
-            >
-              擁有者變更
-            </Button>
-          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1788,21 +1794,6 @@ export default function LeadDetailPage() {
           </div>
         </div>
       )}
-
-      <OwnerTransferDialog
-        open={isOwnerTransferOpen}
-        onOpenChange={setIsOwnerTransferOpen}
-        entityType="lead"
-        entityName={lead.cxpName}
-        currentOwner="目前使用者"
-        onTransfer={(newOwnerId, newOwnerName) => {
-          toast({
-            title: "擁有者已變更",
-            description: `此商機已轉移給 ${newOwnerName}`,
-          })
-          router.push("/leads")
-        }}
-      />
     </div>
   )
 }

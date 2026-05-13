@@ -151,21 +151,21 @@ function NewOpportunityContent() {
                   <SelectValue placeholder="選擇階段" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="qualify">Qualify</SelectItem>
-                  <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
-                  <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
-                  <SelectItem value="appraise">Appraise</SelectItem>
-                  <SelectItem value="negotiate">Negotiate</SelectItem>
-                  <SelectItem value="take-order">Take Order</SelectItem>
-                  <SelectItem value="won">Won</SelectItem>
+                  <SelectItem value="contact">聯繫</SelectItem>
+                  <SelectItem value="test-drive">試駕</SelectItem>
+                  <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                  <SelectItem value="trade-in">舊車處理</SelectItem>
+                  <SelectItem value="negotiation">談判</SelectItem>
+                  <SelectItem value="order">訂購</SelectItem>
+                  <SelectItem value="delivery">交車</SelectItem>
                   <SelectItem value="lost">Lost</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 訂單日期 */}
+            {/* 訂購日期 */}
             <div className="space-y-2">
-              <Label>訂單日期</Label>
+              <Label>訂購日期</Label>
               <input
                 type="date"
                 value={orderDate}
@@ -207,17 +207,21 @@ function NewOpportunityContent() {
               </Select>
             </div>
 
-            {/* 詳細分類 */}
+            {/* 次要形式 */}
             <div className="space-y-2">
-              <Label>詳細分類</Label>
+              <Label>次要形式</Label>
               <Select value={detailCategory} onValueChange={setDetailCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             </div>

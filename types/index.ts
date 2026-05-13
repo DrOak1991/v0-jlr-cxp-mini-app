@@ -9,7 +9,7 @@ export interface Lead {
   phone: string
   email: string
   createdAt: Date
-  stage?: "new" | "follow-up" | "lost" | "converted"
+  stage?: "new" | "follow-up" | "qualified" | "lost"
   lostCategory?: "competitor" | "duplicate" | "no-interest" | "unreachable" // 戰敗原因分類
   lostReason?: string // 流失原因詳細說明（僅當 stage = lost 時有值）
   // Detail page fields
@@ -22,9 +22,9 @@ export interface Lead {
   industry?: string
   workStatus?: string
   carType?: "new-car" | "certified-used"
-  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
-  interestedModel?: "defender-90" | "defender-110" | "range-rover" | "range-rover-sport" | "discovery" | "i-pace"
-  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "service" | "accessories" | "parts" | "sv-custom" | "genuine-accessories" | "evhc" | "self-registration"
+  interestedModel?: "range-rover" | "range-rover-sport" | "range-rover-velar" | "range-rover-evoque" | "defender-130" | "defender-110" | "defender-90" | "discovery" | "discovery-sport" | "f-type" | "f-pace" | "e-pace" | "i-pace"
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid" | "mild-hybrid"
   performancePreference?: boolean
   leadSource?:
     | "walk-in"
@@ -48,14 +48,15 @@ export interface Opportunity {
   accountId: string // 所屬帳戶 ID
   accountName: string // 所屬帳戶名稱（用於列表顯示）
   name: string // 機會名稱
-  stage: "qualify" | "test-drive-demo" | "select-vehicle" | "appraise" | "negotiate" | "take-order" | "won" | "lost"
+  stage: "contact" | "test-drive" | "vehicle-selection" | "trade-in" | "negotiation" | "order" | "delivery" | "lost"
   probability?: number // 可能性 %
   // 車型選擇
   carType?: "new-car" | "certified-used"
-  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
+  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "accessories" | "sv-custom" | "genuine-accessories" | "self-registration"
   interestedModel?: string
-  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid" | "mild-hybrid"
   performancePreference?: boolean // SV/V8 偏好
+  vistaOrderNumber?: string // Vista 訂單號碼
   // 轉換資訊
   leadSource?: string
   existingCarBrand?: string
@@ -63,7 +64,7 @@ export interface Opportunity {
   // 機會狀態
   orderDate?: Date // 訂單日期
   deliveryDate?: Date // 交車日期
-  lostReason?: string // 流失原因（僅當 stage = closed-lost）
+  lostReason?: string // 流失原因（僅當 stage = lost）
   // 活動記錄
   activities?: Activity[]
   createdAt: Date
@@ -137,6 +138,7 @@ export interface EventActivity {
   startDateTime: Date
   endDateTime: Date
   createdAt: Date
+  testDriveConsentId?: string // 關聯的試駕同意書 ID（僅適用於試駕相關事件）
 }
 
 export interface TaskActivity {

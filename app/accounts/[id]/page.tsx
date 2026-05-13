@@ -45,7 +45,6 @@ import Image from "next/image"
 import type { Account, Activity } from "@/types"
 import { getAccountById, getOpportunitiesByAccountId } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
-import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function AccountDetailPage() {
   const params = useParams()
@@ -60,7 +59,6 @@ export default function AccountDetailPage() {
   const [notes, setNotes] = useState("")
   const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
-  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
 
   // Invite sheet states
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -365,13 +363,13 @@ export default function AccountDetailPage() {
   }
 
   const stageLabels: Record<string, string> = {
-    "qualify": "Qualify",
-    "test-drive-demo": "Test Drive Demo",
-    "select-vehicle": "Select Vehicle",
-    "appraise": "Appraise",
-    "negotiate": "Negotiate",
-    "take-order": "Take Order",
-    "won": "Won",
+    "contact": "聯繫",
+    "test-drive": "試駕",
+    "vehicle-selection": "車型選擇",
+    "trade-in": "舊車處理",
+    "negotiation": "談判",
+    "order": "訂購",
+    "delivery": "交車",
     "lost": "Lost",
   }
 
@@ -626,7 +624,7 @@ export default function AccountDetailPage() {
               <p className="font-medium">
                 {account.contactPreferences?.length
                   ? account.contactPreferences
-                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "��寄"))
+                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
                       .join(", ")
                   : "未設定"}
               </p>
@@ -707,7 +705,6 @@ export default function AccountDetailPage() {
                 >
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                   <span className="font-medium">事件</span>
-                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
                 </button>
                 <button
                   type="button"
@@ -718,8 +715,19 @@ export default function AccountDetailPage() {
                 >
                   <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
                   <span className="font-medium">工作</span>
-                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
                 </button>
+              </div>
+              {/* Activity Type Description */}
+              <div className="bg-muted/50 rounded-lg p-3">
+                {activityType === "event" ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    一般行程、雜事，例如電話聯繫跟進、活動邀約、生日祝福...等等，請將行程建立成工作。
+                  </p>
+                )}
               </div>
             </div>
 
@@ -824,7 +832,7 @@ export default function AccountDetailPage() {
             )}
 
             <Button className="w-full" onClick={handleSaveActivity}>
-              {activityType === "event" ? "���增事件" : "新增工作"}
+              {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
           </div>
         </SheetContent>
@@ -1132,11 +1140,6 @@ export default function AccountDetailPage() {
 
       {isEditing && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
-          <div className="px-4 py-2 border-b border-border">
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
-              擁有者變更
-            </Button>
-          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1149,21 +1152,6 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
-
-      <OwnerTransferDialog
-        open={isOwnerTransferOpen}
-        onOpenChange={setIsOwnerTransferOpen}
-        entityType="account"
-        entityName={account?.cxpName || ""}
-        currentOwner="目前使用者"
-        onTransfer={(newOwnerId, newOwnerName) => {
-          toast({
-            title: "擁有者已變更",
-            description: `此帳戶已轉移給 ${newOwnerName}`,
-          })
-          router.push("/accounts")
-        }}
-      />
     </div>
   )
 }

@@ -75,10 +75,10 @@ export function SearchFilterSheet({ isOpen, onClose, type }: SearchFilterSheetPr
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部階段</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="follow-up">Follow up</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
-                <SelectItem value="converted">Converted</SelectItem>
+                <SelectItem value="new">新增（尚未聯繫）</SelectItem>
+                <SelectItem value="follow-up">已聯繫並持續跟進</SelectItem>
+                <SelectItem value="qualified">合格</SelectItem>
+                <SelectItem value="lost">戰敗</SelectItem>
               </SelectContent>
             </Select>
           </div>
