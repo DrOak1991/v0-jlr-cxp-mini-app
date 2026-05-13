@@ -474,12 +474,8 @@ export default function OpportunityDetailPage() {
           size="icon"
           onClick={() => setIsEditing(!isEditing)}
         >
-          {isEditing && (
+          {isEditing ? (
             <X className="h-5 w-5" />
-          )}
-          {!isEditing && (
-            <Edit className="h-5 w-5" />
-          )}
           ) : (
             <Edit className="h-5 w-5" />
           )}
@@ -957,7 +953,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
-                  : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
+                  : opportunity.leadSource === "line-booking" ? "網路客預�� (LINE)"
                   : opportunity.leadSource === "field-visit" ? "陌生開發"
                   : "未設定"}
               </p>
@@ -1140,7 +1136,7 @@ export default function OpportunityDetailPage() {
               <div className="bg-muted/50 rounded-lg p-3">
                 {activityType === "event" ? (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                    任何需要與公司主管報備的��程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground leading-relaxed">
