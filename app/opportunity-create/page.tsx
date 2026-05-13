@@ -35,9 +35,10 @@ function NewOpportunityContent() {
   }, [accountId])
 
   // Form state
-  const [name, setName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [firstName, setFirstName] = useState("")
   const [notes, setNotes] = useState("")
-  const [stage, setStage] = useState<string>("prospecting")
+  const [stage, setStage] = useState<string>("contact")
   const [carType, setCarType] = useState<string>("")
   const [detailCategory, setDetailCategory] = useState<string>("")
   const [interestedModel, setInterestedModel] = useState<string>("")
@@ -55,7 +56,11 @@ function NewOpportunityContent() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = "請輸入機會名稱"
+    if (!lastName.trim()) newErrors.lastName = "請輸入姓氏"
+    if (!firstName.trim()) newErrors.firstName = "請輸入名字"
+    if (!carType) newErrors.carType = "請選擇購車方式"
+    if (!interestedModel) newErrors.interestedModel = "請選擇主要興趣車款"
+    if (!leadSource) newErrors.leadSource = "請選擇商機來源"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -73,10 +78,12 @@ function NewOpportunityContent() {
       return
     }
 
+    const fullName = `${lastName}${firstName}`
+
     // In real app, would call API to create opportunity
     toast({
       title: "機會已建立",
-      description: `已成功建立機會：${name}`,
+      description: `已成功建立機會：${fullName}`,
     })
 
     // Navigate back to account detail or opportunities list
@@ -112,19 +119,31 @@ function NewOpportunityContent() {
               </div>
             )}
 
-            {/* 機會名稱 */}
+            {/* 機會名稱（姓氏 + 名字） */}
             <div className="space-y-2">
-              <Label htmlFor="name">
+              <Label>
                 機會名稱 <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="請輸入機會名稱"
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="姓氏"
+                    className={errors.lastName ? "border-red-500" : ""}
+                  />
+                  {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="名字"
+                    className={errors.firstName ? "border-red-500" : ""}
+                  />
+                  {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+                </div>
+              </div>
             </div>
 
             {/* 機會階段 */}
@@ -180,9 +199,9 @@ function NewOpportunityContent() {
 
             {/* 購車方式 */}
             <div className="space-y-2">
-              <Label>購車方式</Label>
+              <Label>購車方式 <span className="text-red-500">*</span></Label>
               <Select value={carType} onValueChange={setCarType}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.carType ? "border-red-500" : ""}>
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
@@ -190,6 +209,7 @@ function NewOpportunityContent() {
                   <SelectItem value="certified-used">認證中古車</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.carType && <p className="text-xs text-red-500">{errors.carType}</p>}
             </div>
 
             {/* 次要形式 */}
@@ -213,9 +233,9 @@ function NewOpportunityContent() {
 
             {/* 主要興趣車款 */}
             <div className="space-y-2">
-              <Label>主要興趣車款</Label>
+              <Label>主要興趣車款 <span className="text-red-500">*</span></Label>
               <Select value={interestedModel} onValueChange={setInterestedModel}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.interestedModel ? "border-red-500" : ""}>
                   <SelectValue placeholder="請選擇車款" />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,6 +256,7 @@ function NewOpportunityContent() {
                   <SelectItem value="XE">XE</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.interestedModel && <p className="text-xs text-red-500">{errors.interestedModel}</p>}
             </div>
 
             {/* 動力型式 */}
@@ -283,9 +304,9 @@ function NewOpportunityContent() {
 
             {/* 商機來源 */}
             <div className="space-y-2">
-              <Label>商機來源</Label>
+              <Label>商機來源 <span className="text-red-500">*</span></Label>
               <Select value={leadSource} onValueChange={setLeadSource}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.leadSource ? "border-red-500" : ""}>
                   <SelectValue placeholder="請選擇來源" />
                 </SelectTrigger>
                 <SelectContent>
@@ -298,6 +319,7 @@ function NewOpportunityContent() {
                   <SelectItem value="field-visit">陌生開發</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.leadSource && <p className="text-xs text-red-500">{errors.leadSource}</p>}
             </div>
 
             {/* 現有車輛品牌 */}
