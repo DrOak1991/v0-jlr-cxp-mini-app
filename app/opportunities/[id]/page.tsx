@@ -203,6 +203,19 @@ export default function OpportunityDetailPage() {
     if (newOpportunityData) {
       setOpportunity(newOpportunityData)
       setOriginalOpportunity(newOpportunityData)
+      
+      // 解析已存在的流失原因資料
+      if (newOpportunityData.lostReason) {
+        try {
+          const lossInfo = JSON.parse(newOpportunityData.lostReason)
+          if (lossInfo.retailerLossReason) setRetailerLossReason(lossInfo.retailerLossReason)
+          if (lossInfo.retailerLossDescription) setRetailerLossDescription(lossInfo.retailerLossDescription)
+          if (lossInfo.jlrLossReason) setJlrLossReason(lossInfo.jlrLossReason)
+          if (lossInfo.jlrLossDescription) setJlrLossDescription(lossInfo.jlrLossDescription)
+        } catch {
+          // 如果不是 JSON 格式，忽略
+        }
+      }
     }
     setActivities(newActivitiesData)
     setAccount(newAccountData)
@@ -970,6 +983,78 @@ export default function OpportunityDetailPage() {
             )}
           </div>
         </Card>
+
+        {/* 流失原因編輯區塊 - 僅在編輯模式且 stage 為 lost 時顯示 */}
+        {isEditing && opportunity.stage === "lost" && (
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+            <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
+                <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
+              </TabsList>
+
+              {/* Retailer Loss Tab */}
+              <TabsContent value="retailer" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Retailer Loss 原因</Label>
+                  <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="--None--" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lossReasonOptions.map((option) => (
+                        <SelectItem key={option.value || "none"} value={option.value || "none"}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Retailer Loss 說明</Label>
+                  <Textarea
+                    value={retailerLossDescription}
+                    onChange={(e) => setRetailerLossDescription(e.target.value)}
+                    placeholder="請輸入詳細說明..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </TabsContent>
+
+              {/* JLR Loss Tab */}
+              <TabsContent value="jlr" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>JLR Loss 原因</Label>
+                  <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="--None--" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lossReasonOptions.map((option) => (
+                        <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>JLR Loss 說明</Label>
+                  <Textarea
+                    value={jlrLossDescription}
+                    onChange={(e) => setJlrLossDescription(e.target.value)}
+                    placeholder="請輸入詳細說明..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Card>
+        )}
 
         {/* 試駕同意書卡片 - 編輯模式下隱藏 */}
         {!isEditing && (
