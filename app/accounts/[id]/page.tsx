@@ -428,11 +428,6 @@ export default function AccountDetailPage() {
                     {account.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
                   </span>
                 </div>
-                {account.maintenanceStatus && (
-                  <Badge variant="secondary" className="mt-1">
-                    {maintenanceStatusLabels[account.maintenanceStatus] || account.maintenanceStatus}
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -458,43 +453,149 @@ export default function AccountDetailPage() {
             </div>
 
             {/* 聯絡資訊 */}
-            <div className="space-y-2 pt-3 border-t">
-              <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span>{account.phone ? `886 ${account.phone}` : "未設定"}</span>
-              </div>
+            <div className="space-y-3 pt-3 border-t">
+              {/* 電話 */}
               <div className="flex items-start gap-2 text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <span className="break-all">{account.email || "未設定"}</span>
+                <Phone className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
+                {isEditing ? (
+                  <Input
+                    value={account.phone || ""}
+                    onChange={(e) => setAccount({ ...account, phone: e.target.value })}
+                    placeholder="請輸入電話號碼"
+                    className="flex-1"
+                  />
+                ) : (
+                  <span className="mt-0.5">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
+                )}
               </div>
-              {account.email2 && (
+              {/* Email */}
+              <div className="flex items-start gap-2 text-sm">
+                <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
+                {isEditing ? (
+                  <Input
+                    value={account.email || ""}
+                    onChange={(e) => setAccount({ ...account, email: e.target.value })}
+                    placeholder="請輸入 Email"
+                    type="email"
+                    className="flex-1"
+                  />
+                ) : (
+                  <span className="break-all mt-0.5">{account.email || "未設定"}</span>
+                )}
+              </div>
+              {/* Email 2 */}
+              {(isEditing || account.email2) && (
                 <div className="flex items-start gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <span className="break-all">{account.email2}</span>
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
+                  {isEditing ? (
+                    <Input
+                      value={account.email2 || ""}
+                      onChange={(e) => setAccount({ ...account, email2: e.target.value })}
+                      placeholder="請輸入備用 Email"
+                      type="email"
+                      className="flex-1"
+                    />
+                  ) : (
+                    <span className="break-all mt-0.5">{account.email2}</span>
+                  )}
                 </div>
               )}
             </div>
 
             {/* 基本資料 */}
             <div className="space-y-3 pt-3 border-t">
+              {/* 階段 — 獨立一列，在生日/性別上方 */}
+              <div>
+                <Label className="text-sm text-muted-foreground">階段</Label>
+                {isEditing ? (
+                  <Select
+                    value={account.maintenanceStatus || ""}
+                    onValueChange={(value) => setAccount({ ...account, maintenanceStatus: value as any })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="請選擇階段" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="purchased">已購</SelectItem>
+                      <SelectItem value="interested">有興趣</SelectItem>
+                      <SelectItem value="none">無</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="font-medium mt-0.5">
+                    {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-muted-foreground">生日</span>
-                  <p className="font-medium">{account.birthday ? formatDate(account.birthday) : "未設定"}</p>
+                  {isEditing ? (
+                    <div className="mt-1">
+                      <DatePicker
+                        date={account.birthday ?? undefined}
+                        onDateChange={(date) => setAccount({ ...account, birthday: date ?? null })}
+                      />
+                    </div>
+                  ) : (
+                    <p className="font-medium">{account.birthday ? formatDate(account.birthday) : "未設定"}</p>
+                  )}
                 </div>
                 <div>
                   <span className="text-muted-foreground">性別</span>
-                  <p className="font-medium">{account.gender ? genderLabels[account.gender] : "未設定"}</p>
+                  {isEditing ? (
+                    <Select
+                      value={account.gender || ""}
+                      onValueChange={(value) => setAccount({ ...account, gender: value as any })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="請選擇" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">男</SelectItem>
+                        <SelectItem value="female">女</SelectItem>
+                        <SelectItem value="unknown">未指定</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="font-medium">{account.gender ? genderLabels[account.gender] : "未設定"}</p>
+                  )}
                 </div>
                 <div>
                   <span className="text-muted-foreground">身分證字號</span>
-                  <p className="font-medium">{account.nationalId || "未設定"}</p>
+                  {isEditing ? (
+                    <Input
+                      value={account.nationalId || ""}
+                      onChange={(e) => setAccount({ ...account, nationalId: e.target.value })}
+                      placeholder="請輸入身分證字號"
+                      className="mt-1"
+                    />
+                  ) : (
+                    <p className="font-medium">{account.nationalId || "未設定"}</p>
+                  )}
                 </div>
                 <div>
                   <span className="text-muted-foreground">商機來源</span>
-                  <p className="font-medium">
-                    {account.leadSource ? leadSourceLabels[account.leadSource] : "未設定"}
-                  </p>
+                  {isEditing ? (
+                    <Select
+                      value={account.leadSource || ""}
+                      onValueChange={(value) => setAccount({ ...account, leadSource: value as any })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="請選擇" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(leadSourceLabels).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="font-medium">
+                      {account.leadSource ? leadSourceLabels[account.leadSource] : "未設定"}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -717,12 +818,14 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">職業</span>
                 {isEditing ? (
-                  <Input
-                    value={account.occupation || ""}
-                    onChange={(e) => setAccount({ ...account, occupation: e.target.value })}
-                    placeholder="請輸入職業"
-                    className="mt-1"
-                  />
+                  <Select value={account.occupation || ""} onValueChange={(value) => setAccount({ ...account, occupation: value })}>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇職業" /></SelectTrigger>
+                    <SelectContent>
+                      {["企業主", "高階主管", "中階主管", "專業人士", "自由業", "軍公教", "退休人員", "學生", "其他"].map((o) => (
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="font-medium">{account.occupation || "未設定"}</p>
                 )}
@@ -730,12 +833,14 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">行業</span>
                 {isEditing ? (
-                  <Input
-                    value={account.industry || ""}
-                    onChange={(e) => setAccount({ ...account, industry: e.target.value })}
-                    placeholder="請輸入行業"
-                    className="mt-1"
-                  />
+                  <Select value={account.industry || ""} onValueChange={(value) => setAccount({ ...account, industry: value })}>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇行業" /></SelectTrigger>
+                    <SelectContent>
+                      {["科技業", "金融業", "製造業", "服務業", "醫療業", "營建業", "貿易業", "農林漁牧", "政府機關", "教育業", "其他"].map((i) => (
+                        <SelectItem key={i} value={i}>{i}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="font-medium">{account.industry || "未設定"}</p>
                 )}
@@ -804,16 +909,22 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">帳單地址</span>
                 {isEditing ? (
-                  <Input
-                    value={`${account.billingCity || ""} ${account.billingAddress || ""}`.trim()}
-                    onChange={(e) => setAccount({ ...account, billingAddress: e.target.value })}
-                    placeholder="請輸入帳單地址"
-                    className="mt-1"
-                  />
+                  <div className="mt-1 space-y-1">
+                    <Input
+                      value={account.billingCity || ""}
+                      onChange={(e) => setAccount({ ...account, billingCity: e.target.value })}
+                      placeholder="城市"
+                    />
+                    <Input
+                      value={account.billingAddress || ""}
+                      onChange={(e) => setAccount({ ...account, billingAddress: e.target.value })}
+                      placeholder="詳細地址"
+                    />
+                  </div>
                 ) : (
                   <p className="font-medium">
                     {account.billingCity || account.billingAddress
-                      ? `${account.billingCity || ""} ${account.billingAddress || ""}`
+                      ? `${account.billingCity || ""}${account.billingAddress || ""}`
                       : "未設定"}
                   </p>
                 )}
@@ -821,16 +932,22 @@ export default function AccountDetailPage() {
               <div>
                 <span className="text-muted-foreground">郵寄地址</span>
                 {isEditing ? (
-                  <Input
-                    value={`${account.shippingCity || ""} ${account.shippingAddress || ""}`.trim()}
-                    onChange={(e) => setAccount({ ...account, shippingAddress: e.target.value })}
-                    placeholder="請輸入郵寄地址"
-                    className="mt-1"
-                  />
+                  <div className="mt-1 space-y-1">
+                    <Input
+                      value={account.shippingCity || ""}
+                      onChange={(e) => setAccount({ ...account, shippingCity: e.target.value })}
+                      placeholder="城市"
+                    />
+                    <Input
+                      value={account.shippingAddress || ""}
+                      onChange={(e) => setAccount({ ...account, shippingAddress: e.target.value })}
+                      placeholder="詳細地址"
+                    />
+                  </div>
                 ) : (
                   <p className="font-medium">
                     {account.shippingCity || account.shippingAddress
-                      ? `${account.shippingCity || ""} ${account.shippingAddress || ""}`
+                      ? `${account.shippingCity || ""}${account.shippingAddress || ""}`
                       : "未設定"}
                   </p>
                 )}
