@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描�������������已成功更新",
+      description: "您的描述內容已成功更新",
     })
   }
 
@@ -363,7 +363,7 @@ export default function OpportunityDetailPage() {
     if (!newActivity.subject.trim()) {
       toast({
         title: "請輸入主題",
-        description: activityType === "event" ? "請輸入事件主題" : "請輸入工��主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
         variant: "destructive",
       })
       return
