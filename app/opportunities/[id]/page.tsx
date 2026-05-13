@@ -691,8 +691,8 @@ export default function OpportunityDetailPage() {
           </div>
         </Card>
 
-        {/* 流失原因區塊 */}
-        {opportunity.stage === "lost" && (
+        {/* 流失原因區塊 - 檢視模式 */}
+        {!isEditing && opportunity.stage === "lost" && (
           <Card className="p-4">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
