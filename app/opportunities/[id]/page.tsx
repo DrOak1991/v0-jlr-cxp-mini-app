@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描�����������已成功更新",
+      description: "您的描�������������已成功更新",
     })
   }
 
@@ -535,6 +535,7 @@ export default function OpportunityDetailPage() {
                     onClick={navigateToAccount}
                   >
                     <Building2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-sm text-muted-foreground">帳戶：</span>
                     <span className="text-sm font-medium text-primary">{opportunity.accountName}</span>
                   </div>
                   <Button
@@ -1159,7 +1160,7 @@ export default function OpportunityDetailPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>JLR Loss 說明</Label>
+                <Label>JLR Loss 說��</Label>
                 <Textarea
                   value={jlrLossDescription}
                   onChange={(e) => setJlrLossDescription(e.target.value)}
