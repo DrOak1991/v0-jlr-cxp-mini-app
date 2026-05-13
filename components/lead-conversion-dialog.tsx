@@ -269,9 +269,14 @@ export function LeadConversionDialog({
 
           {/* Opportunity Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold">機會</h3>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">機會</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed pl-7">
+                若買車人（車主）與用車人（駕駛）為不同人，則帳戶姓名與資料請以用車人（駕駛）為主；機會名稱則輸入買車人姓名。
+              </p>
             </div>
 
             <RadioGroup 
