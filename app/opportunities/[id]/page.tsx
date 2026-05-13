@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描述內容已成功更新",
+      description: "您的描���內容已成功更新",
     })
   }
 
@@ -673,8 +673,8 @@ export default function OpportunityDetailPage() {
 
         {/* 流失原因區塊 */}
         {opportunity.stage === "lost" && (
-          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               流失原因
             </h3>
@@ -683,35 +683,61 @@ export default function OpportunityDetailPage() {
                 const lossInfo = opportunity.lostReason ? JSON.parse(opportunity.lostReason) : null
                 if (lossInfo && (lossInfo.retailerLossReason || lossInfo.jlrLossReason)) {
                   return (
-                    <div className="space-y-3 text-sm">
-                      {lossInfo.retailerLossReason && (
-                        <div>
-                          <p className="font-medium text-red-700 dark:text-red-400">Retailer Loss</p>
-                          <p className="text-red-600 dark:text-red-300">
-                            原因：{lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
-                          </p>
-                          {lossInfo.retailerLossDescription && (
-                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.retailerLossDescription}</p>
-                          )}
-                        </div>
-                      )}
-                      {lossInfo.jlrLossReason && (
-                        <div>
-                          <p className="font-medium text-red-700 dark:text-red-400">JLR Loss</p>
-                          <p className="text-red-600 dark:text-red-300">
-                            原因：{lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
-                          </p>
-                          {lossInfo.jlrLossDescription && (
-                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.jlrLossDescription}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <Tabs defaultValue={lossInfo.retailerLossReason ? "retailer" : "jlr"} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
+                        <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
+                      </TabsList>
+
+                      {/* Retailer Loss Tab */}
+                      <TabsContent value="retailer" className="space-y-4 mt-4">
+                        {lossInfo.retailerLossReason ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-muted-foreground">Retailer Loss 原因</Label>
+                              <p className="text-sm font-medium">
+                                {lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
+                              </p>
+                            </div>
+                            {lossInfo.retailerLossDescription && (
+                              <div className="space-y-2">
+                                <Label className="text-sm text-muted-foreground">Retailer Loss 說明</Label>
+                                <p className="text-sm font-medium">{lossInfo.retailerLossDescription}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">未記錄 Retailer Loss 原因</p>
+                        )}
+                      </TabsContent>
+
+                      {/* JLR Loss Tab */}
+                      <TabsContent value="jlr" className="space-y-4 mt-4">
+                        {lossInfo.jlrLossReason ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-muted-foreground">JLR Loss 原因</Label>
+                              <p className="text-sm font-medium">
+                                {lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
+                              </p>
+                            </div>
+                            {lossInfo.jlrLossDescription && (
+                              <div className="space-y-2">
+                                <Label className="text-sm text-muted-foreground">JLR Loss 說明</Label>
+                                <p className="text-sm font-medium">{lossInfo.jlrLossDescription}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">未記錄 JLR Loss 原因</p>
+                        )}
+                      </TabsContent>
+                    </Tabs>
                   )
                 }
-                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+                return <p className="text-sm text-muted-foreground">{opportunity.lostReason || "未記錄流失原因"}</p>
               } catch {
-                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+                return <p className="text-sm text-muted-foreground">{opportunity.lostReason || "未記錄流失原因"}</p>
               }
             })()}
           </Card>
