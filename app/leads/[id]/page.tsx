@@ -55,6 +55,8 @@ import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
+import { LeadConversionDialog } from "@/components/lead-conversion-dialog"
+import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function LeadDetailPage() {
   const router = useRouter()
@@ -91,6 +93,7 @@ export default function LeadDetailPage() {
   const [lostCategory, setLostCategory] = useState("")
   const [lostReason, setLostReason] = useState("")
   const [isConvertedDialogOpen, setIsConvertedDialogOpen] = useState(false)
+  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [pendingSave, setPendingSave] = useState(false)
 
   // Call record modal states
@@ -304,10 +307,15 @@ export default function LeadDetailPage() {
     }
 
     // 將流失原因存到 lead 物件
-    const updatedLead = { ...lead, lostReason: lostReason.trim() }
+    const updatedLead = { 
+      ...lead, 
+      lostCategory: lostCategory as Lead["lostCategory"],
+      lostReason: lostReason.trim() 
+    }
     setLead(updatedLead)
     setOriginalLead({ ...updatedLead })
     setIsLostDialogOpen(false)
+    setLostCategory("")
     setLostReason("")
     setIsEditing(false)
     setHasFieldsChanged(false)
@@ -336,14 +344,38 @@ export default function LeadDetailPage() {
     })
   }
 
-  const handleConvertedSave = () => {
-    console.log("[v0] Convert to account")
+  const handleConversion = (data: {
+    accountMode: "new" | "existing"
+    accountId?: string
+    newAccountFirstName?: string
+    newAccountLastName?: string
+    updateLeadSource: boolean
+    opportunityMode: "new" | "existing"
+    opportunityId?: string
+    newOpportunityName?: string
+  }) => {
+    console.log("[v0] Convert lead with data:", data)
+    
+    // Update lead stage to converted
+    const updatedLead = { ...lead, stage: "converted" as const }
+    setLead(updatedLead)
+    setOriginalLead({ ...updatedLead })
     setIsConvertedDialogOpen(false)
-    performSave()
+    setIsEditing(false)
+    setHasFieldsChanged(false)
+    setPendingSave(false)
+    
     toast({
-      title: "已轉換為帳戶",
-      description: "商機已成功轉換為帳戶",
+      title: "商機已轉換",
+      description: "正在導向機會頁面...",
     })
+
+    // Navigate to opportunity page
+    // In real implementation, this would be the newly created/selected opportunity ID
+    const opportunityId = data.opportunityMode === "existing" ? data.opportunityId : "new-opp-1"
+    setTimeout(() => {
+      router.push(`/opportunities/${opportunityId}`)
+    }, 500)
   }
 
   const handleConvertedCancel = () => {
@@ -714,6 +746,64 @@ export default function LeadDetailPage() {
             </div>
           </div>
         </Card>
+
+        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
+        {lead.stage === "lost" && (
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+
+            <div className="space-y-4">
+              {/* 戰敗原因 */}
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">戰敗原因</Label>
+                {isEditing ? (
+                  <Select
+                    value={lead.lostCategory || ""}
+                    onValueChange={(value) => setLead({ ...lead, lostCategory: value as Lead["lostCategory"] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="請選擇戰敗原因" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="competitor">購買競牌</SelectItem>
+                      <SelectItem value="duplicate">重複資料</SelectItem>
+                      <SelectItem value="no-interest">沒有意願購買</SelectItem>
+                      <SelectItem value="unreachable">無法聯繫</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm font-medium">
+                    {lead.lostCategory === "competitor" && "購買競牌"}
+                    {lead.lostCategory === "duplicate" && "重複資料"}
+                    {lead.lostCategory === "no-interest" && "沒有意願購買"}
+                    {lead.lostCategory === "unreachable" && "無法聯繫"}
+                    {!lead.lostCategory && <span className="text-muted-foreground">未選擇</span>}
+                  </p>
+                )}
+              </div>
+
+              {/* 詳細說明 */}
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">詳細說明</Label>
+                {isEditing ? (
+                  <Textarea
+                    value={lead.lostReason || ""}
+                    onChange={(e) => setLead({ ...lead, lostReason: e.target.value })}
+                    placeholder="輸入流失原因的詳細說明..."
+                    className="min-h-[80px]"
+                  />
+                ) : (
+                  <p className="text-sm font-medium">
+                    {lead.lostReason || <span className="text-muted-foreground font-normal">未記錄詳細說明</span>}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
 
         <Card className="p-4">
           <Label className="text-base font-semibold mb-2 block">描述</Label>
@@ -1132,19 +1222,6 @@ export default function LeadDetailPage() {
           </div>
         </Card>
 
-        {/* 流失原因區塊 - 僅當 stage = lost 時顯示 */}
-        {lead.stage === "lost" && (
-          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
-              <AlertCircle className="h-5 w-5" />
-              流失原因
-            </h3>
-            <p className="text-sm text-red-600 dark:text-red-300">
-              {lead.lostReason || "未記錄流失原因"}
-            </p>
-          </Card>
-        )}
-
         <TestDriveConsentCard
           consent={testDriveConsent}
           onCreateConsent={handleStartTestDrive}
@@ -1357,25 +1434,13 @@ export default function LeadDetailPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isConvertedDialogOpen} onOpenChange={setIsConvertedDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>轉換為帳戶</DialogTitle>
-            <DialogDescription>確認將此商機轉換為帳戶</DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <p className="text-center text-muted-foreground">待定</p>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleConvertedCancel}>
-              取消
-            </Button>
-            <Button onClick={handleConvertedSave}>儲存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LeadConversionDialog
+        open={isConvertedDialogOpen}
+        onOpenChange={setIsConvertedDialogOpen}
+        lead={lead}
+        onConvert={handleConversion}
+        onCancel={handleConvertedCancel}
+      />
 
       {/* Call Record Modal */}
       <Sheet open={isCallRecordOpen} onOpenChange={setIsCallRecordOpen}>
@@ -1521,7 +1586,7 @@ export default function LeadDetailPage() {
 
               {/* License Front */}
               <div className="space-y-2">
-                <Label>駕照正面</Label>
+                <Label>駕���正面</Label>
                 <div className="border-2 border-dashed rounded-lg p-4 text-center">
                   {licenseFrontPreview ? (
                     <div className="relative">
@@ -1701,6 +1766,16 @@ export default function LeadDetailPage() {
               </div>
             </div>
           )}
+          <div className="px-4 py-2 border-b border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() => setIsOwnerTransferOpen(true)}
+            >
+              擁有者變更
+            </Button>
+          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1713,6 +1788,21 @@ export default function LeadDetailPage() {
           </div>
         </div>
       )}
+
+      <OwnerTransferDialog
+        open={isOwnerTransferOpen}
+        onOpenChange={setIsOwnerTransferOpen}
+        entityType="lead"
+        entityName={lead.cxpName}
+        currentOwner="目前使用者"
+        onTransfer={(newOwnerId, newOwnerName) => {
+          toast({
+            title: "擁有者已變更",
+            description: `此商機已轉移給 ${newOwnerName}`,
+          })
+          router.push("/leads")
+        }}
+      />
     </div>
   )
 }

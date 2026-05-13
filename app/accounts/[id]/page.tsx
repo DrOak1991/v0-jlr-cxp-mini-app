@@ -30,6 +30,7 @@ import {
   MailIcon,
   Copy,
   Check,
+  X,
   Upload,
   Plus,
   ClipboardList,
@@ -44,6 +45,7 @@ import Image from "next/image"
 import type { Account, Activity } from "@/types"
 import { getAccountById, getOpportunitiesByAccountId } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
+import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function AccountDetailPage() {
   const params = useParams()
@@ -58,6 +60,7 @@ export default function AccountDetailPage() {
   const [notes, setNotes] = useState("")
   const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
+  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
 
   // Invite sheet states
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -199,8 +202,8 @@ export default function AccountDetailPage() {
     setOriginalNotes(notes)
     setHasNotesChanged(false)
     toast({
-      title: "備註已儲存",
-      description: "您的備註已成功更新",
+      title: "描述已儲存",
+      description: "您的描述已成功更新",
     })
   }
 
@@ -362,13 +365,14 @@ export default function AccountDetailPage() {
   }
 
   const stageLabels: Record<string, string> = {
-    prospecting: "探索中",
-    qualification: "資格確認",
-    "needs-analysis": "需求分析",
-    proposal: "提案中",
-    negotiation: "議價中",
-    "closed-won": "已成交",
-    "closed-lost": "已流失",
+    "qualify": "Qualify",
+    "test-drive-demo": "Test Drive Demo",
+    "select-vehicle": "Select Vehicle",
+    "appraise": "Appraise",
+    "negotiate": "Negotiate",
+    "take-order": "Take Order",
+    "won": "Won",
+    "lost": "Lost",
   }
 
   return (
@@ -382,16 +386,7 @@ export default function AccountDetailPage() {
           <h1 className="font-semibold text-lg">帳戶詳情</h1>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button variant="outline" size="sm" onClick={handleCancel} className="bg-transparent">
-                取消
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                儲存
-              </Button>
-            </>
-          ) : (
+          {!isEditing && (
             <Button variant="outline" size="sm" onClick={handleEdit} className="bg-transparent">
               <Edit className="h-4 w-4 mr-1" />
               編輯
@@ -401,7 +396,7 @@ export default function AccountDetailPage() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 p-4 space-y-4 pb-24">
+      <main className="flex-1 p-4 space-y-4 pb-36">
         {/* 基本資訊卡片 */}
         <Card className="p-4">
           <div className="space-y-4">
@@ -449,8 +444,8 @@ export default function AccountDetailPage() {
                 撥打
               </Button>
               <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MailIcon className="h-4 w-4 mr-2" />
-                郵件
+                <MessageCircle className="h-4 w-4 mr-2" />
+                簡訊
               </Button>
               <Button
                 variant="outline"
@@ -493,10 +488,6 @@ export default function AccountDetailPage() {
                   <p className="font-medium">{account.gender ? genderLabels[account.gender] : "未設定"}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">語言</span>
-                  <p className="font-medium">{account.language || "未設定"}</p>
-                </div>
-                <div>
                   <span className="text-muted-foreground">身分證字號</span>
                   <p className="font-medium">{account.nationalId || "未設定"}</p>
                 </div>
@@ -511,39 +502,24 @@ export default function AccountDetailPage() {
           </div>
         </Card>
 
-        {/* 備註卡片 */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="h-5 w-5" />
-            <Label className="text-base font-semibold">備註</Label>
-          </div>
-
-          {hasNotesChanged && (
-            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
-              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
-              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
-            </div>
-          )}
-
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="新增備註..."
-            className="min-h-[100px] mb-3"
-          />
-
-          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
-            儲存備註
-          </Button>
-        </Card>
-
         {/* 關聯機會卡片 */}
-        {opportunities.length > 0 && (
-          <Card className="p-4">
-            <h3 className="font-semibold text-base flex items-center gap-2 mb-3">
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-base flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               關聯機會 ({opportunities.length})
             </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-transparent"
+              onClick={() => router.push(`/opportunity-create?accountId=${account.id}`)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              新增
+            </Button>
+          </div>
+          {opportunities.length > 0 ? (
             <div className="space-y-2">
               {opportunities.map((opp) => (
                 <div
@@ -561,8 +537,10 @@ export default function AccountDetailPage() {
                 </div>
               ))}
             </div>
-          </Card>
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">目前沒有關聯機會</p>
+          )}
+        </Card>
 
         {/* 車輛偏好卡片 */}
         <Card className="p-4 space-y-4">
@@ -648,7 +626,7 @@ export default function AccountDetailPage() {
               <p className="font-medium">
                 {account.contactPreferences?.length
                   ? account.contactPreferences
-                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
+                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "��寄"))
                       .join(", ")
                   : "未設定"}
               </p>
@@ -680,6 +658,29 @@ export default function AccountDetailPage() {
               </div>
             </div>
           </div>
+        </Card>
+
+        {/* 描述卡片 */}
+        <Card className="p-4">
+          <Label className="text-base font-semibold mb-2 block">描述</Label>
+
+          {hasNotesChanged && (
+            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
+            </div>
+          )}
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="新增描述..."
+            className="min-h-[120px] mb-3"
+          />
+
+          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
+            儲存描述
+          </Button>
         </Card>
 
         {/* 活動記錄卡片 */}
@@ -823,7 +824,7 @@ export default function AccountDetailPage() {
             )}
 
             <Button className="w-full" onClick={handleSaveActivity}>
-              {activityType === "event" ? "新增事件" : "新增工作"}
+              {activityType === "event" ? "���增事件" : "新增工作"}
             </Button>
           </div>
         </SheetContent>
@@ -1128,6 +1129,41 @@ export default function AccountDetailPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
+          <div className="px-4 py-2 border-b border-border">
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
+              擁有者變更
+            </Button>
+          </div>
+          <div className="p-4 flex gap-3">
+            <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
+              <X className="h-5 w-5 mr-2" />
+              取消
+            </Button>
+            <Button size="lg" className="flex-1" onClick={handleSave}>
+              <Check className="h-5 w-5 mr-2" />
+              儲存
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <OwnerTransferDialog
+        open={isOwnerTransferOpen}
+        onOpenChange={setIsOwnerTransferOpen}
+        entityType="account"
+        entityName={account?.cxpName || ""}
+        currentOwner="目前使用者"
+        onTransfer={(newOwnerId, newOwnerName) => {
+          toast({
+            title: "擁有者已變更",
+            description: `此帳戶已轉移給 ${newOwnerName}`,
+          })
+          router.push("/accounts")
+        }}
+      />
     </div>
   )
 }

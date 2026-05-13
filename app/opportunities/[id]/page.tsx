@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
+
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ import {
   UserX,
   Copy,
   Check,
+  X,
   Upload,
   Plus,
   ClipboardList,
@@ -53,25 +54,17 @@ import { useToast } from "@/hooks/use-toast"
 import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
+import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
-  "prospecting": "探索中",
-  "qualification": "資格確認",
-  "needs-analysis": "需求分析",
-  "proposal": "提案中",
-  "negotiation": "議價中",
-  "closed-won": "已成交",
-  "closed-lost": "已流失",
-}
-
-const stageColors: Record<string, string> = {
-  "prospecting": "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  "qualification": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "needs-analysis": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  "proposal": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  "negotiation": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  "closed-won": "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  "closed-lost": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  "qualify": "Qualify",
+  "test-drive-demo": "Test Drive Demo",
+  "select-vehicle": "Select Vehicle",
+  "appraise": "Appraise",
+  "negotiate": "Negotiate",
+  "take-order": "Take Order",
+  "won": "Won",
+  "lost": "Lost",
 }
 
 const taskStatusLabels: Record<string, string> = {
@@ -98,6 +91,10 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
+  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
+  const [notes, setNotes] = useState(opportunityData?.notes || "")
+  const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
+  const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
@@ -165,6 +162,19 @@ export default function OpportunityDetailPage() {
       })
     }
   }, [isNewActivitySheetOpen])
+
+  useEffect(() => {
+    setHasNotesChanged(notes !== originalNotes)
+  }, [notes, originalNotes])
+
+  const handleSaveNotes = () => {
+    setOriginalNotes(notes)
+    setHasNotesChanged(false)
+    toast({
+      title: "描述已儲存",
+      description: "您的描述已成功更新",
+    })
+  }
 
   useEffect(() => {
     const newOpportunityData = getOpportunityById(params.id as string)
@@ -415,17 +425,8 @@ export default function OpportunityDetailPage() {
         </Button>
       </header>
 
-      {/* Cancel bar when editing */}
-      {isEditing && (
-        <div className="px-4 py-2 bg-muted/50 border-b">
-          <Button variant="ghost" size="sm" onClick={handleCancel} className="text-muted-foreground">
-            取消編輯
-          </Button>
-        </div>
-      )}
-
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
         {/* 基本資訊卡片 */}
         <Card className="p-4">
           <div className="space-y-4">
@@ -468,9 +469,9 @@ export default function OpportunityDetailPage() {
                       </span>
                     </div>
                   </div>
-                  <Badge variant="secondary" className={`shrink-0 ${stageColors[opportunity.stage]}`}>
+                  <span className="text-xs text-muted-foreground shrink-0">
                     {stageLabels[opportunity.stage]}
-                  </Badge>
+                  </span>
                 </div>
               </div>
             </div>
@@ -482,8 +483,8 @@ export default function OpportunityDetailPage() {
                 撥打
               </Button>
               <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MailIcon className="h-4 w-4 mr-2" />
-                郵件
+                <MessageCircle className="h-4 w-4 mr-2" />
+                簡訊
               </Button>
               <Button
                 variant="outline"
@@ -538,13 +539,14 @@ export default function OpportunityDetailPage() {
                         <SelectValue placeholder="選擇階段" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="prospecting">探索中</SelectItem>
-                        <SelectItem value="qualification">資格確認</SelectItem>
-                        <SelectItem value="needs-analysis">需求分析</SelectItem>
-                        <SelectItem value="proposal">提案中</SelectItem>
-                        <SelectItem value="negotiation">議價中</SelectItem>
-                        <SelectItem value="closed-won">已成交</SelectItem>
-                        <SelectItem value="closed-lost">已流失</SelectItem>
+                        <SelectItem value="qualify">Qualify</SelectItem>
+                        <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
+                        <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
+                        <SelectItem value="appraise">Appraise</SelectItem>
+                        <SelectItem value="negotiate">Negotiate</SelectItem>
+                        <SelectItem value="take-order">Take Order</SelectItem>
+                        <SelectItem value="won">Won</SelectItem>
+                        <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
@@ -605,6 +607,29 @@ export default function OpportunityDetailPage() {
           </Card>
         )}
 
+        {/* 描述區塊 */}
+        <Card className="p-4">
+          <Label className="text-base font-semibold mb-2 block">描述</Label>
+
+          {hasNotesChanged && (
+            <div className="mb-3 flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-800 dark:text-yellow-200">有未儲存的變更</span>
+            </div>
+          )}
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="新增描述..."
+            className="min-h-[120px] mb-3"
+          />
+
+          <Button onClick={handleSaveNotes} disabled={!hasNotesChanged} className="w-full" size="sm">
+            儲存描述
+          </Button>
+        </Card>
+
         {/* 車型選擇卡片 */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base flex items-center gap-2">
@@ -612,7 +637,7 @@ export default function OpportunityDetailPage() {
             車型選擇
           </h3>
 
-          {/* 購車方式 */}
+          {/* 購���方式 */}
           <div>
             <Label className="text-sm text-muted-foreground">購車方式</Label>
             {isEditing ? (
@@ -1195,6 +1220,49 @@ export default function OpportunityDetailPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
+          {hasFieldsChanged && (
+            <div className="px-4 py-2 bg-yellow-50 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-900">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+                <span className="text-sm text-yellow-800 dark:text-yellow-200">您有未儲存的變更</span>
+              </div>
+            </div>
+          )}
+          <div className="px-4 py-2 border-b border-border">
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
+              擁有者變更
+            </Button>
+          </div>
+          <div className="p-4 flex gap-3">
+            <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
+              <X className="h-5 w-5 mr-2" />
+              取消
+            </Button>
+            <Button size="lg" className="flex-1" onClick={handleSave}>
+              <Check className="h-5 w-5 mr-2" />
+              儲存
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <OwnerTransferDialog
+        open={isOwnerTransferOpen}
+        onOpenChange={setIsOwnerTransferOpen}
+        entityType="opportunity"
+        entityName={opportunity.name}
+        currentOwner="目前使用者"
+        onTransfer={(newOwnerId, newOwnerName) => {
+          toast({
+            title: "擁有者已變更",
+            description: `此機會已轉移給 ${newOwnerName}`,
+          })
+          router.push("/opportunities")
+        }}
+      />
     </div>
   )
 }
