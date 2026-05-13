@@ -907,7 +907,7 @@ export default function LeadDetailPage() {
               </div>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未���定"}
+                {lead.city || lead.address ? `${lead.city || ""}${lead.address || ""}` : "未設定"}
               </p>
             )}
           </div>
@@ -953,7 +953,7 @@ export default function LeadDetailPage() {
               <Select value={lead.workStatus || ""} onValueChange={(value) => setLead({ ...lead, workStatus: value })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇工作狀態" /></SelectTrigger>
                 <SelectContent>
-                  {["全職", "兼職", "自營", "��休", "待業", "學生"].map((w) => (
+                  {["全職", "兼職", "自營", "退休", "待業", "學生"].map((w) => (
                     <SelectItem key={w} value={w}>{w}</SelectItem>
                   ))}
                 </SelectContent>
@@ -1108,7 +1108,7 @@ export default function LeadDetailPage() {
                   {lead.leadSource === "walk-in" ? "來店客 (Walk-in)"
                     : lead.leadSource === "referral" ? "轉介 (Referral)"
                       : lead.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
-                        : lead.leadSource === "existing-customer" ? "���有客戶 (Existing Customer)"
+                        : lead.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
                           : lead.leadSource === "phone-in" ? "來電客 (Phone-in)"
                             : lead.leadSource === "line-booking" ? "網路客預約 (LINE)"
                               : lead.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
@@ -1476,7 +1476,7 @@ export default function LeadDetailPage() {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mb-4">
-              {isRecording ? "錄音中..." : "點擊麥克風開始��音輸入"}
+              {isRecording ? "錄音中..." : "點擊麥克風開始語音輸入"}
             </p>
 
             {/* Text area */}
@@ -1594,7 +1594,7 @@ export default function LeadDetailPage() {
 
               {/* License Front */}
               <div className="space-y-2">
-                <Label>駕���正面</Label>
+                <Label>駕照正面</Label>
                 <div className="border-2 border-dashed rounded-lg p-4 text-center">
                   {licenseFrontPreview ? (
                     <div className="relative">

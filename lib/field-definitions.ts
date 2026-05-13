@@ -94,24 +94,24 @@ export const genderDefinition: FieldDefinition = {
 }
 
 // ============================================
-// 詳細分類 (適用於商機和機會)
+// 詳細分類 (適用於商機) / 次要形式 (適用於機會)
 // ============================================
 export const detailCategoryOptions: FieldOption[] = [
   { key: "retail", label: "零售", entities: ["lead", "opportunity"] },
   { key: "lease", label: "租賃", entities: ["lead", "opportunity"] },
   { key: "approved-pre-owned", label: "APO 認證中古車", entities: ["lead", "opportunity"] },
-  { key: "service", label: "服務/維修", entities: ["lead", "opportunity"] },
+  { key: "service", label: "服務/維修", entities: ["lead"] }, // 僅商機
   { key: "accessories", label: "原廠精品", entities: ["lead", "opportunity"] },
-  { key: "parts", label: "原廠零件", entities: ["lead", "opportunity"] },
+  { key: "parts", label: "原廠零件", entities: ["lead"] }, // 僅商機
   { key: "sv-custom", label: "SV 訂製車", entities: ["lead", "opportunity"] },
   { key: "genuine-accessories", label: "原廠配件", entities: ["lead", "opportunity"] },
-  { key: "evhc", label: "EVHC", entities: ["lead", "opportunity"] },
+  { key: "evhc", label: "EVHC", entities: ["lead"] }, // 僅商機
   { key: "self-registration", label: "自領牌", entities: ["lead", "opportunity"] },
 ]
 
 export const detailCategoryDefinition: FieldDefinition = {
   fieldKey: "detailCategory",
-  fieldLabel: "詳細分類",
+  fieldLabel: "詳細分類", // 商機用「詳細分類」，機會用「次要形式」
   entities: ["lead", "opportunity"],
   options: detailCategoryOptions,
 }

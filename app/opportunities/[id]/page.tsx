@@ -556,11 +556,11 @@ export default function OpportunityDetailPage() {
                 </div>
               </div>
 
-              {/* 訂單日期 */}
+              {/* 訂購日期 */}
               <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <span className="text-sm text-muted-foreground">訂單日期</span>
+                  <span className="text-sm text-muted-foreground">訂購日期</span>
                   {isEditing ? (
                     <input
                       type="date"
@@ -638,7 +638,7 @@ export default function OpportunityDetailPage() {
             車型選擇
           </h3>
 
-          {/* 購���方式 */}
+          {/* 購車方式 */}
           <div>
             <Label className="text-sm text-muted-foreground">購車方式</Label>
             {isEditing ? (
@@ -661,9 +661,9 @@ export default function OpportunityDetailPage() {
             )}
           </div>
 
-          {/* 詳細分類 */}
+          {/* 次要形式 */}
           <div>
-            <Label className="text-sm text-muted-foreground">詳細分類</Label>
+            <Label className="text-sm text-muted-foreground">次要形式</Label>
             {isEditing ? (
               <Select
                 value={opportunity.detailCategory || ""}
@@ -676,12 +676,9 @@ export default function OpportunityDetailPage() {
                   <SelectItem value="retail">零售</SelectItem>
                   <SelectItem value="lease">租賃</SelectItem>
                   <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
-                  <SelectItem value="service">服務/維修</SelectItem>
                   <SelectItem value="accessories">原廠精品</SelectItem>
-                  <SelectItem value="parts">原廠零件</SelectItem>
                   <SelectItem value="sv-custom">SV 訂製車</SelectItem>
                   <SelectItem value="genuine-accessories">原廠配件</SelectItem>
-                  <SelectItem value="evhc">EVHC</SelectItem>
                   <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
@@ -723,6 +720,7 @@ export default function OpportunityDetailPage() {
                   <SelectItem value="diesel">柴油</SelectItem>
                   <SelectItem value="electric">純電</SelectItem>
                   <SelectItem value="hybrid">混合動力</SelectItem>
+                  <SelectItem value="mild-hybrid">高效輕油電</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -731,8 +729,24 @@ export default function OpportunityDetailPage() {
                   : opportunity.powerType === "diesel" ? "柴油"
                   : opportunity.powerType === "electric" ? "純電"
                   : opportunity.powerType === "hybrid" ? "混合動力"
+                  : opportunity.powerType === "mild-hybrid" ? "高效輕油電"
                   : "未設定"}
               </p>
+            )}
+          </div>
+
+          {/* Vista 訂單號碼 */}
+          <div>
+            <Label className="text-sm text-muted-foreground">Vista 訂單號碼</Label>
+            {isEditing ? (
+              <Input
+                value={opportunity.vistaOrderNumber || ""}
+                onChange={(e) => setOpportunity({ ...opportunity, vistaOrderNumber: e.target.value })}
+                placeholder="請輸入 Vista 訂單號碼"
+                className="mt-1"
+              />
+            ) : (
+              <p className="text-foreground mt-1">{opportunity.vistaOrderNumber || "未設定"}</p>
             )}
           </div>
 
@@ -806,12 +820,12 @@ export default function OpportunityDetailPage() {
 
           {/* 現有車輛 */}
           <div>
-            <Label className="text-sm text-muted-foreground">現有��輛</Label>
+            <Label className="text-sm text-muted-foreground">現有車輛</Label>
             {isEditing ? (
               <Input
                 value={opportunity.existingCarModel || ""}
                 onChange={(e) => setOpportunity({ ...opportunity, existingCarModel: e.target.value })}
-                placeholder="請輸��車款"
+                placeholder="請輸入車款"
                 className="mt-1"
               />
             ) : (

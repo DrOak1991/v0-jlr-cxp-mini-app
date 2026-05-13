@@ -548,7 +548,7 @@ export const mockOpportunityActivities: Record<string, Activity[]> = {
     {
       id: "oa-9",
       type: "event",
-      subject: "客戶告��暫緩",
+      subject: "客戶告知暫緩",
       createdAt: new Date("2024-02-20"),
       startDateTime: new Date("2024-02-20T16:00:00"),
       endDateTime: new Date("2024-02-20T16:30:00"),

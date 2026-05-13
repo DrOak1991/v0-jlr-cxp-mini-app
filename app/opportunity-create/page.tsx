@@ -163,9 +163,9 @@ function NewOpportunityContent() {
               </Select>
             </div>
 
-            {/* 訂單日期 */}
+            {/* 訂購日期 */}
             <div className="space-y-2">
-              <Label>訂單日期</Label>
+              <Label>訂購日期</Label>
               <input
                 type="date"
                 value={orderDate}
@@ -207,9 +207,9 @@ function NewOpportunityContent() {
               </Select>
             </div>
 
-            {/* 詳細分類 */}
+            {/* 次要形式 */}
             <div className="space-y-2">
-              <Label>詳細分類</Label>
+              <Label>次要形式</Label>
               <Select value={detailCategory} onValueChange={setDetailCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="請選擇" />
@@ -218,12 +218,9 @@ function NewOpportunityContent() {
                   <SelectItem value="retail">零售</SelectItem>
                   <SelectItem value="lease">租賃</SelectItem>
                   <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
-                  <SelectItem value="service">服務/維修</SelectItem>
                   <SelectItem value="accessories">原廠精品</SelectItem>
-                  <SelectItem value="parts">原廠零件</SelectItem>
                   <SelectItem value="sv-custom">SV 訂製車</SelectItem>
                   <SelectItem value="genuine-accessories">原廠配件</SelectItem>
-                  <SelectItem value="evhc">EVHC</SelectItem>
                   <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>

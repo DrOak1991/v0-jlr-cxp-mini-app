@@ -626,7 +626,7 @@ export default function AccountDetailPage() {
               <p className="font-medium">
                 {account.contactPreferences?.length
                   ? account.contactPreferences
-                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "��寄"))
+                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
                       .join(", ")
                   : "未設定"}
               </p>
@@ -824,7 +824,7 @@ export default function AccountDetailPage() {
             )}
 
             <Button className="w-full" onClick={handleSaveActivity}>
-              {activityType === "event" ? "���增事件" : "新增工作"}
+              {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
           </div>
         </SheetContent>

@@ -52,10 +52,11 @@ export interface Opportunity {
   probability?: number // 可能性 %
   // 車型選擇
   carType?: "new-car" | "certified-used"
-  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "service" | "accessories" | "parts" | "sv-custom" | "genuine-accessories" | "evhc" | "self-registration"
+  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "accessories" | "sv-custom" | "genuine-accessories" | "self-registration"
   interestedModel?: string
   powerType?: "gasoline" | "diesel" | "electric" | "hybrid" | "mild-hybrid"
   performancePreference?: boolean // SV/V8 偏好
+  vistaOrderNumber?: string // Vista 訂單號碼
   // 轉換資訊
   leadSource?: string
   existingCarBrand?: string

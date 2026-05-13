@@ -322,7 +322,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
                     </div>
                     <div className="bg-muted rounded-lg p-4 space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">賞車客戶名���</span>
+                        <span className="text-sm text-muted-foreground">賞車客戶名單</span>
                         <span className="text-sm font-medium">{opportunity.accountName}</span>
                       </div>
                       <div className="flex justify-between">
