@@ -793,7 +793,7 @@ export default function OpportunityDetailPage() {
               <p className="text-foreground mt-1">
                 {opportunity.leadSource === "walk-in" ? "來店客 (Walk-in)"
                   : opportunity.leadSource === "referral" ? "轉介 (Referral)"
-                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
+                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活��"
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
@@ -885,7 +885,6 @@ export default function OpportunityDetailPage() {
                 >
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                   <span className="font-medium">事件</span>
-                  <p className="text-xs text-muted-foreground mt-1">會議、拜訪、電話等</p>
                 </button>
                 <button
                   type="button"
@@ -898,8 +897,19 @@ export default function OpportunityDetailPage() {
                 >
                   <CheckCircle2 className="h-6 w-6 mx-auto mb-2 text-green-600" />
                   <span className="font-medium">工作</span>
-                  <p className="text-xs text-muted-foreground mt-1">待辦事項、跟進任務</p>
                 </button>
+              </div>
+              {/* Activity Type Description */}
+              <div className="bg-muted/50 rounded-lg p-3">
+                {activityType === "event" ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    一般行程、雜事，例如電話聯繫跟進、活動邀約、生日祝福...等等，請將行程建立成工作。
+                  </p>
+                )}
               </div>
             </div>
 
