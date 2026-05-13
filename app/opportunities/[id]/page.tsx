@@ -489,13 +489,6 @@ export default function OpportunityDetailPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-semibold text-xl truncate">{opportunity.name}</h2>
-                    <div
-                      className="flex items-center gap-1.5 mt-0.5 text-sm text-primary cursor-pointer hover:underline"
-                      onClick={navigateToAccount}
-                    >
-                      <Building2 className="h-4 w-4 shrink-0" />
-                      <span className="truncate">帳戶：{opportunity.accountName}</span>
-                    </div>
                     {/* LINE status */}
                     <div className="flex items-center gap-1.5 mt-0.5 text-sm">
                       <MessageCircle
@@ -533,11 +526,17 @@ export default function OpportunityDetailPage() {
               </div>
             )}
 
-            {/* 帳戶聯絡資訊 - 編輯模式下隱藏 */}
+            {/* 關聯帳戶與聯絡資訊 - 編輯模式下隱藏 */}
             {!isEditing && account && (
               <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">帳戶聯絡資訊</span>
+                  <div 
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    onClick={navigateToAccount}
+                  >
+                    <Building2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-sm font-medium text-primary">{opportunity.accountName}</span>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
