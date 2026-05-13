@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描�����已成功更新",
+      description: "您的描�������已成功更新",
     })
   }
 
@@ -808,17 +808,17 @@ export default function OpportunityDetailPage() {
           </div>
 
           {/* SV/V8 偏好 */}
-          <div className="flex items-center justify-between">
+          <div>
             <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
             {isEditing ? (
-              <Switch
-                checked={opportunity.performancePreference || false}
-                onCheckedChange={(checked) => setOpportunity({ ...opportunity, performancePreference: checked })}
-              />
+              <div className="mt-1">
+                <Switch
+                  checked={opportunity.performancePreference || false}
+                  onCheckedChange={(checked) => setOpportunity({ ...opportunity, performancePreference: checked })}
+                />
+              </div>
             ) : (
-              <Badge variant={opportunity.performancePreference ? "default" : "secondary"}>
-                {opportunity.performancePreference ? "是" : "否"}
-              </Badge>
+              <p className="text-foreground mt-1">{opportunity.performancePreference ? "是" : "否"}</p>
             )}
           </div>
 
