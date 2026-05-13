@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描�������已成功更新",
+      description: "您的描���������已成功更新",
     })
   }
 
@@ -506,36 +506,40 @@ export default function OpportunityDetailPage() {
                       </span>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
                   <span className="text-xs text-muted-foreground shrink-0">
                     {stageLabels[opportunity.stage]}
-                  </span>
                 </div>
               </div>
             </div>
 
-            {/* 快速操作按鈕 */}
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
-                <PhoneCall className="h-4 w-4 mr-2" />
-                撥打
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MessageCircle className="h-4 w-4 mr-2" />
-                簡訊
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
-                onClick={handleInvite}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                邀請
-              </Button>
-            </div>
+            {/* 快速操作按鈕 - 編輯模式下隱藏 */}
+            {!isEditing && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
+                  <PhoneCall className="h-4 w-4 mr-2" />
+                  撥打
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  簡訊
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
+                  onClick={handleInvite}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  邀請
+                </Button>
+              </div>
+            )}
 
-            {/* 帳戶聯絡資訊 */}
-            {account && (
+            {/* 帳戶聯絡資訊 - 編輯模式下隱藏 */}
+            {!isEditing && account && (
               <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">帳戶聯絡資訊</span>
@@ -908,32 +912,36 @@ export default function OpportunityDetailPage() {
           </div>
         </Card>
 
-        {/* 試駕同意書卡片 */}
-        <TestDriveConsentCard
-          consent={testDriveConsent}
-          onCreateConsent={() => {
-            // 建立試駕同意書後設定為 pending 狀態
-            setTestDriveConsent({
-              id: `tdc-${Date.now()}`,
-              leadId: opportunity.id,
-              status: "pending",
-              generatedAt: new Date(),
-              vehicleBrand: testDriveBrand || "Land Rover",
-              vehicleModel: testDriveModel || opportunity.interestedModel || "Defender 90",
-              testDriveDate: testDriveDate ? new Date(testDriveDate) : new Date(),
-              testDriveTime: testDriveTime || "14:00",
-            })
-          }}
-          onModifyInvite={() => {
-            // 開啟修改試駕邀請的對話框（可以擴展）
-          }}
-          onViewLicense={(index) => {
-            // 檢視駕照資料（可以擴展）
-          }}
-        />
+        {/* 試駕同意書卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <TestDriveConsentCard
+            consent={testDriveConsent}
+            onCreateConsent={() => {
+              // 建立試駕同意書後設定為 pending 狀態
+              setTestDriveConsent({
+                id: `tdc-${Date.now()}`,
+                leadId: opportunity.id,
+                status: "pending",
+                generatedAt: new Date(),
+                vehicleBrand: testDriveBrand || "Land Rover",
+                vehicleModel: testDriveModel || opportunity.interestedModel || "Defender 90",
+                testDriveDate: testDriveDate ? new Date(testDriveDate) : new Date(),
+                testDriveTime: testDriveTime || "14:00",
+              })
+            }}
+            onModifyInvite={() => {
+              // 開啟修改試駕邀請的對話框（可以擴展）
+            }}
+            onViewLicense={(index) => {
+              // 檢視駕照資料（可以擴展）
+            }}
+          />
+        )}
 
-        {/* 活動記錄卡片 */}
-        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+        {/* 活動記錄卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+        )}
       </div>
 
       {/* New Activity Sheet */}
