@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描述已成功更新",
+      description: "您的描���已成功更新",
     })
   }
 
@@ -837,36 +837,7 @@ export default function OpportunityDetailPage() {
             )}
           </div>
 
-          {/* Vista 訂單號碼 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">Vista 訂單號碼</Label>
-            {isEditing ? (
-              <Input
-                value={opportunity.vistaOrderNumber || ""}
-                onChange={(e) => setOpportunity({ ...opportunity, vistaOrderNumber: e.target.value })}
-                placeholder="請輸入 Vista 訂單號碼"
-                className="mt-1"
-              />
-            ) : (
-              <p className="text-foreground mt-1">{opportunity.vistaOrderNumber || "未設定"}</p>
-            )}
-          </div>
-
-          {/* SV/V8 偏好 */}
-          <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
-            {isEditing ? (
-              <Switch
-                checked={opportunity.performancePreference || false}
-                onCheckedChange={(checked) => setOpportunity({ ...opportunity, performancePreference: checked })}
-              />
-            ) : (
-              <p className="text-foreground">{opportunity.performancePreference ? "是" : "否"}</p>
-            )}
-          </div>
-        </Card>
-
-        {/* 轉換資訊卡片 */}
+          {/* 轉換資訊卡片 */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base">轉換資訊</h3>
 
