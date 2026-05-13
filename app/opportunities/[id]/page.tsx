@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描���������已成功更新",
+      description: "您的描�����������已成功更新",
     })
   }
 
@@ -506,11 +506,6 @@ export default function OpportunityDetailPage() {
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {stageLabels[opportunity.stage]}
                 </div>
               </div>
             </div>
