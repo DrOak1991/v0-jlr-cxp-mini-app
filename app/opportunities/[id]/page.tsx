@@ -237,7 +237,24 @@ export default function OpportunityDetailPage() {
   }
 
   const performSave = () => {
-    setOriginalOpportunity({ ...opportunity })
+    // 如果在編輯流失原因，需要保存
+    if (opportunity.stage === "lost" && (retailerLossReason || jlrLossReason)) {
+      const lossInfo = {
+        retailerLossReason,
+        retailerLossDescription: retailerLossDescription.trim(),
+        jlrLossReason,
+        jlrLossDescription: jlrLossDescription.trim(),
+      }
+      const updatedOpportunity = {
+        ...opportunity,
+        lostReason: JSON.stringify(lossInfo),
+      }
+      setOpportunity(updatedOpportunity)
+      setOriginalOpportunity({ ...updatedOpportunity })
+    } else {
+      setOriginalOpportunity({ ...opportunity })
+    }
+    
     setIsEditing(false)
     setHasFieldsChanged(false)
     toast({
@@ -455,20 +472,14 @@ export default function OpportunityDetailPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => {
-            if (isEditing && hasFieldsChanged) {
-              handleSave()
-            } else {
-              setIsEditing(!isEditing)
-            }
-          }}
+          onClick={() => setIsEditing(!isEditing)}
         >
-          {isEditing ? (
-            hasFieldsChanged ? (
-              <span className="text-primary font-medium text-sm">儲存</span>
-            ) : (
-              <span className="text-muted-foreground font-medium text-sm">完成</span>
-            )
+          {isEditing && (
+            <X className="h-5 w-5" />
+          )}
+          {!isEditing && (
+            <Edit className="h-5 w-5" />
+          )}
           ) : (
             <Edit className="h-5 w-5" />
           )}
