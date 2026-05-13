@@ -3,13 +3,18 @@
 import { Menu, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import { SearchFilterSheet } from "@/components/search-filter-sheet"
+import { LeadSearchSheet, type LeadSearchFilters } from "@/components/lead-search-sheet"
+import { OpportunitySearchSheet, type OpportunitySearchFilters } from "@/components/opportunity-search-sheet"
 
 interface HeaderProps {
   activeTab: "leads" | "accounts"
+  onLeadFilter: (filters: LeadSearchFilters) => void
+  onOpportunityFilter: (filters: OpportunitySearchFilters) => void
+  leadFilters: LeadSearchFilters
+  opportunityFilters: OpportunitySearchFilters
 }
 
-export function Header({ activeTab }: HeaderProps) {
+export function Header({ activeTab, onLeadFilter, onOpportunityFilter, leadFilters, opportunityFilters }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   return (
@@ -28,7 +33,21 @@ export function Header({ activeTab }: HeaderProps) {
         </div>
       </header>
 
-      <SearchFilterSheet isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} type={activeTab} />
+      {activeTab === "leads" ? (
+        <LeadSearchSheet
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          onApply={onLeadFilter}
+          filters={leadFilters}
+        />
+      ) : (
+        <OpportunitySearchSheet
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          onApply={onOpportunityFilter}
+          filters={opportunityFilters}
+        />
+      )}
     </>
   )
 }

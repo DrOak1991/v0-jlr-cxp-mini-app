@@ -702,7 +702,7 @@ export default function LeadDetailPage() {
                       886
                     </div>
                     <Input
-                      value={lead.phone.replace(/^0/, "").replace(/[-\s]/g, "")}
+                      value={(lead.phone || "").replace(/^0/, "").replace(/[-\s]/g, "")}
                       onChange={(e) => {
                         const cleaned = e.target.value.replace(/[-\s]/g, "")
                         const normalized = cleaned.startsWith("0") ? cleaned.substring(1) : cleaned
@@ -713,7 +713,7 @@ export default function LeadDetailPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-foreground">886 {lead.phone.replace(/^0/, "").replace(/[-\s]/g, "")}</p>
+                  <p className="text-foreground">886 {(lead.phone || "").replace(/^0/, "").replace(/[-\s]/g, "")}</p>
                 )}
               </div>
             </div>

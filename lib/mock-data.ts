@@ -574,7 +574,7 @@ export const mockOpportunities: Opportunity[] = [
     leadSource: "retailer-experience",
     existingCarBrand: "Tesla",
     existingCarModel: "Model 3",
-    lostReason: "客戶預算調整，決定先購入 I-PACE，Range Rover 計畫延後。",
+    lostReason: '{"retailerLossReason":"price","retailerLossDescription":"客戶預算調整，決定先購入 I-PACE","jlrLossReason":"lead-time","jlrLossDescription":"Range Rover 計畫延後，等待新款車型"}',
     createdAt: new Date("2024-01-25"),
     updatedAt: new Date("2024-02-20"),
   },

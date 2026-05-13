@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { getAccountById } from "@/lib/mock-data"
 
@@ -35,13 +35,17 @@ function NewOpportunityContent() {
   }, [accountId])
 
   // Form state
-  const [name, setName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [firstName, setFirstName] = useState("")
   const [notes, setNotes] = useState("")
-  const [stage, setStage] = useState<string>("prospecting")
+  const [stage, setStage] = useState<string>("contact")
   const [carType, setCarType] = useState<string>("")
   const [detailCategory, setDetailCategory] = useState<string>("")
   const [interestedModel, setInterestedModel] = useState<string>("")
   const [powerType, setPowerType] = useState<string>("")
+  const [vistaOrderNumber, setVistaOrderNumber] = useState<string>("")
+  const [currentVehicleBrand, setCurrentVehicleBrand] = useState<string>("")
+  const [currentVehicle, setCurrentVehicle] = useState<string>("")
   const [orderDate, setOrderDate] = useState<string>("")
   const [deliveryDate, setDeliveryDate] = useState<string>("")
   const [leadSource, setLeadSource] = useState<string>("")
@@ -52,7 +56,11 @@ function NewOpportunityContent() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = "請輸入機會名稱"
+    if (!lastName.trim()) newErrors.lastName = "請輸入姓氏"
+    if (!firstName.trim()) newErrors.firstName = "請輸入名字"
+    if (!carType) newErrors.carType = "請選擇購車方式"
+    if (!interestedModel) newErrors.interestedModel = "請選擇主要興趣車款"
+    if (!leadSource) newErrors.leadSource = "請選擇商機來源"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -70,10 +78,12 @@ function NewOpportunityContent() {
       return
     }
 
+    const fullName = `${lastName}${firstName}`
+
     // In real app, would call API to create opportunity
     toast({
       title: "機會已建立",
-      description: `已成功建立機會：${name}`,
+      description: `已成功建立機會：${fullName}`,
     })
 
     // Navigate back to account detail or opportunities list
@@ -109,38 +119,32 @@ function NewOpportunityContent() {
               </div>
             )}
 
-            {/* 機會名稱 */}
+            {/* 姓氏 */}
             <div className="space-y-2">
-              <Label htmlFor="name">
-                機會名稱 <span className="text-red-500">*</span>
+              <Label>
+                姓氏 <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="請輸入機會名稱"
-                className={errors.name ? "border-red-500" : ""}
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="請輸入姓氏"
+                className={errors.lastName ? "border-red-500" : ""}
               />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+              {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
             </div>
 
-            {/* 商機來源 */}
+            {/* 名字 */}
             <div className="space-y-2">
-              <Label>商機來源</Label>
-              <Select value={leadSource} onValueChange={setLeadSource}>
-                <SelectTrigger>
-                  <SelectValue placeholder="請選擇來源" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="walk-in">來店客 (Walk-in)</SelectItem>
-                  <SelectItem value="referral">轉介 (Referral)</SelectItem>
-                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動</SelectItem>
-                  <SelectItem value="existing-customer">既有客戶</SelectItem>
-                  <SelectItem value="phone-in">來電客</SelectItem>
-                  <SelectItem value="line-booking">網路客預約 (LINE)</SelectItem>
-                  <SelectItem value="field-visit">陌生開發</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>
+                名字 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="請輸入名字"
+                className={errors.firstName ? "border-red-500" : ""}
+              />
+              {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
             </div>
 
             {/* 機會階段 */}
@@ -156,11 +160,12 @@ function NewOpportunityContent() {
                   <SelectItem value="vehicle-selection">車型選擇</SelectItem>
                   <SelectItem value="trade-in">舊車處理</SelectItem>
                   <SelectItem value="negotiation">談判</SelectItem>
-                  <SelectItem value="order">訂購</SelectItem>
-                  <SelectItem value="delivery">交車</SelectItem>
                   <SelectItem value="lost">Lost</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                目前在 CXP Mini App 之中，只支援更新到談判階段，後續銷售階段請回到 CXP 桌面版進行。
+              </p>
             </div>
 
             {/* 訂購日期 */}
@@ -195,9 +200,9 @@ function NewOpportunityContent() {
 
             {/* 購車方式 */}
             <div className="space-y-2">
-              <Label>購車方式</Label>
+              <Label>購車方式 <span className="text-red-500">*</span></Label>
               <Select value={carType} onValueChange={setCarType}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.carType ? "border-red-500" : ""}>
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,6 +210,7 @@ function NewOpportunityContent() {
                   <SelectItem value="certified-used">認證中古車</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.carType && <p className="text-xs text-red-500">{errors.carType}</p>}
             </div>
 
             {/* 次要形式 */}
@@ -228,24 +234,30 @@ function NewOpportunityContent() {
 
             {/* 主要興趣車款 */}
             <div className="space-y-2">
-              <Label>主要興趣車款</Label>
-              <Input
-                value={interestedModel}
-                onChange={(e) => setInterestedModel(e.target.value)}
-                placeholder="請輸入車款"
-              />
-            </div>
-
-            {/* 有意購買 SV / V8 */}
-            <div className="flex items-center gap-3 py-1">
-              <Checkbox
-                id="interestedSvV8"
-                checked={interestedSvV8}
-                onCheckedChange={(checked) => setInterestedSvV8(checked === true)}
-              />
-              <Label htmlFor="interestedSvV8" className="cursor-pointer font-normal">
-                有意購買 SV / V8
-              </Label>
+              <Label>主要興趣車款 <span className="text-red-500">*</span></Label>
+              <Select value={interestedModel} onValueChange={setInterestedModel}>
+                <SelectTrigger className={errors.interestedModel ? "border-red-500" : ""}>
+                  <SelectValue placeholder="請選擇車款" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Defender 90">Defender 90</SelectItem>
+                  <SelectItem value="Defender 110">Defender 110</SelectItem>
+                  <SelectItem value="Defender 130">Defender 130</SelectItem>
+                  <SelectItem value="Range Rover">Range Rover</SelectItem>
+                  <SelectItem value="Range Rover Sport">Range Rover Sport</SelectItem>
+                  <SelectItem value="Range Rover Velar">Range Rover Velar</SelectItem>
+                  <SelectItem value="Range Rover Evoque">Range Rover Evoque</SelectItem>
+                  <SelectItem value="Discovery">Discovery</SelectItem>
+                  <SelectItem value="Discovery Sport">Discovery Sport</SelectItem>
+                  <SelectItem value="F-PACE">F-PACE</SelectItem>
+                  <SelectItem value="E-PACE">E-PACE</SelectItem>
+                  <SelectItem value="I-PACE">I-PACE</SelectItem>
+                  <SelectItem value="F-TYPE">F-TYPE</SelectItem>
+                  <SelectItem value="XF">XF</SelectItem>
+                  <SelectItem value="XE">XE</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.interestedModel && <p className="text-xs text-red-500">{errors.interestedModel}</p>}
             </div>
 
             {/* 動力型式 */}
@@ -256,11 +268,79 @@ function NewOpportunityContent() {
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ice">燃油車</SelectItem>
-                  <SelectItem value="phev">插電混合動力</SelectItem>
-                  <SelectItem value="bev">純電動</SelectItem>
+                  <SelectItem value="gasoline">汽油</SelectItem>
+                  <SelectItem value="diesel">柴油</SelectItem>
+                  <SelectItem value="electric">純電</SelectItem>
+                  <SelectItem value="hybrid">混合動力</SelectItem>
+                  <SelectItem value="mild-hybrid">高效輕油電</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* 顧客想購買 SV / V8 車款 */}
+            <div className="space-y-2">
+              <Label>顧客想購買 SV / V8 車款</Label>
+              <div className="mt-1">
+                <Switch
+                  checked={interestedSvV8}
+                  onCheckedChange={setInterestedSvV8}
+                />
+              </div>
+            </div>
+
+            {/* Vista 訂單號碼 */}
+            <div className="space-y-2">
+              <Label>Vista 訂單號碼</Label>
+              <Input
+                value={vistaOrderNumber}
+                onChange={(e) => setVistaOrderNumber(e.target.value)}
+                placeholder="請輸入 Vista 訂單號碼"
+              />
+            </div>
+          </Card>
+
+          {/* 轉換資訊 */}
+          <Card className="p-4 space-y-4">
+            <h3 className="font-semibold text-base">轉換資訊</h3>
+
+            {/* 商機來源 */}
+            <div className="space-y-2">
+              <Label>商機來源 <span className="text-red-500">*</span></Label>
+              <Select value={leadSource} onValueChange={setLeadSource}>
+                <SelectTrigger className={errors.leadSource ? "border-red-500" : ""}>
+                  <SelectValue placeholder="請選擇來源" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="walk-in">來店客 (Walk-in)</SelectItem>
+                  <SelectItem value="referral">轉介 (Referral)</SelectItem>
+                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動</SelectItem>
+                  <SelectItem value="existing-customer">既有客戶</SelectItem>
+                  <SelectItem value="phone-in">來電客</SelectItem>
+                  <SelectItem value="line-booking">網路客預約 (LINE)</SelectItem>
+                  <SelectItem value="field-visit">陌生開發</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.leadSource && <p className="text-xs text-red-500">{errors.leadSource}</p>}
+            </div>
+
+            {/* 現有車輛品牌 */}
+            <div className="space-y-2">
+              <Label>現有車輛品牌</Label>
+              <Input
+                value={currentVehicleBrand}
+                onChange={(e) => setCurrentVehicleBrand(e.target.value)}
+                placeholder="請輸入現有車輛品牌"
+              />
+            </div>
+
+            {/* 現有車輛 */}
+            <div className="space-y-2">
+              <Label>現有車輛</Label>
+              <Input
+                value={currentVehicle}
+                onChange={(e) => setCurrentVehicle(e.target.value)}
+                placeholder="請輸入現有車輛"
+              />
             </div>
           </Card>
 

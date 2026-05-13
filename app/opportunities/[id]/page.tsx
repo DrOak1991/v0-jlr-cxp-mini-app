@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描�������已成功更新",
+      description: "您的描述內容已成功更新",
     })
   }
 
@@ -203,6 +203,19 @@ export default function OpportunityDetailPage() {
     if (newOpportunityData) {
       setOpportunity(newOpportunityData)
       setOriginalOpportunity(newOpportunityData)
+      
+      // 解析已存在的流失原因資料
+      if (newOpportunityData.lostReason) {
+        try {
+          const lossInfo = JSON.parse(newOpportunityData.lostReason)
+          if (lossInfo.retailerLossReason) setRetailerLossReason(lossInfo.retailerLossReason)
+          if (lossInfo.retailerLossDescription) setRetailerLossDescription(lossInfo.retailerLossDescription)
+          if (lossInfo.jlrLossReason) setJlrLossReason(lossInfo.jlrLossReason)
+          if (lossInfo.jlrLossDescription) setJlrLossDescription(lossInfo.jlrLossDescription)
+        } catch {
+          // 如果不是 JSON 格式，忽略
+        }
+      }
     }
     setActivities(newActivitiesData)
     setAccount(newAccountData)
@@ -224,7 +237,24 @@ export default function OpportunityDetailPage() {
   }
 
   const performSave = () => {
-    setOriginalOpportunity({ ...opportunity })
+    // 如果在編輯流失原因，需要保存
+    if (opportunity.stage === "lost" && (retailerLossReason || jlrLossReason)) {
+      const lossInfo = {
+        retailerLossReason,
+        retailerLossDescription: retailerLossDescription.trim(),
+        jlrLossReason,
+        jlrLossDescription: jlrLossDescription.trim(),
+      }
+      const updatedOpportunity = {
+        ...opportunity,
+        lostReason: JSON.stringify(lossInfo),
+      }
+      setOpportunity(updatedOpportunity)
+      setOriginalOpportunity({ ...updatedOpportunity })
+    } else {
+      setOriginalOpportunity({ ...opportunity })
+    }
+    
     setIsEditing(false)
     setHasFieldsChanged(false)
     toast({
@@ -363,7 +393,7 @@ export default function OpportunityDetailPage() {
     if (!newActivity.subject.trim()) {
       toast({
         title: "請輸入主題",
-        description: activityType === "event" ? "請輸入事件主題" : "請輸入工��主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
         variant: "destructive",
       })
       return
@@ -442,20 +472,10 @@ export default function OpportunityDetailPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => {
-            if (isEditing && hasFieldsChanged) {
-              handleSave()
-            } else {
-              setIsEditing(!isEditing)
-            }
-          }}
+          onClick={() => setIsEditing(!isEditing)}
         >
           {isEditing ? (
-            hasFieldsChanged ? (
-              <span className="text-primary font-medium text-sm">儲存</span>
-            ) : (
-              <span className="text-muted-foreground font-medium text-sm">完成</span>
-            )
+            <X className="h-5 w-5" />
           ) : (
             <Edit className="h-5 w-5" />
           )}
@@ -464,81 +484,118 @@ export default function OpportunityDetailPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
-        {/* 基本資訊卡片 */}
-        <Card className="p-4">
-          <div className="space-y-4">
-            {/* 頭像 + 機會名稱 + LINE 狀態 + 階段 */}
-            <div className="flex gap-3">
-              {/* Avatar with LINE status */}
-              <div className="shrink-0">
-                <Avatar className="h-14 w-14">
-                  {account?.lineStatus === "joined" && account?.avatarUrl && (
-                    <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
-                  )}
-                  <AvatarFallback
-                    className={
-                      account?.lineStatus === "joined" ? "bg-blue-100 text-blue-700 font-semibold" : "bg-gray-100 text-gray-400"
-                    }
-                  >
-                    {account?.lineStatus === "joined" ? getInitials(opportunity.accountName) : <UserX className="h-6 w-6" />}
-                  </AvatarFallback>
-                </Avatar>
+        {/* 編輯模式 Header */}
+        {isEditing && (
+          <Card className="p-4 bg-primary/5 border-primary/20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Edit className="h-5 w-5" />
+                <span className="font-medium">編輯機會資料</span>
               </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-xl truncate">{opportunity.name}</h2>
-                    <div
-                      className="flex items-center gap-1.5 mt-0.5 text-sm text-primary cursor-pointer hover:underline"
-                      onClick={navigateToAccount}
-                    >
-                      <Building2 className="h-4 w-4 shrink-0" />
-                      <span className="truncate">帳戶：{opportunity.accountName}</span>
-                    </div>
-                    {/* LINE status */}
-                    <div className="flex items-center gap-1.5 mt-0.5 text-sm">
-                      <MessageCircle
-                        className={`h-4 w-4 shrink-0 ${account?.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
-                      />
-                      <span className={account?.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
-                        {account?.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {stageLabels[opportunity.stage]}
-                  </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">姓氏</Label>
+                  <Input
+                    value={opportunity.name?.charAt(0) || ""}
+                    onChange={(e) => {
+                      const firstName = opportunity.name?.slice(1) || ""
+                      setOpportunity({ ...opportunity, name: e.target.value + firstName })
+                    }}
+                    placeholder="姓氏"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">名字</Label>
+                  <Input
+                    value={opportunity.name?.slice(1) || ""}
+                    onChange={(e) => {
+                      const lastName = opportunity.name?.charAt(0) || ""
+                      setOpportunity({ ...opportunity, name: lastName + e.target.value })
+                    }}
+                    placeholder="名字"
+                  />
                 </div>
               </div>
             </div>
+          </Card>
+        )}
 
-            {/* 快速操作按鈕 */}
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
-                <PhoneCall className="h-4 w-4 mr-2" />
-                撥打
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
-                <MessageCircle className="h-4 w-4 mr-2" />
-                簡訊
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
-                onClick={handleInvite}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                邀請
-              </Button>
-            </div>
+        {/* 基本資訊卡片 */}
+        <Card className="p-4">
+          <div className="space-y-4">
+            {/* 頭像 + 機會名稱 + LINE 狀態 + 階段 - 檢視模式才顯示 */}
+            {!isEditing && (
+              <div className="flex gap-3">
+                {/* Avatar with LINE status */}
+                <div className="shrink-0">
+                  <Avatar className="h-14 w-14">
+                    {account?.lineStatus === "joined" && account?.avatarUrl && (
+                      <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
+                    )}
+                    <AvatarFallback
+                      className={
+                        account?.lineStatus === "joined" ? "bg-blue-100 text-blue-700 font-semibold" : "bg-gray-100 text-gray-400"
+                      }
+                    >
+                      {account?.lineStatus === "joined" ? getInitials(opportunity.accountName) : <UserX className="h-6 w-6" />}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
 
-            {/* 帳戶聯絡資訊 */}
-            {account && (
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-semibold text-xl truncate">{opportunity.name}</h2>
+                      {/* LINE status */}
+                      <div className="flex items-center gap-1.5 mt-0.5 text-sm">
+                        <MessageCircle
+                          className={`h-4 w-4 shrink-0 ${account?.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
+                        />
+                        <span className={account?.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
+                          {account?.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 快速操作按鈕 - 編輯模式下隱藏 */}
+            {!isEditing && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
+                  <PhoneCall className="h-4 w-4 mr-2" />
+                  撥打
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  簡訊
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent border-green-600 text-green-600 hover:bg-green-50"
+                  onClick={handleInvite}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  邀請
+                </Button>
+              </div>
+            )}
+
+            {/* 關聯帳戶與聯絡資訊 - 編輯模式下隱藏 */}
+            {!isEditing && account && (
               <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">帳戶聯絡資訊</span>
+                  <div 
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                    onClick={navigateToAccount}
+                  >
+                    <Building2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-sm text-muted-foreground">帳戶：</span>
+                    <span className="text-sm font-medium text-primary">{opportunity.accountName}</span>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
@@ -634,10 +691,10 @@ export default function OpportunityDetailPage() {
           </div>
         </Card>
 
-        {/* 流失原因區塊 */}
-        {opportunity.stage === "lost" && (
-          <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-            <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
+        {/* 流失原因區塊 - 檢視模式 */}
+        {!isEditing && opportunity.stage === "lost" && (
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               流失原因
             </h3>
@@ -646,35 +703,61 @@ export default function OpportunityDetailPage() {
                 const lossInfo = opportunity.lostReason ? JSON.parse(opportunity.lostReason) : null
                 if (lossInfo && (lossInfo.retailerLossReason || lossInfo.jlrLossReason)) {
                   return (
-                    <div className="space-y-3 text-sm">
-                      {lossInfo.retailerLossReason && (
-                        <div>
-                          <p className="font-medium text-red-700 dark:text-red-400">Retailer Loss</p>
-                          <p className="text-red-600 dark:text-red-300">
-                            原因：{lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
-                          </p>
-                          {lossInfo.retailerLossDescription && (
-                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.retailerLossDescription}</p>
-                          )}
-                        </div>
-                      )}
-                      {lossInfo.jlrLossReason && (
-                        <div>
-                          <p className="font-medium text-red-700 dark:text-red-400">JLR Loss</p>
-                          <p className="text-red-600 dark:text-red-300">
-                            原因：{lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
-                          </p>
-                          {lossInfo.jlrLossDescription && (
-                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.jlrLossDescription}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <Tabs defaultValue={lossInfo.retailerLossReason ? "retailer" : "jlr"} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
+                        <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
+                      </TabsList>
+
+                      {/* Retailer Loss Tab */}
+                      <TabsContent value="retailer" className="space-y-4 mt-4">
+                        {lossInfo.retailerLossReason ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-muted-foreground">Retailer Loss 原因</Label>
+                              <p className="text-sm font-medium">
+                                {lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
+                              </p>
+                            </div>
+                            {lossInfo.retailerLossDescription && (
+                              <div className="space-y-2">
+                                <Label className="text-sm text-muted-foreground">Retailer Loss 說明</Label>
+                                <p className="text-sm font-medium">{lossInfo.retailerLossDescription}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">未記錄 Retailer Loss 原因</p>
+                        )}
+                      </TabsContent>
+
+                      {/* JLR Loss Tab */}
+                      <TabsContent value="jlr" className="space-y-4 mt-4">
+                        {lossInfo.jlrLossReason ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-muted-foreground">JLR Loss 原因</Label>
+                              <p className="text-sm font-medium">
+                                {lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
+                              </p>
+                            </div>
+                            {lossInfo.jlrLossDescription && (
+                              <div className="space-y-2">
+                                <Label className="text-sm text-muted-foreground">JLR Loss 說明</Label>
+                                <p className="text-sm font-medium">{lossInfo.jlrLossDescription}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">未記錄 JLR Loss 原因</p>
+                        )}
+                      </TabsContent>
+                    </Tabs>
                   )
                 }
-                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+                return <p className="text-sm text-muted-foreground">{opportunity.lostReason || "未記錄流失原因"}</p>
               } catch {
-                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+                return <p className="text-sm text-muted-foreground">{opportunity.lostReason || "未記錄流失原因"}</p>
               }
             })()}
           </Card>
@@ -870,7 +953,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
-                  : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
+                  : opportunity.leadSource === "line-booking" ? "網路客預�� (LINE)"
                   : opportunity.leadSource === "field-visit" ? "陌生開發"
                   : "未設定"}
               </p>
@@ -908,32 +991,108 @@ export default function OpportunityDetailPage() {
           </div>
         </Card>
 
-        {/* 試駕同意書卡片 */}
-        <TestDriveConsentCard
-          consent={testDriveConsent}
-          onCreateConsent={() => {
-            // 建立試駕同意書後設定為 pending 狀態
-            setTestDriveConsent({
-              id: `tdc-${Date.now()}`,
-              leadId: opportunity.id,
-              status: "pending",
-              generatedAt: new Date(),
-              vehicleBrand: testDriveBrand || "Land Rover",
-              vehicleModel: testDriveModel || opportunity.interestedModel || "Defender 90",
-              testDriveDate: testDriveDate ? new Date(testDriveDate) : new Date(),
-              testDriveTime: testDriveTime || "14:00",
-            })
-          }}
-          onModifyInvite={() => {
-            // 開啟修改試駕邀請的對話框（可以擴展）
-          }}
-          onViewLicense={(index) => {
-            // 檢視駕照資料（可以擴展）
-          }}
-        />
+        {/* 流失原因編輯區塊 - 僅在編輯模式且 stage 為 lost 時顯示 */}
+        {isEditing && opportunity.stage === "lost" && (
+          <Card className="p-4">
+            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              流失原因
+            </h3>
+            <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
+                <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
+              </TabsList>
 
-        {/* 活動記錄卡片 */}
-        <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+              {/* Retailer Loss Tab */}
+              <TabsContent value="retailer" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Retailer Loss 原因</Label>
+                  <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="--None--" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lossReasonOptions.map((option) => (
+                        <SelectItem key={option.value || "none"} value={option.value || "none"}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Retailer Loss 說明</Label>
+                  <Textarea
+                    value={retailerLossDescription}
+                    onChange={(e) => setRetailerLossDescription(e.target.value)}
+                    placeholder="請輸入詳細說明..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </TabsContent>
+
+              {/* JLR Loss Tab */}
+              <TabsContent value="jlr" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>JLR Loss 原因</Label>
+                  <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="--None--" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lossReasonOptions.map((option) => (
+                        <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>JLR Loss 說明</Label>
+                  <Textarea
+                    value={jlrLossDescription}
+                    onChange={(e) => setJlrLossDescription(e.target.value)}
+                    placeholder="請輸入詳細說明..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Card>
+        )}
+
+        {/* 試駕同意書卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <TestDriveConsentCard
+            consent={testDriveConsent}
+            onCreateConsent={() => {
+              // 建立試駕同意書後設定為 pending 狀態
+              setTestDriveConsent({
+                id: `tdc-${Date.now()}`,
+                leadId: opportunity.id,
+                status: "pending",
+                generatedAt: new Date(),
+                vehicleBrand: testDriveBrand || "Land Rover",
+                vehicleModel: testDriveModel || opportunity.interestedModel || "Defender 90",
+                testDriveDate: testDriveDate ? new Date(testDriveDate) : new Date(),
+                testDriveTime: testDriveTime || "14:00",
+              })
+            }}
+            onModifyInvite={() => {
+              // 開啟修改試駕邀請的對話框（可以擴展）
+            }}
+            onViewLicense={(index) => {
+              // 檢視駕照資料（可以擴展）
+            }}
+          />
+        )}
+
+        {/* 活動記錄卡片 - 編輯模式下隱藏 */}
+        {!isEditing && (
+          <ActivityRecord activities={activities} onAddActivity={() => setIsNewActivitySheetOpen(true)} />
+        )}
       </div>
 
       {/* New Activity Sheet */}
@@ -977,7 +1136,7 @@ export default function OpportunityDetailPage() {
               <div className="bg-muted/50 rounded-lg p-3">
                 {activityType === "event" ? (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                    任何需要與公司主管報備的��程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground leading-relaxed">
