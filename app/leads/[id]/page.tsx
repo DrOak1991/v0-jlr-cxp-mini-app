@@ -1175,7 +1175,7 @@ export default function LeadDetailPage() {
                 </SelectContent>
               </Select>
             ) : (
-              <p className="text-foreground mt-1">{lead.existingCarModel || "未���定"}</p>
+              <p className="text-foreground mt-1">{lead.existingCarModel || "未設定"}</p>
             )}
           </div>
 

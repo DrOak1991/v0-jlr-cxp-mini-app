@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描���內容已成功更新",
+      description: "您的描述內容已成功更新",
     })
   }
 
