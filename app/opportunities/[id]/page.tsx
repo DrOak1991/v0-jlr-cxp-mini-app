@@ -362,7 +362,7 @@ export default function OpportunityDetailPage() {
     if (!newActivity.subject.trim()) {
       toast({
         title: "請輸入主題",
-        description: activityType === "event" ? "請輸入事件主題" : "請輸入工作主題",
+        description: activityType === "event" ? "請輸入事件主題" : "請輸入工��主題",
         variant: "destructive",
       })
       return
@@ -803,6 +803,36 @@ export default function OpportunityDetailPage() {
                   : opportunity.powerType === "mild-hybrid" ? "高效輕油電"
                   : "未設定"}
               </p>
+            )}
+          </div>
+
+          {/* SV/V8 偏好 */}
+          <div className="flex items-center justify-between">
+            <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
+            {isEditing ? (
+              <Switch
+                checked={opportunity.performancePreference || false}
+                onCheckedChange={(checked) => setOpportunity({ ...opportunity, performancePreference: checked })}
+              />
+            ) : (
+              <Badge variant={opportunity.performancePreference ? "default" : "secondary"}>
+                {opportunity.performancePreference ? "是" : "否"}
+              </Badge>
+            )}
+          </div>
+
+          {/* Vista 訂單號碼 */}
+          <div>
+            <Label className="text-sm text-muted-foreground">Vista 訂單號碼</Label>
+            {isEditing ? (
+              <Input
+                value={opportunity.vistaOrderNumber || ""}
+                onChange={(e) => setOpportunity({ ...opportunity, vistaOrderNumber: e.target.value })}
+                placeholder="請輸入 Vista 訂單號碼"
+                className="mt-1"
+              />
+            ) : (
+              <p className="text-foreground mt-1">{opportunity.vistaOrderNumber || "未設定"}</p>
             )}
           </div>
 
