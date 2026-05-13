@@ -151,13 +151,13 @@ function NewOpportunityContent() {
                   <SelectValue placeholder="選擇階段" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="qualify">Qualify</SelectItem>
-                  <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
-                  <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
-                  <SelectItem value="appraise">Appraise</SelectItem>
-                  <SelectItem value="negotiate">Negotiate</SelectItem>
-                  <SelectItem value="take-order">Take Order</SelectItem>
-                  <SelectItem value="won">Won</SelectItem>
+                  <SelectItem value="contact">聯繫</SelectItem>
+                  <SelectItem value="test-drive">試駕</SelectItem>
+                  <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                  <SelectItem value="trade-in">舊車處理</SelectItem>
+                  <SelectItem value="negotiation">談判</SelectItem>
+                  <SelectItem value="order">訂購</SelectItem>
+                  <SelectItem value="delivery">交車</SelectItem>
                   <SelectItem value="lost">Lost</SelectItem>
                 </SelectContent>
               </Select>

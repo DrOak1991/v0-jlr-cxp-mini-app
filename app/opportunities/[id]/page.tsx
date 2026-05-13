@@ -57,13 +57,13 @@ import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
-  "qualify": "Qualify",
-  "test-drive-demo": "Test Drive Demo",
-  "select-vehicle": "Select Vehicle",
-  "appraise": "Appraise",
-  "negotiate": "Negotiate",
-  "take-order": "Take Order",
-  "won": "Won",
+  "contact": "聯繫",
+  "test-drive": "試駕",
+  "vehicle-selection": "車型選擇",
+  "trade-in": "舊車處理",
+  "negotiation": "談判",
+  "order": "訂購",
+  "delivery": "交車",
   "lost": "Lost",
 }
 
@@ -195,8 +195,8 @@ export default function OpportunityDetailPage() {
   }, [opportunity, originalOpportunity])
 
   const handleSave = () => {
-    // Check if stage changed to closed-lost
-    if (opportunity.stage === "closed-lost" && originalOpportunity.stage !== "closed-lost") {
+    // Check if stage changed to lost
+    if (opportunity.stage === "lost" && originalOpportunity.stage !== "lost") {
       setIsLostDialogOpen(true)
       return
     }
@@ -539,13 +539,13 @@ export default function OpportunityDetailPage() {
                         <SelectValue placeholder="選擇階段" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="qualify">Qualify</SelectItem>
-                        <SelectItem value="test-drive-demo">Test Drive Demo</SelectItem>
-                        <SelectItem value="select-vehicle">Select Vehicle</SelectItem>
-                        <SelectItem value="appraise">Appraise</SelectItem>
-                        <SelectItem value="negotiate">Negotiate</SelectItem>
-                        <SelectItem value="take-order">Take Order</SelectItem>
-                        <SelectItem value="won">Won</SelectItem>
+                        <SelectItem value="contact">聯繫</SelectItem>
+                        <SelectItem value="test-drive">試駕</SelectItem>
+                        <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                        <SelectItem value="trade-in">舊車處理</SelectItem>
+                        <SelectItem value="negotiation">談判</SelectItem>
+                        <SelectItem value="order">訂購</SelectItem>
+                        <SelectItem value="delivery">交車</SelectItem>
                         <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
@@ -595,7 +595,7 @@ export default function OpportunityDetailPage() {
         </Card>
 
         {/* 流失原因區塊 */}
-        {opportunity.stage === "closed-lost" && (
+        {opportunity.stage === "lost" && (
           <Card className="p-4 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertCircle className="h-5 w-5" />

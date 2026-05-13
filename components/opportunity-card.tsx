@@ -26,13 +26,13 @@ interface OpportunityCardProps {
 }
 
 const stageLabels: Record<string, string> = {
-  "qualify": "Qualify",
-  "test-drive-demo": "Test Drive Demo",
-  "select-vehicle": "Select Vehicle",
-  "appraise": "Appraise",
-  "negotiate": "Negotiate",
-  "take-order": "Take Order",
-  "won": "Won",
+  "contact": "聯繫",
+  "test-drive": "試駕",
+  "vehicle-selection": "車型選擇",
+  "trade-in": "舊車處理",
+  "negotiation": "談判",
+  "order": "訂購",
+  "delivery": "交車",
   "lost": "Lost",
 }
 
@@ -142,10 +142,10 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
   }
 
   const getStageIcon = () => {
-    if (opportunity.stage === "closed-won") {
+    if (opportunity.stage === "delivery") {
       return <CheckCircle2 className="h-4 w-4 text-green-600" />
     }
-    if (opportunity.stage === "closed-lost") {
+    if (opportunity.stage === "lost") {
       return <XCircle className="h-4 w-4 text-red-600" />
     }
     return <TrendingUp className="h-4 w-4 text-muted-foreground" />
