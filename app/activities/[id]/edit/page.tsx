@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
 import { DatePicker } from "@/components/date-picker"
 import {
@@ -16,9 +15,101 @@ import {
   CheckCircle2,
   X,
   Check,
+  ChevronDown,
 } from "lucide-react"
 import { getActivityById, getLeadById, getAccountById, getOpportunityById } from "@/lib/mock-data"
 import type { Activity, EventActivity, TaskActivity, TaskStatus } from "@/types"
+
+// 事件主題建議選項
+const eventSubjectSuggestions = [
+  "試駕",
+  "客戶拜訪",
+  "來店賞車",
+  "邀約客戶至展示中心",
+  "電話諮詢",
+  "交車儀式",
+  "保養預約",
+]
+
+// 工作主題建議選項
+const taskSubjectSuggestions = [
+  "電話聯繫跟進",
+  "發送報價單",
+  "準備車型目錄",
+  "活動邀約",
+  "生日祝福",
+  "保養提醒",
+  "跟進購車意願",
+]
+
+// 帶建議選項的主題輸入元件
+function SubjectInput({
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+}: {
+  value: string
+  onChange: (value: string) => void
+  suggestions: string[]
+  placeholder?: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // 點擊外部關閉下拉
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const handleSelect = (suggestion: string) => {
+    onChange(suggestion)
+    setIsOpen(false)
+    inputRef.current?.focus()
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+              onClick={() => handleSelect(suggestion)}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const taskStatusLabels: Record<string, string> = {
   "not-started": "未開始",
@@ -206,9 +297,10 @@ export default function ActivityEditPage() {
               <Label>
                 主題 <span className="text-destructive">*</span>
               </Label>
-              <Input
+              <SubjectInput
                 value={eventForm.subject}
-                onChange={(e) => setEventForm({ ...eventForm, subject: e.target.value })}
+                onChange={(value) => setEventForm({ ...eventForm, subject: value })}
+                suggestions={eventSubjectSuggestions}
                 placeholder="例如：客戶拜訪"
               />
             </div>
@@ -263,9 +355,10 @@ export default function ActivityEditPage() {
               <Label>
                 主題 <span className="text-destructive">*</span>
               </Label>
-              <Input
+              <SubjectInput
                 value={taskForm.subject}
-                onChange={(e) => setTaskForm({ ...taskForm, subject: e.target.value })}
+                onChange={(value) => setTaskForm({ ...taskForm, subject: value })}
+                suggestions={taskSubjectSuggestions}
                 placeholder="例如：準備報價單"
               />
             </div>
@@ -288,23 +381,6 @@ export default function ActivityEditPage() {
                 date={taskForm.dueDate}
                 onDateChange={(date) => setTaskForm({ ...taskForm, dueDate: date })}
               />
-            </div>
-
-            <div className="space-y-3">
-              <Label>狀態</Label>
-              <RadioGroup
-                value={taskForm.status}
-                onValueChange={(value) => setTaskForm({ ...taskForm, status: value as TaskStatus })}
-              >
-                {Object.entries(taskStatusLabels).map(([key, label]) => (
-                  <div key={key} className="flex items-center space-x-2">
-                    <RadioGroupItem value={key} id={`status-${key}`} />
-                    <Label htmlFor={`status-${key}`} className="cursor-pointer">
-                      {label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
             </div>
           </Card>
         )}

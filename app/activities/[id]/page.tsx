@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   ArrowLeft,
   Calendar,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react"
 import { getActivityById, getTestDriveConsentById, getLeadById, getAccountById, getOpportunityById } from "@/lib/mock-data"
 import type { Activity, EventActivity, TaskActivity, TestDriveConsent } from "@/types"
+import { useToast } from "@/hooks/use-toast"
 
 const taskStatusLabels: Record<string, string> = {
   "not-started": "未開始",
@@ -38,6 +40,7 @@ const taskStatusColors: Record<string, string> = {
 export default function ActivityDetailPage() {
   const router = useRouter()
   const params = useParams()
+  const { toast } = useToast()
   const activityId = params.id as string
 
   const [activityData, setActivityData] = useState<{
@@ -47,11 +50,17 @@ export default function ActivityDetailPage() {
   } | null>(null)
   const [sourceName, setSourceName] = useState<string>("")
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
+  const [taskStatus, setTaskStatus] = useState<string>("")
 
   useEffect(() => {
     const data = getActivityById(activityId)
     if (data) {
       setActivityData(data)
+
+      // 設定工作狀態
+      if (data.activity.type === "task") {
+        setTaskStatus((data.activity as TaskActivity).status)
+      }
 
       // 取得來源名稱
       if (data.sourceType === "lead") {
@@ -139,6 +148,15 @@ export default function ActivityDetailPage() {
     router.push(`/activities/${activityId}/edit`)
   }
 
+  const handleStatusChange = (newStatus: string) => {
+    setTaskStatus(newStatus)
+    // 這裡實際上會呼叫 API 更新狀態
+    toast({
+      title: "狀態已更新",
+      description: `工作狀態已變更為「${taskStatusLabels[newStatus]}」`,
+    })
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
@@ -176,11 +194,6 @@ export default function ActivityDetailPage() {
                 工作
               </Badge>
             )}
-            {taskActivity && (
-              <Badge className={taskStatusColors[taskActivity.status]}>
-                {taskStatusLabels[taskActivity.status]}
-              </Badge>
-            )}
           </div>
 
           {/* 主題 */}
@@ -208,6 +221,28 @@ export default function ActivityDetailPage() {
             </div>
           )}
         </Card>
+
+        {/* 工作狀態卡片（僅工作類型顯示，可直接編輯） */}
+        {!isEvent && taskActivity && (
+          <Card className="p-4 space-y-3">
+            <h3 className="font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              工作狀態
+            </h3>
+            <Select value={taskStatus} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="選擇狀態" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="not-started">未開始</SelectItem>
+                <SelectItem value="in-progress">進行中</SelectItem>
+                <SelectItem value="completed">已完成</SelectItem>
+                <SelectItem value="waiting">等待中</SelectItem>
+                <SelectItem value="deferred">延期</SelectItem>
+              </SelectContent>
+            </Select>
+          </Card>
+        )}
 
         {/* 時間資訊卡片 */}
         <Card className="p-4 space-y-4">
@@ -256,22 +291,18 @@ export default function ActivityDetailPage() {
             <div>
               <Label className="text-sm text-muted-foreground">試駕車款</Label>
               <p className="text-foreground mt-1">
-                {testDriveConsent.vehicleBrand} {testDriveConsent.vehicleModel}
+                {testDriveConsent.vehicleModel}
               </p>
             </div>
 
-            {/* 試駕日期與時間 */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm text-muted-foreground">試駕日期</Label>
-                <p className="text-foreground mt-1">
-                  {testDriveConsent.testDriveDate ? formatDate(testDriveConsent.testDriveDate) : "未設定"}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm text-muted-foreground">試駕時間</Label>
-                <p className="text-foreground mt-1">{testDriveConsent.testDriveTime || "未設定"}</p>
-              </div>
+            {/* 試駕時間 */}
+            <div>
+              <Label className="text-sm text-muted-foreground">試駕時間</Label>
+              <p className="text-foreground mt-1">
+                {testDriveConsent.testDriveDate 
+                  ? `${testDriveConsent.testDriveDate.toLocaleDateString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "/")} ${testDriveConsent.testDriveTime || ""}`
+                  : "未設定"}
+              </p>
             </div>
 
             {/* 客戶填寫時間 */}
