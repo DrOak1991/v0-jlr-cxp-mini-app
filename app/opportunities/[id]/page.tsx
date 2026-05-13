@@ -97,7 +97,26 @@ export default function OpportunityDetailPage() {
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
-  const [lostReason, setLostReason] = useState("")
+  const [lostActiveTab, setLostActiveTab] = useState<"retailer" | "jlr">("retailer")
+  const [retailerLossReason, setRetailerLossReason] = useState("")
+  const [retailerLossDescription, setRetailerLossDescription] = useState("")
+  const [jlrLossReason, setJlrLossReason] = useState("")
+  const [jlrLossDescription, setJlrLossDescription] = useState("")
+
+  // Loss reason options (shared between Retailer and JLR)
+  const lossReasonOptions = [
+    { value: "", label: "--None--" },
+    { value: "brand-image", label: "Brand Image" },
+    { value: "co2-emissions", label: "CO2 Emissions (Taxation)" },
+    { value: "design", label: "Design" },
+    { value: "fuel-efficiency", label: "Fuel Efficiency" },
+    { value: "lead-time", label: "Lead Time / Delivery Delay" },
+    { value: "performance", label: "Performance" },
+    { value: "power-output", label: "Power Output (Taxation)" },
+    { value: "price", label: "Price (MSRP)" },
+    { value: "range", label: "Range (for EV Vehicles)" },
+    { value: "tco", label: "Total Cost of Ownership (TCO)" },
+  ]
 
   // Invite sheet states
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -214,20 +233,38 @@ export default function OpportunityDetailPage() {
   }
 
   const handleLostSave = () => {
-    if (!lostReason.trim()) {
+    // 至少需要填寫一種 Loss 原因
+    if (!retailerLossReason && !jlrLossReason) {
       toast({
-        title: "請輸入原因",
-        description: "請說明機會流失的原因",
+        title: "請選擇原因",
+        description: "請至少選擇一種流失原因（Retailer Loss 或 JLR Loss）",
         variant: "destructive",
       })
       return
     }
 
-    const updatedOpportunity = { ...opportunity, lostReason: lostReason.trim(), probability: 0 }
+    // 組合流失原因資訊
+    const lossInfo = {
+      retailerLossReason,
+      retailerLossDescription: retailerLossDescription.trim(),
+      jlrLossReason,
+      jlrLossDescription: jlrLossDescription.trim(),
+    }
+
+    const updatedOpportunity = { 
+      ...opportunity, 
+      lostReason: JSON.stringify(lossInfo), 
+      probability: 0 
+    }
     setOpportunity(updatedOpportunity)
     setOriginalOpportunity({ ...updatedOpportunity })
     setIsLostDialogOpen(false)
-    setLostReason("")
+    // Reset form
+    setRetailerLossReason("")
+    setRetailerLossDescription("")
+    setJlrLossReason("")
+    setJlrLossDescription("")
+    setLostActiveTab("retailer")
     setIsEditing(false)
     setHasFieldsChanged(false)
     toast({
@@ -530,24 +567,27 @@ export default function OpportunityDetailPage() {
                 <div className="flex-1">
                   <span className="text-sm text-muted-foreground">機會階段</span>
                   {isEditing ? (
-                    <Select
-                      value={opportunity.stage}
-                      onValueChange={(value) => setOpportunity({ ...opportunity, stage: value as any })}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="選擇階段" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="contact">聯繫</SelectItem>
-                        <SelectItem value="test-drive">試駕</SelectItem>
-                        <SelectItem value="vehicle-selection">車型選擇</SelectItem>
-                        <SelectItem value="trade-in">舊車處理</SelectItem>
-                        <SelectItem value="negotiation">談判</SelectItem>
-                        <SelectItem value="order">訂購</SelectItem>
-                        <SelectItem value="delivery">交車</SelectItem>
-                        <SelectItem value="lost">Lost</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Select
+                        value={opportunity.stage}
+                        onValueChange={(value) => setOpportunity({ ...opportunity, stage: value as any })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="選擇階段" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="contact">聯繫</SelectItem>
+                          <SelectItem value="test-drive">試駕</SelectItem>
+                          <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                          <SelectItem value="trade-in">舊車處理</SelectItem>
+                          <SelectItem value="negotiation">談判</SelectItem>
+                          <SelectItem value="lost">Lost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        目前在 CXP Mini App 之中，只支援更新到談判階段，後續銷售階段請回到 CXP 桌面版進行。
+                      </p>
+                    </div>
                   ) : (
                     <p className="text-foreground font-medium">{stageLabels[opportunity.stage]}</p>
                   )}
@@ -600,9 +640,42 @@ export default function OpportunityDetailPage() {
               <AlertCircle className="h-5 w-5" />
               流失原因
             </h3>
-            <p className="text-sm text-red-600 dark:text-red-300">
-              {opportunity.lostReason || "未記錄流失原因"}
-            </p>
+            {(() => {
+              try {
+                const lossInfo = opportunity.lostReason ? JSON.parse(opportunity.lostReason) : null
+                if (lossInfo && (lossInfo.retailerLossReason || lossInfo.jlrLossReason)) {
+                  return (
+                    <div className="space-y-3 text-sm">
+                      {lossInfo.retailerLossReason && (
+                        <div>
+                          <p className="font-medium text-red-700 dark:text-red-400">Retailer Loss</p>
+                          <p className="text-red-600 dark:text-red-300">
+                            原因：{lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
+                          </p>
+                          {lossInfo.retailerLossDescription && (
+                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.retailerLossDescription}</p>
+                          )}
+                        </div>
+                      )}
+                      {lossInfo.jlrLossReason && (
+                        <div>
+                          <p className="font-medium text-red-700 dark:text-red-400">JLR Loss</p>
+                          <p className="text-red-600 dark:text-red-300">
+                            原因：{lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
+                          </p>
+                          {lossInfo.jlrLossDescription && (
+                            <p className="text-red-600 dark:text-red-300 mt-1">說明：{lossInfo.jlrLossDescription}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+              } catch {
+                return <p className="text-sm text-red-600 dark:text-red-300">{opportunity.lostReason || "未記錄流失原因"}</p>
+              }
+            })()}
           </Card>
         )}
 
@@ -1023,18 +1096,89 @@ export default function OpportunityDetailPage() {
 
       {/* Lost Dialog */}
       <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>機會流失原因</DialogTitle>
-            <DialogDescription>請說明此機會流失的原因</DialogDescription>
+            <DialogDescription>請選擇並說明此機會流失的原因（至少填寫一種）</DialogDescription>
           </DialogHeader>
-          <Textarea
-            value={lostReason}
-            onChange={(e) => setLostReason(e.target.value)}
-            placeholder="請輸入流失原因..."
-            className="min-h-[120px]"
-          />
-          <DialogFooter>
+          
+          <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
+              <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
+            </TabsList>
+
+            {/* Retailer Loss Tab */}
+            <TabsContent value="retailer" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Retailer Loss 原因</Label>
+                <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="--None--" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {lossReasonOptions.map((option) => (
+                      <SelectItem key={option.value || "none"} value={option.value || "none"}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Retailer Loss 說明</Label>
+                <Textarea
+                  value={retailerLossDescription}
+                  onChange={(e) => setRetailerLossDescription(e.target.value)}
+                  placeholder="請輸入詳細說明..."
+                  className="min-h-[100px]"
+                />
+              </div>
+            </TabsContent>
+
+            {/* JLR Loss Tab */}
+            <TabsContent value="jlr" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>JLR Loss 原因</Label>
+                <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="--None--" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {lossReasonOptions.map((option) => (
+                      <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>JLR Loss 說明</Label>
+                <Textarea
+                  value={jlrLossDescription}
+                  onChange={(e) => setJlrLossDescription(e.target.value)}
+                  placeholder="請輸入詳細說明..."
+                  className="min-h-[100px]"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* 顯示已填寫的摘要 */}
+          {(retailerLossReason || jlrLossReason) && (
+            <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+              <p className="font-medium text-muted-foreground">已填寫：</p>
+              {retailerLossReason && (
+                <p>Retailer Loss: {lossReasonOptions.find(o => o.value === retailerLossReason)?.label}</p>
+              )}
+              {jlrLossReason && (
+                <p>JLR Loss: {lossReasonOptions.find(o => o.value === jlrLossReason)?.label}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setIsLostDialogOpen(false)} className="bg-transparent">
               取消
             </Button>
