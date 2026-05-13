@@ -45,7 +45,6 @@ import Image from "next/image"
 import type { Account, Activity } from "@/types"
 import { getAccountById, getOpportunitiesByAccountId } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
-import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 export default function AccountDetailPage() {
   const params = useParams()
@@ -60,7 +59,6 @@ export default function AccountDetailPage() {
   const [notes, setNotes] = useState("")
   const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
-  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
 
   // Invite sheet states
   const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false)
@@ -1142,11 +1140,6 @@ export default function AccountDetailPage() {
 
       {isEditing && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
-          <div className="px-4 py-2 border-b border-border">
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
-              擁有者變更
-            </Button>
-          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1159,21 +1152,6 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
-
-      <OwnerTransferDialog
-        open={isOwnerTransferOpen}
-        onOpenChange={setIsOwnerTransferOpen}
-        entityType="account"
-        entityName={account?.cxpName || ""}
-        currentOwner="目前使用者"
-        onTransfer={(newOwnerId, newOwnerName) => {
-          toast({
-            title: "擁有者已變更",
-            description: `此帳戶已轉移給 ${newOwnerName}`,
-          })
-          router.push("/accounts")
-        }}
-      />
     </div>
   )
 }

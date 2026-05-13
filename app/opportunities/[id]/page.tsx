@@ -55,7 +55,6 @@ import { useToast } from "@/hooks/use-toast"
 import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
-import { OwnerTransferDialog } from "@/components/owner-transfer-dialog"
 
 const stageLabels: Record<string, string> = {
   "contact": "聯繫",
@@ -92,7 +91,6 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
-  const [isOwnerTransferOpen, setIsOwnerTransferOpen] = useState(false)
   const [notes, setNotes] = useState(opportunityData?.notes || "")
   const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
@@ -1260,11 +1258,6 @@ export default function OpportunityDetailPage() {
               </div>
             </div>
           )}
-          <div className="px-4 py-2 border-b border-border">
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setIsOwnerTransferOpen(true)}>
-              擁有者變更
-            </Button>
-          </div>
           <div className="p-4 flex gap-3">
             <Button variant="outline" size="lg" className="flex-1 bg-transparent" onClick={handleCancel}>
               <X className="h-5 w-5 mr-2" />
@@ -1277,21 +1270,6 @@ export default function OpportunityDetailPage() {
           </div>
         </div>
       )}
-
-      <OwnerTransferDialog
-        open={isOwnerTransferOpen}
-        onOpenChange={setIsOwnerTransferOpen}
-        entityType="opportunity"
-        entityName={opportunity.name}
-        currentOwner="目前使用者"
-        onTransfer={(newOwnerId, newOwnerName) => {
-          toast({
-            title: "擁有者已變更",
-            description: `此機會已轉移給 ${newOwnerName}`,
-          })
-          router.push("/opportunities")
-        }}
-      />
     </div>
   )
 }

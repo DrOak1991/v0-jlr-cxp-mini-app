@@ -1,3 +1,13 @@
+/**
+ * @archived 2026-05-13
+ * @reason 功能暫時停用，保留以備未來需要
+ * @description 擁有者變更對話框元件，允許將商機/機會/帳戶的擁有權轉移給其他聯絡人
+ * @usage 
+ *   - 在商機、機會、帳戶詳情頁面中使用
+ *   - import { OwnerTransferDialog } from "@/components/_archived/owner-transfer-dialog"
+ *   - <OwnerTransferDialog open={...} onOpenChange={...} entityType="lead" entityName="..." onTransfer={...} />
+ */
+
 "use client"
 
 import { useState, useMemo } from "react"
