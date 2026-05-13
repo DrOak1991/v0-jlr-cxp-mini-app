@@ -549,21 +549,81 @@ export default function AccountDetailPage() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">品牌偏好</span>
-              <p className="font-medium">
-                {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
-              </p>
+              {isEditing ? (
+                <Select
+                  value={account.brandPreferences?.[0] || ""}
+                  onValueChange={(value) => setAccount({ ...account, brandPreferences: [value] })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="請選擇" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Land Rover">Land Rover</SelectItem>
+                    <SelectItem value="Jaguar">Jaguar</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="font-medium">
+                  {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
+                </p>
+              )}
             </div>
             <div>
               <span className="text-muted-foreground">興趣車款</span>
-              <p className="font-medium">{account.interestedModel || "未設定"}</p>
+              {isEditing ? (
+                <Select
+                  value={account.interestedModel || ""}
+                  onValueChange={(value) => setAccount({ ...account, interestedModel: value })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="請選擇" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {account.brandPreferences?.[0] && brandModels[account.brandPreferences[0]]?.map((model) => (
+                      <SelectItem key={model} value={model}>{model}</SelectItem>
+                    ))}
+                    {!account.brandPreferences?.[0] && (
+                      <>
+                        {brandModels["Land Rover"].map((model) => (
+                          <SelectItem key={model} value={model}>{model}</SelectItem>
+                        ))}
+                        {brandModels["Jaguar"].map((model) => (
+                          <SelectItem key={model} value={model}>{model}</SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="font-medium">{account.interestedModel || "未設定"}</p>
+              )}
             </div>
             <div>
               <span className="text-muted-foreground">SV/V8 偏好</span>
-              <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
+              {isEditing ? (
+                <div className="mt-1">
+                  <Switch
+                    checked={account.performancePreference || false}
+                    onCheckedChange={(checked) => setAccount({ ...account, performancePreference: checked })}
+                  />
+                </div>
+              ) : (
+                <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
+              )}
             </div>
             <div>
               <span className="text-muted-foreground">車輛數</span>
-              <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
+              {isEditing ? (
+                <Input
+                  type="number"
+                  min="0"
+                  value={account.vehicleCount ?? ""}
+                  onChange={(e) => setAccount({ ...account, vehicleCount: parseInt(e.target.value) || 0 })}
+                  className="mt-1"
+                />
+              ) : (
+                <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
+              )}
             </div>
           </div>
         </Card>
@@ -584,20 +644,67 @@ export default function AccountDetailPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">婚姻狀態</span>
-                <p className="font-medium">{account.maritalStatus ? maritalStatusLabels[account.maritalStatus] : "未設定"}</p>
+                {isEditing ? (
+                  <Select
+                    value={account.maritalStatus || ""}
+                    onValueChange={(value) => setAccount({ ...account, maritalStatus: value as any })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="請選擇" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">單身</SelectItem>
+                      <SelectItem value="married">已婚</SelectItem>
+                      <SelectItem value="divorced">離婚</SelectItem>
+                      <SelectItem value="widowed">喪偶</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="font-medium">{account.maritalStatus ? maritalStatusLabels[account.maritalStatus] : "未設定"}</p>
+                )}
               </div>
               <div>
                 <span className="text-muted-foreground">家庭成員數</span>
-                <p className="font-medium">{account.familyMemberCount ?? "未設定"}</p>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    value={account.familyMemberCount ?? ""}
+                    onChange={(e) => setAccount({ ...account, familyMemberCount: parseInt(e.target.value) || 0 })}
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="font-medium">{account.familyMemberCount ?? "未設定"}</p>
+                )}
               </div>
               <div>
                 <span className="text-muted-foreground">有子女</span>
-                <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
+                {isEditing ? (
+                  <div className="mt-1">
+                    <Switch
+                      checked={account.hasChildren || false}
+                      onCheckedChange={(checked) => setAccount({ ...account, hasChildren: checked })}
+                    />
+                  </div>
+                ) : (
+                  <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
+                )}
               </div>
-              {account.hasChildren && account.childrenCount && (
+              {(isEditing || (account.hasChildren && account.childrenCount)) && (
                 <div>
                   <span className="text-muted-foreground">子女數</span>
-                  <p className="font-medium">{account.childrenCount}</p>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      min="0"
+                      value={account.childrenCount ?? ""}
+                      onChange={(e) => setAccount({ ...account, childrenCount: parseInt(e.target.value) || 0 })}
+                      className="mt-1"
+                      disabled={!account.hasChildren}
+                    />
+                  ) : (
+                    <p className="font-medium">{account.childrenCount}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -608,26 +715,81 @@ export default function AccountDetailPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">職業</span>
-                <p className="font-medium">{account.occupation || "未設定"}</p>
+                {isEditing ? (
+                  <Input
+                    value={account.occupation || ""}
+                    onChange={(e) => setAccount({ ...account, occupation: e.target.value })}
+                    placeholder="請輸入職業"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="font-medium">{account.occupation || "未設定"}</p>
+                )}
               </div>
               <div>
                 <span className="text-muted-foreground">行業</span>
-                <p className="font-medium">{account.industry || "未設定"}</p>
+                {isEditing ? (
+                  <Input
+                    value={account.industry || ""}
+                    onChange={(e) => setAccount({ ...account, industry: e.target.value })}
+                    placeholder="請輸入行業"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="font-medium">{account.industry || "未設定"}</p>
+                )}
               </div>
             </div>
             <div className="text-sm">
               <span className="text-muted-foreground">興趣</span>
-              <p className="font-medium">{account.interests?.length ? account.interests.join("、") : "未設定"}</p>
+              {isEditing ? (
+                <Input
+                  value={account.interests?.join("、") || ""}
+                  onChange={(e) => setAccount({ ...account, interests: e.target.value.split("、").filter(Boolean) })}
+                  placeholder="請輸入興趣（用「、」分隔）"
+                  className="mt-1"
+                />
+              ) : (
+                <p className="font-medium">{account.interests?.length ? account.interests.join("、") : "未設定"}</p>
+              )}
             </div>
             <div className="text-sm">
               <span className="text-muted-foreground">聯絡偏好</span>
-              <p className="font-medium">
-                {account.contactPreferences?.length
-                  ? account.contactPreferences
-                      .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
-                      .join(", ")
-                  : "未設定"}
-              </p>
+              {isEditing ? (
+                <div className="mt-2 space-y-2">
+                  {[
+                    { value: "phone", label: "電話" },
+                    { value: "email", label: "郵件" },
+                    { value: "sms", label: "簡訊" },
+                    { value: "mail", label: "郵寄" },
+                  ].map((option) => (
+                    <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={account.contactPreferences?.includes(option.value as any) || false}
+                        onChange={(e) => {
+                          const currentPrefs = account.contactPreferences || []
+                          if (e.target.checked) {
+                            setAccount({ ...account, contactPreferences: [...currentPrefs, option.value as any] })
+                          } else {
+                            setAccount({ ...account, contactPreferences: currentPrefs.filter((p) => p !== option.value) })
+                          }
+                        }}
+                        className="rounded border-input"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-medium">
+                  {account.contactPreferences?.length
+                    ? account.contactPreferences
+                        .map((p) => (p === "phone" ? "電話" : p === "email" ? "郵件" : p === "sms" ? "簡訊" : "郵寄"))
+                        .join(", ")
+                    : "未設定"}
+                </p>
+              )}
             </div>
           </div>
 
@@ -640,19 +802,37 @@ export default function AccountDetailPage() {
             <div className="space-y-3 text-sm">
               <div>
                 <span className="text-muted-foreground">帳單地址</span>
-                <p className="font-medium">
-                  {account.billingCity || account.billingAddress
-                    ? `${account.billingCity || ""} ${account.billingAddress || ""}`
-                    : "未設定"}
-                </p>
+                {isEditing ? (
+                  <Input
+                    value={`${account.billingCity || ""} ${account.billingAddress || ""}`.trim()}
+                    onChange={(e) => setAccount({ ...account, billingAddress: e.target.value })}
+                    placeholder="請輸入帳單地址"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="font-medium">
+                    {account.billingCity || account.billingAddress
+                      ? `${account.billingCity || ""} ${account.billingAddress || ""}`
+                      : "未設定"}
+                  </p>
+                )}
               </div>
               <div>
                 <span className="text-muted-foreground">郵寄地址</span>
-                <p className="font-medium">
-                  {account.shippingCity || account.shippingAddress
-                    ? `${account.shippingCity || ""} ${account.shippingAddress || ""}`
-                    : "未設定"}
-                </p>
+                {isEditing ? (
+                  <Input
+                    value={`${account.shippingCity || ""} ${account.shippingAddress || ""}`.trim()}
+                    onChange={(e) => setAccount({ ...account, shippingAddress: e.target.value })}
+                    placeholder="請輸入郵寄地址"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="font-medium">
+                    {account.shippingCity || account.shippingAddress
+                      ? `${account.shippingCity || ""} ${account.shippingAddress || ""}`
+                      : "未設定"}
+                  </p>
+                )}
               </div>
             </div>
           </div>
