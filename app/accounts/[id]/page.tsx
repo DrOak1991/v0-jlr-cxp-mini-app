@@ -383,13 +383,12 @@ export default function AccountDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="font-semibold text-lg">帳戶詳情</h1>
-          {!isEditing && (
-            <Button variant="ghost" size="sm" onClick={handleEdit}>
-              <Edit className="h-5 w-5" />
-            </Button>
-          )}
-          {isEditing && <div className="w-10" />}
         </div>
+        {!isEditing && (
+          <Button variant="ghost" size="icon" onClick={handleEdit}>
+            <Edit className="h-5 w-5" />
+          </Button>
+        )}
       </header>
 
       {/* Content */}
