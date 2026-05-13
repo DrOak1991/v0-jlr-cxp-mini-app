@@ -191,7 +191,7 @@ export default function OpportunityDetailPage() {
     setHasNotesChanged(false)
     toast({
       title: "描述已儲存",
-      description: "您的描���已成功更新",
+      description: "您的描�����已成功更新",
     })
   }
 
@@ -836,8 +836,9 @@ export default function OpportunityDetailPage() {
               <p className="text-foreground mt-1">{opportunity.vistaOrderNumber || "未設定"}</p>
             )}
           </div>
+        </Card>
 
-          {/* 轉換資訊卡片 */}
+        {/* 轉換資訊卡片 */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-base">轉換資訊</h3>
 
