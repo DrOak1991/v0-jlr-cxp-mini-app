@@ -51,6 +51,8 @@ export default function ActivityDetailPage() {
   const [sourceName, setSourceName] = useState<string>("")
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
   const [taskStatus, setTaskStatus] = useState<string>("")
+  const [originalTaskStatus, setOriginalTaskStatus] = useState<string>("")
+  const [hasStatusChanged, setHasStatusChanged] = useState(false)
 
   useEffect(() => {
     const data = getActivityById(activityId)
@@ -59,7 +61,9 @@ export default function ActivityDetailPage() {
 
       // 設定工作狀態
       if (data.activity.type === "task") {
-        setTaskStatus((data.activity as TaskActivity).status)
+        const status = (data.activity as TaskActivity).status
+        setTaskStatus(status)
+        setOriginalTaskStatus(status)
       }
 
       // 取得來源名稱
@@ -150,10 +154,16 @@ export default function ActivityDetailPage() {
 
   const handleStatusChange = (newStatus: string) => {
     setTaskStatus(newStatus)
+    setHasStatusChanged(newStatus !== originalTaskStatus)
+  }
+
+  const handleStatusSave = () => {
     // 這裡實際上會呼叫 API 更新狀態
+    setOriginalTaskStatus(taskStatus)
+    setHasStatusChanged(false)
     toast({
       title: "狀態已更新",
-      description: `工作狀態已變更為「${taskStatusLabels[newStatus]}」`,
+      description: `工作狀態已變更為「${taskStatusLabels[taskStatus]}」`,
     })
   }
 
@@ -241,6 +251,13 @@ export default function ActivityDetailPage() {
                 <SelectItem value="deferred">延期</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              className="w-full"
+              disabled={!hasStatusChanged}
+              onClick={handleStatusSave}
+            >
+              儲存
+            </Button>
           </Card>
         )}
 
