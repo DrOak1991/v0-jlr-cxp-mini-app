@@ -464,44 +464,82 @@ export default function OpportunityDetailPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
+        {/* 編輯模式 Header */}
+        {isEditing && (
+          <Card className="p-4 bg-primary/5 border-primary/20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Edit className="h-5 w-5" />
+                <span className="font-medium">編輯機會資料</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">姓氏</Label>
+                  <Input
+                    value={opportunity.name?.charAt(0) || ""}
+                    onChange={(e) => {
+                      const firstName = opportunity.name?.slice(1) || ""
+                      setOpportunity({ ...opportunity, name: e.target.value + firstName })
+                    }}
+                    placeholder="姓氏"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">名字</Label>
+                  <Input
+                    value={opportunity.name?.slice(1) || ""}
+                    onChange={(e) => {
+                      const lastName = opportunity.name?.charAt(0) || ""
+                      setOpportunity({ ...opportunity, name: lastName + e.target.value })
+                    }}
+                    placeholder="名字"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* 基本資訊卡片 */}
         <Card className="p-4">
           <div className="space-y-4">
-            {/* 頭像 + 機會名稱 + LINE 狀態 + 階段 */}
-            <div className="flex gap-3">
-              {/* Avatar with LINE status */}
-              <div className="shrink-0">
-                <Avatar className="h-14 w-14">
-                  {account?.lineStatus === "joined" && account?.avatarUrl && (
-                    <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
-                  )}
-                  <AvatarFallback
-                    className={
-                      account?.lineStatus === "joined" ? "bg-blue-100 text-blue-700 font-semibold" : "bg-gray-100 text-gray-400"
-                    }
-                  >
-                    {account?.lineStatus === "joined" ? getInitials(opportunity.accountName) : <UserX className="h-6 w-6" />}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+            {/* 頭像 + 機會名稱 + LINE 狀態 + 階段 - 檢視模式才顯示 */}
+            {!isEditing && (
+              <div className="flex gap-3">
+                {/* Avatar with LINE status */}
+                <div className="shrink-0">
+                  <Avatar className="h-14 w-14">
+                    {account?.lineStatus === "joined" && account?.avatarUrl && (
+                      <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
+                    )}
+                    <AvatarFallback
+                      className={
+                        account?.lineStatus === "joined" ? "bg-blue-100 text-blue-700 font-semibold" : "bg-gray-100 text-gray-400"
+                      }
+                    >
+                      {account?.lineStatus === "joined" ? getInitials(opportunity.accountName) : <UserX className="h-6 w-6" />}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-xl truncate">{opportunity.name}</h2>
-                    {/* LINE status */}
-                    <div className="flex items-center gap-1.5 mt-0.5 text-sm">
-                      <MessageCircle
-                        className={`h-4 w-4 shrink-0 ${account?.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
-                      />
-                      <span className={account?.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
-                        {account?.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
-                      </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-semibold text-xl truncate">{opportunity.name}</h2>
+                      {/* LINE status */}
+                      <div className="flex items-center gap-1.5 mt-0.5 text-sm">
+                        <MessageCircle
+                          className={`h-4 w-4 shrink-0 ${account?.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
+                        />
+                        <span className={account?.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
+                          {account?.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* 快速操作按鈕 - 編輯模式下隱藏 */}
             {!isEditing && (

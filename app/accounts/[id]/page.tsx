@@ -383,53 +383,89 @@ export default function AccountDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="font-semibold text-lg">帳戶詳情</h1>
-        </div>
-        <div className="flex items-center gap-2">
           {!isEditing && (
-            <Button variant="outline" size="sm" onClick={handleEdit} className="bg-transparent">
-              <Edit className="h-4 w-4 mr-1" />
-              編輯
+            <Button variant="ghost" size="sm" onClick={handleEdit}>
+              <Edit className="h-5 w-5" />
             </Button>
           )}
+          {isEditing && <div className="w-10" />}
         </div>
       </header>
 
       {/* Content */}
       <main className="flex-1 p-4 space-y-4 pb-36">
-        {/* 基本資訊卡片 */}
-        <Card className="p-4">
-          <div className="space-y-4">
-            {/* 頭像 + 帳戶名稱 + LINE 狀態 */}
-            <div className="flex gap-3">
-              <div className="shrink-0">
-                <Avatar className="h-14 w-14">
-                  {account.lineStatus === "joined" && account.avatarUrl && (
-                    <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
-                  )}
-                  <AvatarFallback
-                    className={
-                      account.lineStatus === "joined"
-                        ? "bg-blue-100 text-blue-700 font-semibold"
-                        : "bg-gray-100 text-gray-400"
-                    }
-                  >
-                    {account.lineStatus === "joined" ? getInitials(account.cxpName) : <UserX className="h-6 w-6" />}
-                  </AvatarFallback>
-                </Avatar>
+        {/* 編輯模式 Header */}
+        {isEditing && (
+          <Card className="p-4 bg-primary/5 border-primary/20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Edit className="h-5 w-5" />
+                <span className="font-medium">編輯帳戶資料</span>
               </div>
-
-              <div className="flex-1 min-w-0">
-                <h2 className="font-semibold text-xl">{account.cxpName}</h2>
-                <div className="flex items-center gap-1.5 mt-0.5 text-sm">
-                  <MessageCircle
-                    className={`h-4 w-4 shrink-0 ${account.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">姓氏</Label>
+                  <Input
+                    value={account.cxpName?.split("")?.[0] || ""}
+                    onChange={(e) => {
+                      const firstName = account.cxpName?.slice(1) || ""
+                      setAccount({ ...account, cxpName: e.target.value + firstName })
+                    }}
+                    placeholder="姓氏"
                   />
-                  <span className={account.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
-                    {account.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
-                  </span>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">名字</Label>
+                  <Input
+                    value={account.cxpName?.slice(1) || ""}
+                    onChange={(e) => {
+                      const lastName = account.cxpName?.charAt(0) || ""
+                      setAccount({ ...account, cxpName: lastName + e.target.value })
+                    }}
+                    placeholder="名字"
+                  />
                 </div>
               </div>
             </div>
+          </Card>
+        )}
+
+        {/* 基本資訊卡片 */}
+        <Card className="p-4">
+          <div className="space-y-4">
+            {/* 頭像 + 帳戶名稱 + LINE 狀態 - 檢視模式才顯示 */}
+            {!isEditing && (
+              <div className="flex gap-3">
+                <div className="shrink-0">
+                  <Avatar className="h-14 w-14">
+                    {account.lineStatus === "joined" && account.avatarUrl && (
+                      <AvatarImage src={account.avatarUrl} alt={account.cxpName} />
+                    )}
+                    <AvatarFallback
+                      className={
+                        account.lineStatus === "joined"
+                          ? "bg-blue-100 text-blue-700 font-semibold"
+                          : "bg-gray-100 text-gray-400"
+                      }
+                    >
+                      {account.lineStatus === "joined" ? getInitials(account.cxpName) : <UserX className="h-6 w-6" />}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-semibold text-xl">{account.cxpName}</h2>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-sm">
+                    <MessageCircle
+                      className={`h-4 w-4 shrink-0 ${account.lineStatus === "joined" ? "text-green-600" : "text-muted-foreground"}`}
+                    />
+                    <span className={account.lineStatus === "joined" ? "text-foreground" : "text-muted-foreground"}>
+                      {account.lineStatus === "joined" ? account.lineName : "未加入 LINE"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 快速操作按鈕 - 編輯模式下隱藏 */}
             {!isEditing && (

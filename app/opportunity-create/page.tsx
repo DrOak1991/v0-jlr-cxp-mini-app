@@ -119,31 +119,32 @@ function NewOpportunityContent() {
               </div>
             )}
 
-            {/* 機會名稱（姓氏 + 名字） */}
+            {/* 姓氏 */}
             <div className="space-y-2">
               <Label>
-                機會名稱 <span className="text-red-500">*</span>
+                姓氏 <span className="text-red-500">*</span>
               </Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="姓氏"
-                    className={errors.lastName ? "border-red-500" : ""}
-                  />
-                  {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
-                </div>
-                <div className="space-y-1">
-                  <Input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="名字"
-                    className={errors.firstName ? "border-red-500" : ""}
-                  />
-                  {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
-                </div>
-              </div>
+              <Input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="請輸入姓氏"
+                className={errors.lastName ? "border-red-500" : ""}
+              />
+              {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
+            </div>
+
+            {/* 名字 */}
+            <div className="space-y-2">
+              <Label>
+                名字 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="請輸入名字"
+                className={errors.firstName ? "border-red-500" : ""}
+              />
+              {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
             </div>
 
             {/* 機會階段 */}
