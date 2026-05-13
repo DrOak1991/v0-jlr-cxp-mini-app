@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { detailCategoryLabels } from "@/lib/field-definitions"
 
 import {
   Dialog,
@@ -672,17 +673,21 @@ export default function OpportunityDetailPage() {
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="service">服務/維修</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="parts">原廠零件</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="evhc">EVHC</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
-                {opportunity.detailCategory === "retail" ? "Retail"
-                  : opportunity.detailCategory === "fleet" ? "Fleet"
-                  : opportunity.detailCategory === "approved-pre-owned" ? "Approved Pre-Owned"
-                  : "未設定"}
+                {opportunity.detailCategory ? detailCategoryLabels[opportunity.detailCategory] || opportunity.detailCategory : "未設定"}
               </p>
             )}
           </div>
@@ -806,7 +811,7 @@ export default function OpportunityDetailPage() {
               <Input
                 value={opportunity.existingCarModel || ""}
                 onChange={(e) => setOpportunity({ ...opportunity, existingCarModel: e.target.value })}
-                placeholder="請輸入車款"
+                placeholder="請輸��車款"
                 className="mt-1"
               />
             ) : (

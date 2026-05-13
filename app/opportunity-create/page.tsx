@@ -215,9 +215,16 @@ function NewOpportunityContent() {
                   <SelectValue placeholder="請選擇" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="service">服務/維修</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="parts">原廠零件</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="evhc">EVHC</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             </div>

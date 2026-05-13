@@ -282,10 +282,10 @@ export default function NewLeadPage() {
           <Select value={stage} onValueChange={setStage}>
             <SelectTrigger id="stage"><SelectValue placeholder="請選擇商機狀態" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="follow-up">Follow up</SelectItem>
-              <SelectItem value="lost">Lost</SelectItem>
-              <SelectItem value="converted">Converted</SelectItem>
+              <SelectItem value="new">新增（尚未聯繫）</SelectItem>
+              <SelectItem value="follow-up">已聯繫並持續跟進</SelectItem>
+              <SelectItem value="qualified">合格</SelectItem>
+              <SelectItem value="lost">戰敗</SelectItem>
             </SelectContent>
           </Select>
           {errors.stage && <p className="text-sm text-destructive">{errors.stage}</p>}
@@ -425,9 +425,16 @@ export default function NewLeadPage() {
           <Select value={detailCategory} onValueChange={setDetailCategory}>
             <SelectTrigger id="detailCategory"><SelectValue placeholder="請選擇詳細分類" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="retail">Retail</SelectItem>
-              <SelectItem value="fleet">Fleet</SelectItem>
-              <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+              <SelectItem value="retail">零售</SelectItem>
+              <SelectItem value="lease">租賃</SelectItem>
+              <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+              <SelectItem value="service">服務/維修</SelectItem>
+              <SelectItem value="accessories">原廠精品</SelectItem>
+              <SelectItem value="parts">原廠零件</SelectItem>
+              <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+              <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+              <SelectItem value="evhc">EVHC</SelectItem>
+              <SelectItem value="self-registration">自領牌</SelectItem>
             </SelectContent>
           </Select>
         </div>

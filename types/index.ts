@@ -9,7 +9,7 @@ export interface Lead {
   phone: string
   email: string
   createdAt: Date
-  stage?: "new" | "follow-up" | "lost" | "converted"
+  stage?: "new" | "follow-up" | "qualified" | "lost"
   lostCategory?: "competitor" | "duplicate" | "no-interest" | "unreachable" // 戰敗原因分類
   lostReason?: string // 流失原因詳細說明（僅當 stage = lost 時有值）
   // Detail page fields
@@ -22,9 +22,9 @@ export interface Lead {
   industry?: string
   workStatus?: string
   carType?: "new-car" | "certified-used"
-  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
-  interestedModel?: "defender-90" | "defender-110" | "range-rover" | "range-rover-sport" | "discovery" | "i-pace"
-  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "service" | "accessories" | "parts" | "sv-custom" | "genuine-accessories" | "evhc" | "self-registration"
+  interestedModel?: "range-rover" | "range-rover-sport" | "range-rover-velar" | "range-rover-evoque" | "defender-130" | "defender-110" | "defender-90" | "discovery" | "discovery-sport" | "f-type" | "f-pace" | "e-pace" | "i-pace"
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid" | "mild-hybrid"
   performancePreference?: boolean
   leadSource?:
     | "walk-in"
@@ -52,9 +52,9 @@ export interface Opportunity {
   probability?: number // 可能性 %
   // 車型選擇
   carType?: "new-car" | "certified-used"
-  detailCategory?: "retail" | "fleet" | "approved-pre-owned"
+  detailCategory?: "retail" | "lease" | "approved-pre-owned" | "service" | "accessories" | "parts" | "sv-custom" | "genuine-accessories" | "evhc" | "self-registration"
   interestedModel?: string
-  powerType?: "gasoline" | "diesel" | "electric" | "hybrid"
+  powerType?: "gasoline" | "diesel" | "electric" | "hybrid" | "mild-hybrid"
   performancePreference?: boolean // SV/V8 偏好
   // 轉換資訊
   leadSource?: string

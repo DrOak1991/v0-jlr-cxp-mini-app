@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { detailCategoryLabels } from "@/lib/field-definitions"
 import {
   ArrowLeft,
   Phone,
@@ -275,7 +276,7 @@ export default function LeadDetailPage() {
       return
     }
 
-    if (stageChanged && lead.stage === "converted") {
+    if (stageChanged && lead.stage === "qualified") {
       setPendingSave(true)
       setIsConvertedDialogOpen(true)
       return
@@ -356,8 +357,8 @@ export default function LeadDetailPage() {
   }) => {
     console.log("[v0] Convert lead with data:", data)
     
-    // Update lead stage to converted
-    const updatedLead = { ...lead, stage: "converted" as const }
+    // Update lead stage to qualified
+    const updatedLead = { ...lead, stage: "qualified" as const }
     setLead(updatedLead)
     setOriginalLead({ ...updatedLead })
     setIsConvertedDialogOpen(false)
@@ -527,10 +528,10 @@ export default function LeadDetailPage() {
   }
 
   const stageLabels = {
-    new: "New",
-    "follow-up": "Follow up",
-    lost: "Lost",
-    converted: "Converted",
+    new: "新增（尚未聯繫）",
+    "follow-up": "已聯繫並持續跟進",
+    qualified: "合格",
+    lost: "戰敗",
   }
 
   const handleStartTestDrive = () => {
@@ -671,10 +672,10 @@ export default function LeadDetailPage() {
                       <SelectValue placeholder="選擇商機狀態" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="follow-up">Follow up</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                      <SelectItem value="converted">Converted</SelectItem>
+                      <SelectItem value="new">新增（尚未聯繫）</SelectItem>
+                      <SelectItem value="follow-up">已聯繫並持續跟進</SelectItem>
+                      <SelectItem value="qualified">合格</SelectItem>
+                      <SelectItem value="lost">戰敗</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -993,14 +994,21 @@ export default function LeadDetailPage() {
               <Select value={lead.detailCategory || ""} onValueChange={(value) => setLead({ ...lead, detailCategory: value as any })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇詳細分類" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="fleet">Fleet</SelectItem>
-                  <SelectItem value="approved-pre-owned">Approved Pre-Owned</SelectItem>
+                  <SelectItem value="retail">零售</SelectItem>
+                  <SelectItem value="lease">租賃</SelectItem>
+                  <SelectItem value="approved-pre-owned">APO 認證中古車</SelectItem>
+                  <SelectItem value="service">服務/維修</SelectItem>
+                  <SelectItem value="accessories">原廠精品</SelectItem>
+                  <SelectItem value="parts">原廠零件</SelectItem>
+                  <SelectItem value="sv-custom">SV 訂製車</SelectItem>
+                  <SelectItem value="genuine-accessories">原廠配件</SelectItem>
+                  <SelectItem value="evhc">EVHC</SelectItem>
+                  <SelectItem value="self-registration">自領牌</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
-                {lead.detailCategory === "retail" ? "Retail" : lead.detailCategory === "fleet" ? "Fleet" : lead.detailCategory === "approved-pre-owned" ? "Approved Pre-Owned" : "未設定"}
+                {lead.detailCategory ? detailCategoryLabels[lead.detailCategory] || lead.detailCategory : "未設定"}
               </p>
             )}
           </div>
