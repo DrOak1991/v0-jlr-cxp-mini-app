@@ -793,7 +793,7 @@ export default function OpportunityDetailPage() {
               <p className="text-foreground mt-1">
                 {opportunity.leadSource === "walk-in" ? "來店客 (Walk-in)"
                   : opportunity.leadSource === "referral" ? "轉介 (Referral)"
-                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活��"
+                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"

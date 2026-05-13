@@ -1578,7 +1578,7 @@ export default function LeadDetailPage() {
                   setTestDriveModel("")
                 }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="選擇品���" />
+                    <SelectValue placeholder="選擇品牌" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Jaguar">Jaguar</SelectItem>

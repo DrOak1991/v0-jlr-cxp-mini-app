@@ -389,7 +389,7 @@ export default function AccountDetailPage() {
           {!isEditing && (
             <Button variant="outline" size="sm" onClick={handleEdit} className="bg-transparent">
               <Edit className="h-4 w-4 mr-1" />
-              ���輯
+              編輯
             </Button>
           )}
         </div>
