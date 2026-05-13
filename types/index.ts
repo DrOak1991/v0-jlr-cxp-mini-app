@@ -138,6 +138,7 @@ export interface EventActivity {
   startDateTime: Date
   endDateTime: Date
   createdAt: Date
+  testDriveConsentId?: string // 關聯的試駕同意書 ID（僅適用於試駕相關事件）
 }
 
 export interface TaskActivity {

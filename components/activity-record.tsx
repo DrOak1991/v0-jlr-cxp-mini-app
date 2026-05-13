@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import type { Activity } from "@/types"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,9 +10,10 @@ import { formatDate, formatDateTime } from "@/lib/utils"
 
 interface ActivityItemCardProps {
   activity: Activity
+  onClick?: () => void
 }
 
-function ActivityItemCard({ activity }: ActivityItemCardProps) {
+function ActivityItemCard({ activity, onClick }: ActivityItemCardProps) {
   const isEvent = activity.type === "event"
   const isTask = activity.type === "task"
 
@@ -42,7 +44,10 @@ function ActivityItemCard({ activity }: ActivityItemCardProps) {
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 border rounded-lg bg-background hover:bg-accent/30 transition-colors cursor-pointer">
+    <div
+      className="flex items-center gap-3 p-3 border rounded-lg bg-background hover:bg-accent/30 transition-colors cursor-pointer"
+      onClick={onClick}
+    >
       {/* Left Icon */}
       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center">
         {isEvent ? (
@@ -82,9 +87,14 @@ interface ActivityRecordProps {
 }
 
 export function ActivityRecord({ activities, onAddActivity }: ActivityRecordProps) {
+  const router = useRouter()
   const [filter, setFilter] = useState<"all" | "event" | "task">("all")
 
   const filteredActivities = activities.filter((a) => filter === "all" || a.type === filter)
+
+  const handleActivityClick = (activityId: string) => {
+    router.push(`/activities/${activityId}`)
+  }
 
   return (
     <Card className="p-4">
@@ -137,7 +147,11 @@ export function ActivityRecord({ activities, onAddActivity }: ActivityRecordProp
       ) : (
         <div className="space-y-3">
           {filteredActivities.map((activity) => (
-            <ActivityItemCard key={activity.id} activity={activity} />
+            <ActivityItemCard
+              key={activity.id}
+              activity={activity}
+              onClick={() => handleActivityClick(activity.id)}
+            />
           ))}
         </div>
       )}

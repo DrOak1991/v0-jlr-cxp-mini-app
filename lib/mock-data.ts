@@ -1,4 +1,38 @@
-import type { Lead, Activity, Opportunity, Account } from "@/types"
+import type { Lead, Activity, Opportunity, Account, TestDriveConsent } from "@/types"
+
+// Mock Test Drive Consents (試駕同意書)
+export const mockTestDriveConsents: Record<string, TestDriveConsent> = {
+  "tdc-1": {
+    id: "tdc-1",
+    leadId: "1",
+    status: "completed",
+    generatedAt: new Date("2024-01-20"),
+    submittedAt: new Date("2024-01-22T14:25:00"),
+    licensePhotoFront: "/generic-identification-card-front.png",
+    licensePhotoBack: "/driver-license-back.png",
+    testDriveDate: new Date("2024-01-25"),
+    testDriveTime: "14:30",
+    vehicleBrand: "Land Rover",
+    vehicleModel: "Range Rover Sport",
+  },
+  "tdc-2": {
+    id: "tdc-2",
+    leadId: "3",
+    status: "completed",
+    generatedAt: new Date("2024-02-05"),
+    submittedAt: new Date("2024-02-07T10:15:00"),
+    licensePhotoFront: "/generic-identification-card-front.png",
+    licensePhotoBack: "/driver-license-back.png",
+    testDriveDate: new Date("2024-02-10"),
+    testDriveTime: "10:00",
+    vehicleBrand: "Jaguar",
+    vehicleModel: "I-PACE",
+  },
+}
+
+export function getTestDriveConsentById(id: string): TestDriveConsent | undefined {
+  return mockTestDriveConsents[id]
+}
 
 export const mockLeads: Lead[] = [
   {
@@ -177,27 +211,76 @@ export const mockActivities: Record<string, Activity[]> = {
     {
       id: "1",
       type: "event",
-      subject: "電話聯繫，討論試駕時間",
-      createdAt: new Date("2024-01-20"),
-      startDateTime: new Date("2024-01-20T10:00:00"),
-      endDateTime: new Date("2024-01-20T10:30:00"),
+      subject: "安排試駕 Range Rover Sport",
+      description: "客戶對 Range Rover Sport 很有興趣，已完成試駕同意書填寫。",
+      createdAt: new Date("2024-01-22"),
+      startDateTime: new Date("2024-01-25T14:30:00"),
+      endDateTime: new Date("2024-01-25T15:30:00"),
+      testDriveConsentId: "tdc-1", // 關聯試駕同意書
     },
     {
       id: "2",
       type: "task",
-      subject: "寄送產品型錄",
-      createdAt: new Date("2024-01-18"),
-      dueDate: new Date("2024-01-19"),
+      subject: "發送報價單",
+      description: "報價 Range Rover Sport P400",
+      createdAt: new Date("2024-01-20"),
+      dueDate: new Date("2024-01-25"),
       status: "completed",
     },
     {
       id: "3",
       type: "task",
-      subject: "客戶表示下週有空可以來展間",
-      description: "預約下週來店看車",
-      createdAt: new Date("2024-01-16"),
-      dueDate: new Date("2024-01-23"),
+      subject: "後續跟進電話聯繫",
+      createdAt: new Date("2024-01-23"),
+      dueDate: new Date("2024-01-30"),
       status: "in-progress",
+    },
+  ],
+  "2": [
+    {
+      id: "4",
+      type: "event",
+      subject: "初次聯繫，介紹 Defender 90",
+      createdAt: new Date("2024-01-22"),
+      startDateTime: new Date("2024-01-22T14:00:00"),
+      endDateTime: new Date("2024-01-22T15:00:00"),
+    },
+    {
+      id: "5",
+      type: "task",
+      subject: "客戶表示需要考慮預算",
+      description: "待後續跟進",
+      createdAt: new Date("2024-01-21"),
+      dueDate: new Date("2024-01-28"),
+      status: "waiting",
+    },
+  ],
+  "3": [
+    {
+      id: "6",
+      type: "event",
+      subject: "參加體驗活動",
+      createdAt: new Date("2024-02-02"),
+      startDateTime: new Date("2024-02-02T09:00:00"),
+      endDateTime: new Date("2024-02-02T12:00:00"),
+    },
+    {
+      id: "7",
+      type: "event",
+      subject: "試駕 I-PACE",
+      description: "客戶對電動車續航里程和充電設施很關注。",
+      createdAt: new Date("2024-02-07"),
+      startDateTime: new Date("2024-02-10T10:00:00"),
+      endDateTime: new Date("2024-02-10T11:00:00"),
+      testDriveConsentId: "tdc-2", // 關聯試駕同意書
+    },
+    {
+      id: "8",
+      type: "task",
+      subject: "準備充電方案說明",
+      createdAt: new Date("2024-02-03"),
+      dueDate: new Date("2024-02-10"),
+      status: "completed",
     },
   ],
   "2": [
@@ -374,6 +457,61 @@ export const mockAccounts: Account[] = [
     notes: "已購入 I-PACE，對電動車非常熟悉。也對 Range Rover 有興趣，考慮作為第二台車。",
   },
 ]
+
+// Mock Account Activities (帳戶活動)
+export const mockAccountActivities: Record<string, Activity[]> = {
+  "acc-1": [
+    {
+      id: "aa-1",
+      type: "event",
+      subject: "來店賞車",
+      description: "客戶來店看 Range Rover Sport，對內裝配備很滿意。",
+      createdAt: new Date("2024-03-02"),
+      startDateTime: new Date("2024-03-02T14:00:00"),
+      endDateTime: new Date("2024-03-02T15:30:00"),
+    },
+    {
+      id: "aa-2",
+      type: "task",
+      subject: "寄送車型目錄",
+      createdAt: new Date("2024-03-03"),
+      dueDate: new Date("2024-03-05"),
+      status: "completed",
+    },
+  ],
+  "acc-2": [
+    {
+      id: "aa-3",
+      type: "event",
+      subject: "電話諮詢配備問題",
+      createdAt: new Date("2024-02-20"),
+      startDateTime: new Date("2024-02-20T11:00:00"),
+      endDateTime: new Date("2024-02-20T11:30:00"),
+    },
+  ],
+  "acc-3": [
+    {
+      id: "aa-4",
+      type: "event",
+      subject: "I-PACE 保養預約",
+      createdAt: new Date("2024-03-10"),
+      startDateTime: new Date("2024-03-15T09:00:00"),
+      endDateTime: new Date("2024-03-15T12:00:00"),
+    },
+    {
+      id: "aa-5",
+      type: "task",
+      subject: "跟進第二台車購車意願",
+      createdAt: new Date("2024-03-12"),
+      dueDate: new Date("2024-03-20"),
+      status: "in-progress",
+    },
+  ],
+}
+
+export function getActivitiesByAccountId(accountId: string): Activity[] {
+  return mockAccountActivities[accountId] || []
+}
 
 // Mock Opportunities (機會)
 export const mockOpportunities: Opportunity[] = [
@@ -578,4 +716,29 @@ export function getLeadById(id: string): Lead | undefined {
 
 export function getActivitiesByLeadId(leadId: string): Activity[] {
   return mockActivities[leadId] || []
+}
+
+export function getActivityById(activityId: string): { activity: Activity; sourceType: "lead" | "opportunity" | "account"; sourceId: string } | undefined {
+  // 搜尋 Lead 活動
+  for (const [leadId, activities] of Object.entries(mockActivities)) {
+    const activity = activities.find(a => a.id === activityId)
+    if (activity) {
+      return { activity, sourceType: "lead", sourceId: leadId }
+    }
+  }
+  // 搜尋 Opportunity 活動
+  for (const [oppId, activities] of Object.entries(mockOpportunityActivities)) {
+    const activity = activities.find(a => a.id === activityId)
+    if (activity) {
+      return { activity, sourceType: "opportunity", sourceId: oppId }
+    }
+  }
+  // 搜尋 Account 活動
+  for (const [accId, activities] of Object.entries(mockAccountActivities)) {
+    const activity = activities.find(a => a.id === activityId)
+    if (activity) {
+      return { activity, sourceType: "account", sourceId: accId }
+    }
+  }
+  return undefined
 }
