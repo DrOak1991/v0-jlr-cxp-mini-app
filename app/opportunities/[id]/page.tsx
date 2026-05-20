@@ -98,6 +98,7 @@ export default function OpportunityDetailPage() {
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
+  const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
   const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
   const [carBrandSearch, setCarBrandSearch] = useState("")
   const [carModelSearch, setCarModelSearch] = useState("")
@@ -1040,7 +1041,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                  : opportunity.leadSource === "field-visit" ? "陌生開發"
+                  : opportunity.leadSource === "field-visit" ? "陌生���發"
                   : "未設定"}
               </p>
             )}
