@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, Car } from "lucide-react"
+import { ArrowLeft, Car, User, Phone, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,8 @@ import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { getAccountById } from "@/lib/mock-data"
+import { Badge } from "@/components/ui/badge"
+import type { Account } from "@/types"
 
 function NewOpportunityContent() {
   const router = useRouter()
@@ -23,13 +25,13 @@ function NewOpportunityContent() {
   const accountId = searchParams.get("accountId")
 
   // Account data
-  const [accountName, setAccountName] = useState("")
+  const [account, setAccount] = useState<Account | null>(null)
 
   useEffect(() => {
     if (accountId) {
-      const account = getAccountById(accountId)
-      if (account) {
-        setAccountName(account.name)
+      const accountData = getAccountById(accountId)
+      if (accountData) {
+        setAccount(accountData)
       }
     }
   }, [accountId])
@@ -104,20 +106,44 @@ function NewOpportunityContent() {
         <h1 className="text-lg font-semibold truncate">新增機會</h1>
       </header>
 
+      {/* 帳戶資訊區塊 - 麵包屑式設計 */}
+      {account && (
+        <div 
+          className="bg-muted/50 border-b px-4 py-3 cursor-pointer hover:bg-muted transition-colors"
+          onClick={() => router.push(`/accounts/${account.id}`)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-sm truncate">{account.cxpName}</p>
+                  {account.lineStatus === "joined" && (
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-green-100 text-green-700 shrink-0">
+                      LINE
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Phone className="h-3 w-3" />
+                  <span>{account.phone}</span>
+                </div>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 pl-13">在此帳戶下新增機會</p>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 基本資訊 */}
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-base">基本資訊</h3>
-
-            {/* 關聯帳戶 */}
-            {accountName && (
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">關聯帳戶</Label>
-                <p className="text-foreground font-medium">{accountName}</p>
-              </div>
-            )}
 
             {/* 姓氏 */}
             <div className="space-y-2">
