@@ -43,6 +43,7 @@ import {
   Upload,
   Plus,
   ClipboardList,
+  ChevronLeft,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -97,7 +98,45 @@ export default function OpportunityDetailPage() {
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
-  const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
+  const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [carBrandSearch, setCarBrandSearch] = useState("")
+  const [carModelSearch, setCarModelSearch] = useState("")
+
+  // 現有車品牌選項
+  const existingCarBrandOptions: Record<string, string[]> = {
+    "BMW": ["X1", "X3", "X5", "X7", "3 Series", "5 Series", "7 Series"],
+    "Mercedes-Benz": ["GLA", "GLC", "GLE", "GLS", "C-Class", "E-Class", "S-Class"],
+    "Audi": ["Q3", "Q5", "Q7", "Q8", "A4", "A6", "A8"],
+    "Volvo": ["XC40", "XC60", "XC90", "S60", "S90", "V60"],
+    "Porsche": ["Cayenne", "Macan", "Taycan", "911", "Panamera"],
+    "Tesla": ["Model 3", "Model Y", "Model S", "Model X"],
+    "Toyota": ["RAV4", "Camry", "Corolla Cross", "Land Cruiser"],
+    "Lexus": ["RX", "NX", "UX", "ES", "LS", "LX"],
+  }
+
+  // 篩選品牌列表
+  const filteredBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(carBrandSearch.toLowerCase())
+  )
+
+  // 篩選車款列表
+  const availableModels = opportunity.existingCarBrand ? existingCarBrandOptions[opportunity.existingCarBrand] || [] : []
+  const filteredModels = availableModels.filter(model =>
+    model.toLowerCase().includes(carModelSearch.toLowerCase())
+  )
+
+  const handleSelectBrand = (brand: string) => {
+    setOpportunity({ ...opportunity, existingCarBrand: brand, existingCarModel: "" })
+    setCarBrandSearch("")
+    setCarModelSearch("")
+  }
+
+  const handleSelectModel = (model: string) => {
+    setOpportunity({ ...opportunity, existingCarModel: model })
+    setIsExistingCarSheetOpen(false)
+    setCarBrandSearch("")
+    setCarModelSearch("")
+  }
   // 流失原因表單狀態
   const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
   const [lostReason, setLostReason] = useState("") // 經銷商所失原因
@@ -457,7 +496,7 @@ export default function OpportunityDetailPage() {
 
     if (activityType === "task" && !newActivity.dueDate) {
       toast({
-        title: "請選擇��止日期",
+        title: "請選擇新目標日期",
         description: "請選擇工作的截止日期",
         variant: "destructive",
       })
@@ -683,7 +722,7 @@ export default function OpportunityDetailPage() {
                         <SelectContent>
                           <SelectItem value="contact">聯繫</SelectItem>
                           <SelectItem value="test-drive">試駕</SelectItem>
-                          <SelectItem value="vehicle-selection">車��選擇</SelectItem>
+                          <SelectItem value="vehicle-selection">車型選擇</SelectItem>
                           <SelectItem value="trade-in">舊車處理</SelectItem>
                           <SelectItem value="negotiation">談判</SelectItem>
                           <SelectItem value="lost">Lost</SelectItem>
@@ -1007,35 +1046,50 @@ export default function OpportunityDetailPage() {
             )}
           </div>
 
-          {/* 現有車輛品牌 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
-            {isEditing ? (
-              <Input
-                value={opportunity.existingCarBrand || ""}
-                onChange={(e) => setOpportunity({ ...opportunity, existingCarBrand: e.target.value })}
-                placeholder="請輸入品牌"
-                className="mt-1"
-              />
-            ) : (
-              <p className="text-foreground mt-1">{opportunity.existingCarBrand || "未設定"}</p>
-            )}
-          </div>
+          {/* 現有車輛品牌 - 編輯模式下使用灰色匡包裝 */}
+          {isEditing && (
+            <div className="bg-muted rounded-lg p-4 space-y-3">
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <button
+                  onClick={() => setIsExistingCarSheetOpen(true)}
+                  className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                >
+                  {opportunity.existingCarBrand || "點擊選擇品牌"}
+                </button>
+              </div>
 
-          {/* 現有車輛 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛</Label>
-            {isEditing ? (
-              <Input
-                value={opportunity.existingCarModel || ""}
-                onChange={(e) => setOpportunity({ ...opportunity, existingCarModel: e.target.value })}
-                placeholder="請輸入車款"
-                className="mt-1"
-              />
-            ) : (
-              <p className="text-foreground mt-1">{opportunity.existingCarModel || "未設定"}</p>
-            )}
-          </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <button
+                  onClick={() => opportunity.existingCarBrand && setIsExistingCarSheetOpen(true)}
+                  disabled={!opportunity.existingCarBrand}
+                  className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                    opportunity.existingCarBrand
+                      ? "border-input bg-background text-foreground hover:bg-accent"
+                      : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  {opportunity.existingCarModel || (opportunity.existingCarBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 檢視模式 */}
+          {!isEditing && (
+            <>
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <p className="text-foreground mt-1">{opportunity.existingCarBrand || "未設定"}</p>
+              </div>
+
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <p className="text-foreground mt-1">{opportunity.existingCarModel || "未設定"}</p>
+              </div>
+            </>
+          )}
         </Card>
 
         {/* 流失原因編輯區塊 - 僅在編輯模式且 stage 為 lost 時顯示 */}
@@ -1299,6 +1353,95 @@ export default function OpportunityDetailPage() {
             <Button className="w-full" onClick={handleSaveActivity}>
               {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Existing Car Selection Sheet */}
+      <Sheet open={isExistingCarSheetOpen} onOpenChange={setIsExistingCarSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>
+              {!opportunity.existingCarBrand ? "選擇現有車輛品牌" : "選擇現有車輛"}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* 品牌選擇 */}
+            {!opportunity.existingCarBrand ? (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋品牌..."
+                    value={carBrandSearch}
+                    onChange={(e) => setCarBrandSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                  {filteredBrands.length > 0 ? (
+                    filteredBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleSelectBrand(brand)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{brand}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4">找不到符合的品牌</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 返回品牌選擇按鈕 */}
+                <button
+                  onClick={() => {
+                    setOpportunity({ ...opportunity, existingCarBrand: "" })
+                    setCarBrandSearch("")
+                    setCarModelSearch("")
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  返回選擇品牌
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{opportunity.existingCarBrand}</span>
+                    <span className="text-xs text-muted-foreground">已選擇</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋車款..."
+                    value={carModelSearch}
+                    onChange={(e) => setCarModelSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                  {filteredModels.length > 0 ? (
+                    filteredModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => handleSelectModel(model)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{model}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4">找不到符合的車款</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>
