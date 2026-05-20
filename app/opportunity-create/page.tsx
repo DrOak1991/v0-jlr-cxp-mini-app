@@ -289,9 +289,9 @@ function NewOpportunityContent() {
               </Select>
             </div>
 
-            {/* 顧客想購買 SV / V8 車款 */}
+            {/* 顧客想購買 SV / OCTA / V8 車款 */}
             <div className="space-y-2">
-              <Label>顧客想購買 SV / V8 車款</Label>
+              <Label>顧客想購買 SV / OCTA / V8 車款</Label>
               <div className="mt-1">
                 <Switch
                   checked={interestedSvV8}
