@@ -98,6 +98,15 @@ export default function OpportunityDetailPage() {
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
+  // 流失原因表單狀態
+  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
+  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
+  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
+  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
+  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
+  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
+  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
+  // 保留舊的 state 以便兼容（之後可移除）
   const [lostActiveTab, setLostActiveTab] = useState<"retailer" | "jlr">("retailer")
   const [retailerLossReason, setRetailerLossReason] = useState("")
   const [retailerLossDescription, setRetailerLossDescription] = useState("")
@@ -264,18 +273,49 @@ export default function OpportunityDetailPage() {
   }
 
   const handleLostSave = () => {
-    // 至少需要填寫一種 Loss 原因
-    if (!retailerLossReason && !jlrLossReason) {
+    // 驗證必填欄位
+    if (!lostCategory || !lostReason || !boughtCompetitor) {
       toast({
-        title: "請選擇原因",
-        description: "請至少選擇一種流失原因（Retailer Loss 或 JLR Loss）",
+        title: "請填寫必填欄位",
+        description: "經銷商所失客戶類別、經銷商所失原因、是否購買競牌車輛為必填",
         variant: "destructive",
       })
       return
     }
 
+    // 根據「是否購買競牌車輛」的選擇，驗證條件必填欄位
+    if (boughtCompetitor === "yes") {
+      // 選「是的」：購買的品牌、購買的車款必填
+      if (!competitorBrand.trim() || !competitorModel.trim()) {
+        toast({
+          title: "請填寫購買資訊",
+          description: "已選擇購買競牌車輛，請填寫購買的品牌和車款",
+          variant: "destructive",
+        })
+        return
+      }
+    } else {
+      // 選「否」或「不清楚」：新目標日期必填
+      if (!newTargetDate) {
+        toast({
+          title: "請填寫新目標日期",
+          description: "請選擇新目標日期",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+
     // 組合流失原因資訊
     const lossInfo = {
+      lostCategory,
+      lostReason,
+      lostNotes: lostNotes.trim(),
+      boughtCompetitor,
+      competitorBrand: competitorBrand.trim(),
+      competitorModel: competitorModel.trim(),
+      newTargetDate: newTargetDate?.toISOString(),
+      // 保留舊欄位以便兼容
       retailerLossReason,
       retailerLossDescription: retailerLossDescription.trim(),
       jlrLossReason,
@@ -291,6 +331,13 @@ export default function OpportunityDetailPage() {
     setOriginalOpportunity({ ...updatedOpportunity })
     setIsLostDialogOpen(false)
     // Reset form
+    setLostCategory("")
+    setLostReason("")
+    setLostNotes("")
+    setBoughtCompetitor("")
+    setCompetitorBrand("")
+    setCompetitorModel("")
+    setNewTargetDate(undefined)
     setRetailerLossReason("")
     setRetailerLossDescription("")
     setJlrLossReason("")
@@ -1261,84 +1308,116 @@ export default function OpportunityDetailPage() {
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>機會流失原因</DialogTitle>
-            <DialogDescription>請選擇並說明此機會流失的原因（至少填寫一種）</DialogDescription>
+            <DialogDescription>請填寫此機會流失的詳細資訊</DialogDescription>
           </DialogHeader>
           
-          <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
-              <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
-            </TabsList>
-
-            {/* Retailer Loss Tab */}
-            <TabsContent value="retailer" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Retailer Loss 原因</Label>
-                <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="--None--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lossReasonOptions.map((option) => (
-                      <SelectItem key={option.value || "none"} value={option.value || "none"}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Retailer Loss 說明</Label>
-                <Textarea
-                  value={retailerLossDescription}
-                  onChange={(e) => setRetailerLossDescription(e.target.value)}
-                  placeholder="請輸入詳細說明..."
-                  className="min-h-[100px]"
-                />
-              </div>
-            </TabsContent>
-
-            {/* JLR Loss Tab */}
-            <TabsContent value="jlr" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>JLR Loss 原因</Label>
-                <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="--None--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lossReasonOptions.map((option) => (
-                      <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>JLR Loss 說明</Label>
-                <Textarea
-                  value={jlrLossDescription}
-                  onChange={(e) => setJlrLossDescription(e.target.value)}
-                  placeholder="請輸入詳細說明..."
-                  className="min-h-[100px]"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          {/* 顯示已填寫的摘要 */}
-          {(retailerLossReason || jlrLossReason) && (
-            <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
-              <p className="font-medium text-muted-foreground">已填寫：</p>
-              {retailerLossReason && (
-                <p>Retailer Loss: {lossReasonOptions.find(o => o.value === retailerLossReason)?.label}</p>
-              )}
-              {jlrLossReason && (
-                <p>JLR Loss: {lossReasonOptions.find(o => o.value === jlrLossReason)?.label}</p>
-              )}
+          <div className="space-y-4">
+            {/* 經銷商所失客戶類別 */}
+            <div className="space-y-2">
+              <Label>經銷商所失客戶類別 <span className="text-destructive">*</span></Label>
+              <Select value={lostCategory} onValueChange={setLostCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="product">產品</SelectItem>
+                  <SelectItem value="service">服務</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+
+            {/* 經銷商所失原因 */}
+            <div className="space-y-2">
+              <Label>經銷商所失原因 <span className="text-destructive">*</span></Label>
+              <Select value={lostReason} onValueChange={setLostReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="design">設計</SelectItem>
+                  <SelectItem value="price">價格</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 經銷商所失客戶注意事項 */}
+            <div className="space-y-2">
+              <Label>經銷商所失客戶注意事項</Label>
+              <Textarea
+                value={lostNotes}
+                onChange={(e) => setLostNotes(e.target.value)}
+                placeholder="請輸入注意事項..."
+                className="min-h-[80px]"
+              />
+            </div>
+
+            {/* 分隔線與競牌車輛區塊 */}
+            <div className="border-t pt-4 space-y-4">
+              {/* 是否購買競牌車輛 */}
+              <div className="space-y-2">
+                <Label>是否購買競牌車輛？ <span className="text-destructive">*</span></Label>
+                <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="請選擇" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">是的</SelectItem>
+                    <SelectItem value="no">否</SelectItem>
+                    <SelectItem value="unknown">不清楚</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 根據選擇顯示不同的必填提示 */}
+              {boughtCompetitor && (
+                <div className={`rounded-lg p-3 text-sm ${boughtCompetitor === "yes" ? "bg-amber-50 border border-amber-200" : "bg-blue-50 border border-blue-200"}`}>
+                  {boughtCompetitor === "yes" ? (
+                    <p className="text-amber-700">客戶已購買競牌車輛，請填寫「購買的品牌」和「購買的車款」</p>
+                  ) : (
+                    <p className="text-blue-700">請填寫「新目標日期」以便後續追蹤</p>
+                  )}
+                </div>
+              )}
+
+              {/* 購買的品牌 */}
+              <div className="space-y-2">
+                <Label>
+                  購買的品牌
+                  {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                </Label>
+                <Input
+                  value={competitorBrand}
+                  onChange={(e) => setCompetitorBrand(e.target.value)}
+                  placeholder="例如：BMW、Mercedes-Benz"
+                />
+              </div>
+
+              {/* 購買的車款 */}
+              <div className="space-y-2">
+                <Label>
+                  購買的車款
+                  {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                </Label>
+                <Input
+                  value={competitorModel}
+                  onChange={(e) => setCompetitorModel(e.target.value)}
+                  placeholder="例如：X5、GLE"
+                />
+              </div>
+
+              {/* 新目標日期 */}
+              <div className="space-y-2">
+                <Label>
+                  新目標日期
+                  {boughtCompetitor && boughtCompetitor !== "yes" && <span className="text-destructive"> *</span>}
+                </Label>
+                <DatePicker
+                  date={newTargetDate}
+                  onDateChange={setNewTargetDate}
+                />
+              </div>
+            </div>
+          </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setIsLostDialogOpen(false)} className="bg-transparent">
