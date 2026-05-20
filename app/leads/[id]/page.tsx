@@ -47,6 +47,7 @@ import {
   Eye,
   CheckCircle2,
   ClipboardList,
+  ChevronLeft,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
@@ -128,6 +129,47 @@ export default function LeadDetailPage() {
   const brandModels: Record<string, string[]> = {
     "Jaguar": ["F-PACE", "E-PACE", "I-PACE", "F-TYPE", "XF", "XE"],
     "Land Rover": ["Defender 90", "Defender 110", "Defender 130", "Range Rover", "Range Rover Sport", "Range Rover Velar", "Discovery", "Discovery Sport"]
+  }
+
+  // Existing car selection sheet states
+  const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [carBrandSearch, setCarBrandSearch] = useState("")
+  const [carModelSearch, setCarModelSearch] = useState("")
+
+  // 現有車品牌選項
+  const existingCarBrandOptions: Record<string, string[]> = {
+    "BMW": ["X1", "X3", "X5", "X7", "3 Series", "5 Series", "7 Series"],
+    "Mercedes-Benz": ["GLA", "GLC", "GLE", "GLS", "C-Class", "E-Class", "S-Class"],
+    "Audi": ["Q3", "Q5", "Q7", "Q8", "A4", "A6", "A8"],
+    "Volvo": ["XC40", "XC60", "XC90", "S60", "S90", "V60"],
+    "Porsche": ["Cayenne", "Macan", "Taycan", "911", "Panamera"],
+    "Tesla": ["Model 3", "Model Y", "Model S", "Model X"],
+    "Toyota": ["RAV4", "Camry", "Corolla Cross", "Land Cruiser"],
+    "Lexus": ["RX", "NX", "UX", "ES", "LS", "LX"],
+  }
+
+  // 篩選品牌列表
+  const filteredCarBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(carBrandSearch.toLowerCase())
+  )
+
+  // 篩選車款列表
+  const availableCarModels = lead.existingCarBrand ? existingCarBrandOptions[lead.existingCarBrand] || [] : []
+  const filteredCarModels = availableCarModels.filter(model =>
+    model.toLowerCase().includes(carModelSearch.toLowerCase())
+  )
+
+  const handleSelectCarBrand = (brand: string) => {
+    setLead({ ...lead, existingCarBrand: brand, existingCarModel: "" })
+    setCarBrandSearch("")
+    setCarModelSearch("")
+  }
+
+  const handleSelectCarModel = (model: string) => {
+    setLead({ ...lead, existingCarModel: model })
+    setIsExistingCarSheetOpen(false)
+    setCarBrandSearch("")
+    setCarModelSearch("")
   }
 
   useEffect(() => {
@@ -1136,48 +1178,50 @@ export default function LeadDetailPage() {
             )}
           </div>
 
-          {/* 現有車輛品牌 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
-            {isEditing ? (
-              <Select value={lead.existingCarBrand || ""} onValueChange={(value) => setLead({ ...lead, existingCarBrand: value, existingCarModel: "" })}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇品牌" /></SelectTrigger>
-                <SelectContent>
-                  {["BMW", "Mercedes-Benz", "Audi", "Volvo", "Porsche", "Tesla", "Toyota", "Lexus"].map((brand) => (
-                    <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-foreground mt-1">{lead.existingCarBrand || "未設定"}</p>
-            )}
-          </div>
+          {/* 現有車輛品牌 - 編輯模式下使用灰色匡包裝 */}
+          {isEditing && (
+            <div className="bg-muted rounded-lg p-4 space-y-3">
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <button
+                  onClick={() => setIsExistingCarSheetOpen(true)}
+                  className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                >
+                  {lead.existingCarBrand || "點擊選擇品牌"}
+                </button>
+              </div>
 
-          {/* 現有車輛 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛</Label>
-            {isEditing ? (
-              <Select value={lead.existingCarModel || ""} onValueChange={(value) => setLead({ ...lead, existingCarModel: value })} disabled={!lead.existingCarBrand}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder={lead.existingCarBrand ? "請選擇車款" : "請先選擇品牌"} /></SelectTrigger>
-                <SelectContent>
-                  {lead.existingCarBrand && ({
-                    "BMW": ["X1", "X3", "X5", "X7", "3 Series", "5 Series", "7 Series"],
-                    "Mercedes-Benz": ["GLA", "GLC", "GLE", "GLS", "C-Class", "E-Class", "S-Class"],
-                    "Audi": ["Q3", "Q5", "Q7", "Q8", "A4", "A6", "A8"],
-                    "Volvo": ["XC40", "XC60", "XC90", "S60", "S90", "V60"],
-                    "Porsche": ["Cayenne", "Macan", "Taycan", "911", "Panamera"],
-                    "Tesla": ["Model 3", "Model Y", "Model S", "Model X"],
-                    "Toyota": ["RAV4", "Camry", "Corolla Cross", "Land Cruiser"],
-                    "Lexus": ["RX", "NX", "UX", "ES", "LS", "LX"],
-                  } as Record<string, string[]>)[lead.existingCarBrand]?.map((model) => (
-                    <SelectItem key={model} value={model}>{model}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-foreground mt-1">{lead.existingCarModel || "未設定"}</p>
-            )}
-          </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <button
+                  onClick={() => lead.existingCarBrand && setIsExistingCarSheetOpen(true)}
+                  disabled={!lead.existingCarBrand}
+                  className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                    lead.existingCarBrand
+                      ? "border-input bg-background text-foreground hover:bg-accent"
+                      : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  {lead.existingCarModel || (lead.existingCarBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 檢視模式 */}
+          {!isEditing && (
+            <>
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <p className="text-foreground mt-1">{lead.existingCarBrand || "未設定"}</p>
+              </div>
+
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <p className="text-foreground mt-1">{lead.existingCarModel || "未設定"}</p>
+              </div>
+            </>
+          )}
 
           {/* 客戶願意接受 JLR 與經銷商聯絡的管道 */}
           <div>
@@ -1245,6 +1289,95 @@ export default function LeadDetailPage() {
         </Button>
         */}
       </div>
+
+      {/* Existing Car Selection Sheet */}
+      <Sheet open={isExistingCarSheetOpen} onOpenChange={setIsExistingCarSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>
+              {!lead.existingCarBrand ? "選擇現有車輛品牌" : "選擇現有車輛"}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* 品牌選擇 */}
+            {!lead.existingCarBrand ? (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋品牌..."
+                    value={carBrandSearch}
+                    onChange={(e) => setCarBrandSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCarBrands.length > 0 ? (
+                    filteredCarBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleSelectCarBrand(brand)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{brand}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的品牌</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 返回品牌選擇按鈕 */}
+                <button
+                  onClick={() => {
+                    setLead({ ...lead, existingCarBrand: "" })
+                    setCarBrandSearch("")
+                    setCarModelSearch("")
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  返回選擇品牌
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{lead.existingCarBrand}</span>
+                    <span className="text-xs text-muted-foreground">已選擇</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋車款..."
+                    value={carModelSearch}
+                    onChange={(e) => setCarModelSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCarModels.length > 0 ? (
+                    filteredCarModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => handleSelectCarModel(model)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{model}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的車款</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* 新增活動 Sheet */}
       <Sheet open={isNewActivityOpen} onOpenChange={setIsNewActivityOpen}>

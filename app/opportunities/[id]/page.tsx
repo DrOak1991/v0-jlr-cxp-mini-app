@@ -138,6 +138,29 @@ export default function OpportunityDetailPage() {
     setCarBrandSearch("")
     setCarModelSearch("")
   }
+
+  // 競牌車輛篩選
+  const filteredCompetitorBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(competitorBrandSearch.toLowerCase())
+  )
+  const availableCompetitorModels = competitorBrand ? existingCarBrandOptions[competitorBrand] || [] : []
+  const filteredCompetitorModels = availableCompetitorModels.filter(model =>
+    model.toLowerCase().includes(competitorModelSearch.toLowerCase())
+  )
+
+  const handleSelectCompetitorBrand = (brand: string) => {
+    setCompetitorBrand(brand)
+    setCompetitorModel("")
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
+  }
+
+  const handleSelectCompetitorModel = (model: string) => {
+    setCompetitorModel(model)
+    setIsCompetitorCarSheetOpen(false)
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
+  }
   // 流失原因表單狀態
   const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
   const [lostReason, setLostReason] = useState("") // 經銷商所失原因
@@ -146,6 +169,9 @@ export default function OpportunityDetailPage() {
   const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
   const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
   const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
+  const [isCompetitorCarSheetOpen, setIsCompetitorCarSheetOpen] = useState(false) // 競牌車輛選擇 Sheet
+  const [competitorBrandSearch, setCompetitorBrandSearch] = useState("")
+  const [competitorModelSearch, setCompetitorModelSearch] = useState("")
   // 保留舊的 state 以便兼容（之後可移除）
   const [lostActiveTab, setLostActiveTab] = useState<"retailer" | "jlr">("retailer")
   const [retailerLossReason, setRetailerLossReason] = useState("")
@@ -1041,7 +1067,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.leadSource === "existing-customer" ? "既有客戶"
                   : opportunity.leadSource === "phone-in" ? "來電客"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                  : opportunity.leadSource === "field-visit" ? "陌生���發"
+                  : opportunity.leadSource === "field-visit" ? "陌生開發"
                   : "未設定"}
               </p>
             )}
@@ -1360,7 +1386,7 @@ export default function OpportunityDetailPage() {
 
       {/* Existing Car Selection Sheet */}
       <Sheet open={isExistingCarSheetOpen} onOpenChange={setIsExistingCarSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
           <SheetHeader>
             <SheetTitle>
               {!opportunity.existingCarBrand ? "選擇現有車輛品牌" : "選擇現有車輛"}
@@ -1379,7 +1405,7 @@ export default function OpportunityDetailPage() {
                     autoFocus
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
                   {filteredBrands.length > 0 ? (
                     filteredBrands.map((brand) => (
                       <button
@@ -1391,7 +1417,7 @@ export default function OpportunityDetailPage() {
                       </button>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground col-span-2 py-4">找不到符合的品牌</p>
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的品牌</p>
                   )}
                 </div>
               </>
@@ -1426,7 +1452,7 @@ export default function OpportunityDetailPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
                   {filteredModels.length > 0 ? (
                     filteredModels.map((model) => (
                       <button
@@ -1438,7 +1464,7 @@ export default function OpportunityDetailPage() {
                       </button>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground col-span-2 py-4">找不到符合的車款</p>
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的車款</p>
                   )}
                 </div>
               </>
@@ -1531,30 +1557,38 @@ export default function OpportunityDetailPage() {
                     )}
                   </div>
 
-                  {/* 購買的品牌 */}
-                  <div className="space-y-2">
-                    <Label>
-                      購買的品牌
-                      {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
-                    </Label>
-                    <Input
-                      value={competitorBrand}
-                      onChange={(e) => setCompetitorBrand(e.target.value)}
-                      placeholder="例如：BMW、Mercedes-Benz"
-                    />
-                  </div>
+                  {/* 購買的品牌與車款 - 使用灰色匡包裝 */}
+                  <div className="bg-muted rounded-lg p-4 space-y-3">
+                    <div>
+                      <Label className="text-sm">
+                        購買的品牌
+                        {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <button
+                        onClick={() => setIsCompetitorCarSheetOpen(true)}
+                        className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                      >
+                        {competitorBrand || "點擊選擇品牌"}
+                      </button>
+                    </div>
 
-                  {/* 購買的車款 */}
-                  <div className="space-y-2">
-                    <Label>
-                      購買的車款
-                      {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
-                    </Label>
-                    <Input
-                      value={competitorModel}
-                      onChange={(e) => setCompetitorModel(e.target.value)}
-                      placeholder="例如：X5、GLE"
-                    />
+                    <div>
+                      <Label className="text-sm">
+                        購買的車款
+                        {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <button
+                        onClick={() => competitorBrand && setIsCompetitorCarSheetOpen(true)}
+                        disabled={!competitorBrand}
+                        className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                          competitorBrand
+                            ? "border-input bg-background text-foreground hover:bg-accent"
+                            : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                        }`}
+                      >
+                        {competitorModel || (competitorBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                      </button>
+                    </div>
                   </div>
 
                   {/* 新目標日期 */}
@@ -1581,6 +1615,95 @@ export default function OpportunityDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Competitor Car Selection Sheet */}
+      <Sheet open={isCompetitorCarSheetOpen} onOpenChange={setIsCompetitorCarSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>
+              {!competitorBrand ? "選擇購買的品牌" : "選擇購買的車款"}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* 品牌選擇 */}
+            {!competitorBrand ? (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋品牌..."
+                    value={competitorBrandSearch}
+                    onChange={(e) => setCompetitorBrandSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCompetitorBrands.length > 0 ? (
+                    filteredCompetitorBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleSelectCompetitorBrand(brand)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{brand}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的品牌</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 返回品牌選擇按鈕 */}
+                <button
+                  onClick={() => {
+                    setCompetitorBrand("")
+                    setCompetitorBrandSearch("")
+                    setCompetitorModelSearch("")
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  返回選擇品牌
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{competitorBrand}</span>
+                    <span className="text-xs text-muted-foreground">已選擇</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋車款..."
+                    value={competitorModelSearch}
+                    onChange={(e) => setCompetitorModelSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCompetitorModels.length > 0 ? (
+                    filteredCompetitorModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => handleSelectCompetitorModel(model)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{model}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的車款</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Invite Sheet */}
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>
