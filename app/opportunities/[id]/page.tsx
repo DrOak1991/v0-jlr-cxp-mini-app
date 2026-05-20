@@ -415,7 +415,7 @@ export default function OpportunityDetailPage() {
     setHasFieldsChanged(false)
     toast({
       title: "資料已更新",
-      description: "機會已標記為���������",
+      description: "機會已標記為�����������",
     })
   }
 
@@ -599,25 +599,7 @@ export default function OpportunityDetailPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
-        {/* 編輯模式 Header */}
-        {isEditing && (
-          <Card className="p-4 bg-primary/5 border-primary/20">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <Edit className="h-5 w-5" />
-                <span className="font-medium">編輯機會資料</span>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">機會名稱</Label>
-                <Input
-                  value={opportunity.name || ""}
-                  onChange={(e) => setOpportunity({ ...opportunity, name: e.target.value })}
-                  placeholder="請輸入機會名稱"
-                />
-              </div>
-            </div>
-          </Card>
-        )}
+
 
         {/* 基本資訊卡片 */}
         <Card className="p-4">
@@ -719,6 +701,18 @@ export default function OpportunityDetailPage() {
 
             {/* 機會狀態 */}
             <div className="space-y-3 pt-3 border-t">
+              {/* 機會名稱 - 僅編輯模式顯示 */}
+              {isEditing && (
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">機會名稱</Label>
+                  <Input
+                    value={opportunity.name || ""}
+                    onChange={(e) => setOpportunity({ ...opportunity, name: e.target.value })}
+                    placeholder="請輸入機會名稱"
+                  />
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
