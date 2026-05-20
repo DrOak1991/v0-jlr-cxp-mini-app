@@ -355,11 +355,11 @@ export default function AccountDetailPage() {
   const leadSourceLabels: Record<string, string> = {
     "walk-in": "來店客 (Walk-in)",
     referral: "轉介 (Referral)",
-    "retailer-experience": "經銷商外展 / 體驗活動",
-    "existing-customer": "既有客戶",
-    "phone-in": "來電客",
+    "retailer-experience": "經銷商外展 / 體驗活動 (Retailer Experience)",
+    "existing-customer": "既有客戶 (Existing Customer)",
+    "phone-in": "來電客 (Phone-in)",
     "line-booking": "網路客預約 (LINE)",
-    "field-visit": "陌生開發",
+    "field-visit": "陌生開發 (Field Visit)",
   }
 
   const maintenanceStatusLabels: Record<string, string> = {

@@ -1037,22 +1037,22 @@ export default function OpportunityDetailPage() {
                 <SelectContent>
                   <SelectItem value="walk-in">來店客 (Walk-in)</SelectItem>
                   <SelectItem value="referral">轉介 (Referral)</SelectItem>
-                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動</SelectItem>
-                  <SelectItem value="existing-customer">既有客戶</SelectItem>
-                  <SelectItem value="phone-in">來電客</SelectItem>
+                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動 (Retailer Experience)</SelectItem>
+                  <SelectItem value="existing-customer">既有客戶 (Existing Customer)</SelectItem>
+                  <SelectItem value="phone-in">來電客 (Phone-in)</SelectItem>
                   <SelectItem value="line-booking">網路客預約 (LINE)</SelectItem>
-                  <SelectItem value="field-visit">陌生開發</SelectItem>
+                  <SelectItem value="field-visit">陌生開發 (Field Visit)</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
                 {opportunity.leadSource === "walk-in" ? "來店客 (Walk-in)"
                   : opportunity.leadSource === "referral" ? "轉介 (Referral)"
-                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
-                  : opportunity.leadSource === "existing-customer" ? "既有客戶"
-                  : opportunity.leadSource === "phone-in" ? "來電客"
+                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
+                  : opportunity.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
+                  : opportunity.leadSource === "phone-in" ? "來電客 (Phone-in)"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                  : opportunity.leadSource === "field-visit" ? "陌生開發"
+                  : opportunity.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
                   : "未設定"}
               </p>
             )}
