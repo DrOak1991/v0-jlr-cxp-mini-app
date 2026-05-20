@@ -415,7 +415,7 @@ export default function OpportunityDetailPage() {
     setHasFieldsChanged(false)
     toast({
       title: "資料已更新",
-      description: "機會已標記為�������",
+      description: "機會已標記為���������",
     })
   }
 
@@ -607,29 +607,13 @@ export default function OpportunityDetailPage() {
                 <Edit className="h-5 w-5" />
                 <span className="font-medium">編輯機會資料</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">姓氏</Label>
-                  <Input
-                    value={opportunity.name?.charAt(0) || ""}
-                    onChange={(e) => {
-                      const firstName = opportunity.name?.slice(1) || ""
-                      setOpportunity({ ...opportunity, name: e.target.value + firstName })
-                    }}
-                    placeholder="姓氏"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">名字</Label>
-                  <Input
-                    value={opportunity.name?.slice(1) || ""}
-                    onChange={(e) => {
-                      const lastName = opportunity.name?.charAt(0) || ""
-                      setOpportunity({ ...opportunity, name: lastName + e.target.value })
-                    }}
-                    placeholder="名字"
-                  />
-                </div>
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">機會名稱</Label>
+                <Input
+                  value={opportunity.name || ""}
+                  onChange={(e) => setOpportunity({ ...opportunity, name: e.target.value })}
+                  placeholder="請輸入機會名稱"
+                />
               </div>
             </div>
           </Card>

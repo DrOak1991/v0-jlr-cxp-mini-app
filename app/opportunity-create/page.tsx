@@ -57,7 +57,7 @@ function NewOpportunityContent() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!opportunityName.trim()) newErrors.opportunityName = "請輸入商機名稱"
+    if (!opportunityName.trim()) newErrors.opportunityName = "請輸入機會名稱"
     if (!carType) newErrors.carType = "請選擇購車方式"
     if (!interestedModel) newErrors.interestedModel = "請選擇主要興趣車款"
     if (!leadSource) newErrors.leadSource = "請選擇商機來源"
@@ -142,15 +142,15 @@ function NewOpportunityContent() {
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-base">基本資訊</h3>
 
-            {/* 商機名稱 */}
+            {/* 機會名稱 */}
             <div className="space-y-2">
               <Label>
-                商機名稱 <span className="text-red-500">*</span>
+                機會名稱 <span className="text-red-500">*</span>
               </Label>
               <Input
                 value={opportunityName}
                 onChange={(e) => setOpportunityName(e.target.value)}
-                placeholder="請輸入商機名稱"
+                placeholder="請輸入機會名稱"
                 className={errors.opportunityName ? "border-red-500" : ""}
               />
               {errors.opportunityName && <p className="text-xs text-red-500">{errors.opportunityName}</p>}
