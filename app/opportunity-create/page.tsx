@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, Car, User, Phone, ChevronRight, Search } from "lucide-react"
+import { ArrowLeft, Car, User, Phone, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,7 +13,6 @@ import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { getAccountById, searchAccounts } from "@/lib/mock-data"
-import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import type { Account } from "@/types"
 
@@ -107,35 +106,21 @@ function NewOpportunityContent() {
         <h1 className="text-lg font-semibold truncate">新增機會</h1>
       </header>
 
-      {/* 帳戶資訊區塊 - 麵包屑式設計 */}
+      {/* 帳戶資訊區塊 */}
       {account && (
-        <div 
-          className="bg-muted/50 border-b px-4 py-3 cursor-pointer hover:bg-muted transition-colors"
-          onClick={() => router.push(`/accounts/${account.id}`)}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm truncate">{account.cxpName}</p>
-                  {account.lineStatus === "joined" && (
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-green-100 text-green-700 shrink-0">
-                      LINE
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Phone className="h-3 w-3" />
-                  <span>{account.phone}</span>
-                </div>
+        <div className="bg-muted/50 border-b px-4 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <User className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm truncate">{account.cxpName}</p>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Phone className="h-3 w-3" />
+                <span>{account.phone}</span>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
           </div>
-          <p className="text-xs text-muted-foreground mt-1 pl-13">在此帳戶下新增機會</p>
         </div>
       )}
 
