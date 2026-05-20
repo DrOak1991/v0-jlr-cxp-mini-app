@@ -139,6 +139,18 @@ export default function OpportunityDetailPage() {
     setCarModelSearch("")
   }
 
+  // 流失原因表單狀態
+  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
+  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
+  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
+  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
+  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
+  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
+  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
+  const [isCompetitorCarSheetOpen, setIsCompetitorCarSheetOpen] = useState(false) // 競牌車輛選擇 Sheet
+  const [competitorBrandSearch, setCompetitorBrandSearch] = useState("")
+  const [competitorModelSearch, setCompetitorModelSearch] = useState("")
+
   // 競牌車輛篩選
   const filteredCompetitorBrands = Object.keys(existingCarBrandOptions).filter(brand =>
     brand.toLowerCase().includes(competitorBrandSearch.toLowerCase())
@@ -161,17 +173,7 @@ export default function OpportunityDetailPage() {
     setCompetitorBrandSearch("")
     setCompetitorModelSearch("")
   }
-  // 流失原因表單狀態
-  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
-  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
-  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
-  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
-  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
-  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
-  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
-  const [isCompetitorCarSheetOpen, setIsCompetitorCarSheetOpen] = useState(false) // 競牌車輛選擇 Sheet
-  const [competitorBrandSearch, setCompetitorBrandSearch] = useState("")
-  const [competitorModelSearch, setCompetitorModelSearch] = useState("")
+
   // 保留舊的 state 以便兼容（之後可移除）
   const [lostActiveTab, setLostActiveTab] = useState<"retailer" | "jlr">("retailer")
   const [retailerLossReason, setRetailerLossReason] = useState("")
@@ -413,7 +415,7 @@ export default function OpportunityDetailPage() {
     setHasFieldsChanged(false)
     toast({
       title: "資料已更新",
-      description: "機會已標記為流失",
+      description: "機會已標記為流��",
     })
   }
 
