@@ -457,7 +457,7 @@ export default function OpportunityDetailPage() {
 
     if (activityType === "task" && !newActivity.dueDate) {
       toast({
-        title: "請選擇截止日期",
+        title: "請選擇��止日期",
         description: "請選擇工作的截止日期",
         variant: "destructive",
       })
@@ -683,7 +683,7 @@ export default function OpportunityDetailPage() {
                         <SelectContent>
                           <SelectItem value="contact">聯繫</SelectItem>
                           <SelectItem value="test-drive">試駕</SelectItem>
-                          <SelectItem value="vehicle-selection">車型選擇</SelectItem>
+                          <SelectItem value="vehicle-selection">車��選擇</SelectItem>
                           <SelectItem value="trade-in">舊車處理</SelectItem>
                           <SelectItem value="negotiation">談判</SelectItem>
                           <SelectItem value="lost">Lost</SelectItem>
@@ -1368,54 +1368,64 @@ export default function OpportunityDetailPage() {
                 </Select>
               </div>
 
-              {/* 根據選擇顯示不同的必填提示 */}
-              {boughtCompetitor && (
-                <div className={`rounded-lg p-3 text-sm ${boughtCompetitor === "yes" ? "bg-amber-50 border border-amber-200" : "bg-blue-50 border border-blue-200"}`}>
-                  {boughtCompetitor === "yes" ? (
-                    <p className="text-amber-700">客戶已購買競牌車輛，請填寫「購買的品牌」和「購買的車款」</p>
-                  ) : (
-                    <p className="text-blue-700">請填寫「新目標日期」以便後續追蹤</p>
-                  )}
+              {/* 未選擇時的提示 */}
+              {!boughtCompetitor && (
+                <div className="rounded-lg p-3 text-sm bg-muted border border-border">
+                  <p className="text-muted-foreground">請先選擇「是否購買競牌車輛」，以顯示後續填寫欄位</p>
                 </div>
               )}
 
-              {/* 購買的品牌 */}
-              <div className="space-y-2">
-                <Label>
-                  購買的品牌
-                  {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
-                </Label>
-                <Input
-                  value={competitorBrand}
-                  onChange={(e) => setCompetitorBrand(e.target.value)}
-                  placeholder="例如：BMW、Mercedes-Benz"
-                />
-              </div>
+              {/* 選擇後顯示的欄位區塊 */}
+              {boughtCompetitor && (
+                <>
+                  {/* 根據選擇顯示不同的必填提示 */}
+                  <div className={`rounded-lg p-3 text-sm ${boughtCompetitor === "yes" ? "bg-amber-50 border border-amber-200" : "bg-blue-50 border border-blue-200"}`}>
+                    {boughtCompetitor === "yes" ? (
+                      <p className="text-amber-700">客戶已購買競牌車輛，請填寫「購買的品牌」和「購買的車款」</p>
+                    ) : (
+                      <p className="text-blue-700">請填寫「新目標日期」以便後續追蹤</p>
+                    )}
+                  </div>
 
-              {/* 購買的車款 */}
-              <div className="space-y-2">
-                <Label>
-                  購買的車款
-                  {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
-                </Label>
-                <Input
-                  value={competitorModel}
-                  onChange={(e) => setCompetitorModel(e.target.value)}
-                  placeholder="例如：X5、GLE"
-                />
-              </div>
+                  {/* 購買的品牌 */}
+                  <div className="space-y-2">
+                    <Label>
+                      購買的品牌
+                      {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                    </Label>
+                    <Input
+                      value={competitorBrand}
+                      onChange={(e) => setCompetitorBrand(e.target.value)}
+                      placeholder="例如：BMW、Mercedes-Benz"
+                    />
+                  </div>
 
-              {/* 新目標日期 */}
-              <div className="space-y-2">
-                <Label>
-                  新目標日期
-                  {boughtCompetitor && boughtCompetitor !== "yes" && <span className="text-destructive"> *</span>}
-                </Label>
-                <DatePicker
-                  date={newTargetDate}
-                  onDateChange={setNewTargetDate}
-                />
-              </div>
+                  {/* 購買的車款 */}
+                  <div className="space-y-2">
+                    <Label>
+                      購買的車款
+                      {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                    </Label>
+                    <Input
+                      value={competitorModel}
+                      onChange={(e) => setCompetitorModel(e.target.value)}
+                      placeholder="例如：X5、GLE"
+                    />
+                  </div>
+
+                  {/* 新目標日期 */}
+                  <div className="space-y-2">
+                    <Label>
+                      新目標日期
+                      {boughtCompetitor !== "yes" && <span className="text-destructive"> *</span>}
+                    </Label>
+                    <DatePicker
+                      date={newTargetDate}
+                      onDateChange={setNewTargetDate}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
