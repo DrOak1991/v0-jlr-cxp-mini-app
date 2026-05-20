@@ -683,6 +683,18 @@ export function getAccountById(id: string): Account | undefined {
   return mockAccounts.find((account) => account.id === id)
 }
 
+export function searchAccounts(query: string): Account[] {
+  if (!query.trim()) return mockAccounts.slice(0, 10) // 無搜尋時返回前 10 筆
+  const lowerQuery = query.toLowerCase().trim()
+  return mockAccounts.filter(
+    (account) =>
+      account.cxpName?.toLowerCase().includes(lowerQuery) ||
+      account.phone?.includes(lowerQuery) ||
+      account.mobilePhone?.includes(lowerQuery) ||
+      account.email?.toLowerCase().includes(lowerQuery)
+  )
+}
+
 export function getLeadById(id: string): Lead | undefined {
   return mockLeads.find((lead) => lead.id === id)
 }

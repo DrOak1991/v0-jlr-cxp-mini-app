@@ -48,12 +48,14 @@ import {
   CheckCircle2,
   ClipboardList,
   ChevronLeft,
+  Search,
+  User,
 } from "lucide-react"
 import type { Lead, Activity, TaskActivity, TaskStatus, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { DatePicker, DateTimePicker } from "@/components/date-picker"
-import { getLeadById, getActivitiesByLeadId } from "@/lib/mock-data"
+import { getLeadById, getActivitiesByLeadId, searchAccounts } from "@/lib/mock-data"
 import { MultiSelect } from "@/components/multi-select"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
@@ -133,6 +135,8 @@ export default function LeadDetailPage() {
 
   // Existing car selection sheet states
   const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
   const [carBrandSearch, setCarBrandSearch] = useState("")
   const [carModelSearch, setCarModelSearch] = useState("")
 
@@ -1134,11 +1138,16 @@ export default function LeadDetailPage() {
                 {lead.leadSource === "referral" && (
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">轉介者</Label>
-                    <Input
-                      value={lead.referrer || ""}
-                      onChange={(e) => setLead({ ...lead, referrer: e.target.value })}
-                      placeholder="請輸入轉介者姓名"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsReferrerSheetOpen(true)}
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+                    >
+                      <span className={lead.referrer ? "text-foreground" : "text-muted-foreground"}>
+                        {lead.referrer || "點擊搜尋轉介者"}
+                      </span>
+                      <Search className="h-4 w-4 text-muted-foreground" />
+                    </button>
                   </div>
                 )}
               </div>
@@ -1289,6 +1298,53 @@ export default function LeadDetailPage() {
         </Button>
         */}
       </div>
+
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((account) => (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => {
+                    setLead({ ...lead, referrer: account.cxpName })
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{account.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{account.phone || account.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Existing Car Selection Sheet */}
       <Sheet open={isExistingCarSheetOpen} onOpenChange={setIsExistingCarSheetOpen}>
@@ -1753,7 +1809,7 @@ export default function LeadDetailPage() {
                   ) : (
                     <label className="cursor-pointer block">
                       <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">點擊上傳���照正面</span>
+                      <span className="text-sm text-muted-foreground">點擊上傳證照正面</span>
                       <input
                         type="file"
                         accept="image/*"

@@ -44,6 +44,8 @@ import {
   Plus,
   ClipboardList,
   ChevronLeft,
+  Search,
+  User,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -54,7 +56,7 @@ import { DatePicker } from "@/components/date-picker"
 import type { Opportunity, Account, Activity, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
+import { getOpportunityById, getActivitiesByOpportunityId, getAccountById, searchAccounts } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 
@@ -100,6 +102,9 @@ export default function OpportunityDetailPage() {
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
   const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
+  const [referrer, setReferrer] = useState("")
   const [carBrandSearch, setCarBrandSearch] = useState("")
   const [carModelSearch, setCarModelSearch] = useState("")
 
@@ -415,7 +420,7 @@ export default function OpportunityDetailPage() {
     setHasFieldsChanged(false)
     toast({
       title: "資料已更新",
-      description: "機會已標記為�����������",
+      description: "機會已標記為流失",
     })
   }
 
@@ -1051,6 +1056,26 @@ export default function OpportunityDetailPage() {
                   : "未設定"}
               </p>
             )}
+            {/* 轉介者欄位 - 當選擇 referral 時顯示 */}
+            {opportunity.leadSource === "referral" && (
+              isEditing ? (
+                <div className="mt-2">
+                  <Label className="text-sm text-muted-foreground">轉介者</Label>
+                  <button
+                    type="button"
+                    onClick={() => setIsReferrerSheetOpen(true)}
+                    className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+                  >
+                    <span className={referrer ? "text-foreground" : "text-muted-foreground"}>
+                      {referrer || "點擊搜尋轉介者"}
+                    </span>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              ) : referrer && (
+                <p className="text-sm text-muted-foreground mt-1">轉介者：{referrer}</p>
+              )
+            )}
           </div>
 
           {/* 現有車輛品牌 - 編輯模式下使用灰色匡包裝 */}
@@ -1361,6 +1386,53 @@ export default function OpportunityDetailPage() {
             <Button className="w-full" onClick={handleSaveActivity}>
               {activityType === "event" ? "新增事件" : "新增工作"}
             </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((account) => (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => {
+                    setReferrer(account.cxpName)
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{account.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{account.phone || account.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
