@@ -1103,7 +1103,7 @@ export default function LeadDetailPage() {
 
           {/* 顧客想購買 SV / V8 車款 */}
           <div className="flex items-center justify-between">
-            <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
+            <Label className="text-sm text-muted-foreground">顧客想購買 SV / OCTA / V8 車款</Label>
             {isEditing ? (
               <Switch
                 checked={lead.performancePreference || false}

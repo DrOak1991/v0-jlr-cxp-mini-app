@@ -415,7 +415,7 @@ export default function OpportunityDetailPage() {
     setHasFieldsChanged(false)
     toast({
       title: "資料已更新",
-      description: "機會已標記為流��",
+      description: "機會已標記為�����",
     })
   }
 
@@ -1007,7 +1007,7 @@ export default function OpportunityDetailPage() {
 
           {/* SV/V8 偏好 */}
           <div>
-            <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
+            <Label className="text-sm text-muted-foreground">顧客想購買 SV / OCTA / V8 車款</Label>
             {isEditing ? (
               <div className="mt-1">
                 <Switch
