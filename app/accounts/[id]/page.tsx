@@ -1061,7 +1061,8 @@ export default function AccountDetailPage() {
               <div className="bg-muted/50 rounded-lg p-3">
                 {activityType === "event" ? (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                    任何需要與公司主管報備的行程，例如：客戶拜訪、邀約至展示中心賞車...等等，請將行程建立成事件。<br />
+                    若是試駕，請從「建立試駕同意書」單元新增。
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground leading-relaxed">
