@@ -43,6 +43,7 @@ import {
   Heart,
   Search,
   User,
+  ChevronDown,
 } from "lucide-react"
 import Image from "next/image"
 import type { Account, Activity } from "@/types"
@@ -85,6 +86,7 @@ export default function AccountDetailPage() {
   // Activity sheet states
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
@@ -94,6 +96,19 @@ export default function AccountDetailPage() {
     dueDate: undefined as Date | undefined,
     status: "not-started" as "not-started" | "in-progress" | "completed",
   })
+
+  // 主題建議選項
+  const eventSubjectSuggestions = [
+    "邀約至展示中心賞車",
+    "客戶拜訪",
+    "討論報價",
+    "車輛抵購估價",
+  ]
+  const taskSubjectSuggestions = [
+    "電話聯繫",
+    "提供報價",
+    "發送簡訊或電子郵件",
+  ]
 
   const brandModels: Record<string, string[]> = {
     Jaguar: ["F-PACE", "E-PACE", "I-PACE", "F-TYPE", "XF", "XE"],
@@ -1101,11 +1116,40 @@ export default function AccountDetailPage() {
               <Label>
                 主題 <span className="text-destructive">*</span>
               </Label>
-              <Input
-                value={newActivity.subject}
-                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
-                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
-              />
+              <div className="relative">
+                <div className="relative">
+                  <Input
+                    value={newActivity.subject}
+                    onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                    placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：電話聯繫"}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isSubjectDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+                </div>
+                {isSubjectDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {(activityType === "event" ? eventSubjectSuggestions : taskSubjectSuggestions).map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+                        onClick={() => {
+                          setNewActivity({ ...newActivity, subject: suggestion })
+                          setIsSubjectDropdownOpen(false)
+                        }}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
