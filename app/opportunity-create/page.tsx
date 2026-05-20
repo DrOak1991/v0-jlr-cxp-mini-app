@@ -37,8 +37,7 @@ function NewOpportunityContent() {
   }, [accountId])
 
   // Form state
-  const [lastName, setLastName] = useState("")
-  const [firstName, setFirstName] = useState("")
+  const [opportunityName, setOpportunityName] = useState("")
   const [notes, setNotes] = useState("")
   const [stage, setStage] = useState<string>("contact")
   const [carType, setCarType] = useState<string>("")
@@ -58,11 +57,11 @@ function NewOpportunityContent() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!lastName.trim()) newErrors.lastName = "請輸入姓氏"
-    if (!firstName.trim()) newErrors.firstName = "請輸入名字"
+    if (!opportunityName.trim()) newErrors.opportunityName = "請輸入商機名稱"
     if (!carType) newErrors.carType = "請選擇購車方式"
     if (!interestedModel) newErrors.interestedModel = "請選擇主要興趣車款"
     if (!leadSource) newErrors.leadSource = "請選擇商機來源"
+    if (!orderDate) newErrors.orderDate = "請選擇訂購日期"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -80,12 +79,10 @@ function NewOpportunityContent() {
       return
     }
 
-    const fullName = `${lastName}${firstName}`
-
     // In real app, would call API to create opportunity
     toast({
       title: "機會已建立",
-      description: `已成功建立機會：${fullName}`,
+      description: `已成功建立機會：${opportunityName}`,
     })
 
     // Navigate back to account detail or opportunities list
@@ -145,32 +142,18 @@ function NewOpportunityContent() {
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-base">基本資訊</h3>
 
-            {/* 姓氏 */}
+            {/* 商機名稱 */}
             <div className="space-y-2">
               <Label>
-                姓氏 <span className="text-red-500">*</span>
+                商機名稱 <span className="text-red-500">*</span>
               </Label>
               <Input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="請輸入姓氏"
-                className={errors.lastName ? "border-red-500" : ""}
+                value={opportunityName}
+                onChange={(e) => setOpportunityName(e.target.value)}
+                placeholder="請輸入商機名稱"
+                className={errors.opportunityName ? "border-red-500" : ""}
               />
-              {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
-            </div>
-
-            {/* 名字 */}
-            <div className="space-y-2">
-              <Label>
-                名字 <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="請輸入名字"
-                className={errors.firstName ? "border-red-500" : ""}
-              />
-              {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+              {errors.opportunityName && <p className="text-xs text-red-500">{errors.opportunityName}</p>}
             </div>
 
             {/* 機會階段 */}
@@ -196,13 +179,16 @@ function NewOpportunityContent() {
 
             {/* 訂購日期 */}
             <div className="space-y-2">
-              <Label>訂購日期</Label>
+              <Label>
+                訂購日期 <span className="text-red-500">*</span>
+              </Label>
               <input
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className={`w-full px-3 py-2 border rounded-md bg-background ${errors.orderDate ? "border-red-500" : "border-input"}`}
               />
+              {errors.orderDate && <p className="text-xs text-red-500">{errors.orderDate}</p>}
             </div>
 
             {/* 交車日期 */}
