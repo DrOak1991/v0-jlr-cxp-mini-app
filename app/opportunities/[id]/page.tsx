@@ -109,6 +109,8 @@ export default function OpportunityDetailPage() {
   const [referrer, setReferrer] = useState("")
   const [carBrandSearch, setCarBrandSearch] = useState("")
   const [carModelSearch, setCarModelSearch] = useState("")
+  const [competitorBrandSearch, setCompetitorBrandSearch] = useState("")
+  const [competitorModelSearch, setCompetitorModelSearch] = useState("")
 
   // 現有車品牌選項
   const existingCarBrandOptions: Record<string, string[]> = {
@@ -144,6 +146,29 @@ export default function OpportunityDetailPage() {
     setIsExistingCarSheetOpen(false)
     setCarBrandSearch("")
     setCarModelSearch("")
+  }
+
+  // 競牌車輛篩選
+  const filteredCompetitorBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(competitorBrandSearch.toLowerCase())
+  )
+  const availableCompetitorModels = competitorBrand ? existingCarBrandOptions[competitorBrand] || [] : []
+  const filteredCompetitorModels = availableCompetitorModels.filter(model =>
+    model.toLowerCase().includes(competitorModelSearch.toLowerCase())
+  )
+
+  const handleSelectCompetitorBrand = (brand: string) => {
+    setCompetitorBrand(brand)
+    setCompetitorModel("")
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
+  }
+
+  const handleSelectCompetitorModel = (model: string) => {
+    setCompetitorModel(model)
+    setIsCompetitorCarSheetOpen(false)
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
   }
 
   // 流失原因表單狀態
