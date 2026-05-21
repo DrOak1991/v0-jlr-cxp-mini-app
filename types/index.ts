@@ -138,7 +138,7 @@ export interface EventActivity {
   subject: string
   description?: string
   startDateTime: Date
-  endDateTime: Date
+  endDateTime?: Date
   createdAt: Date
   testDriveConsentId?: string // 關聯的試駕同意書 ID（僅適用於試駕相關事件）
 }

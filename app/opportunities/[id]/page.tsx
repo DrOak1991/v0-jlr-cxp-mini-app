@@ -540,24 +540,27 @@ export default function OpportunityDetailPage() {
     }
 
     // Create new activity (mock)
-    const activity: Activity = {
-      id: `new-${Date.now()}`,
-      type: activityType,
-      subject: newActivity.subject,
-      description: newActivity.description || undefined,
-      createdAt: new Date(),
-      ...(activityType === "event"
-        ? {
-            startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
-            endDateTime: newActivity.endTime
-              ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
-              : undefined,
-          }
-        : {
-            dueDate: newActivity.dueDate,
-            status: newActivity.status,
-          }),
-    }
+    const activity: Activity = activityType === "event"
+      ? {
+          id: `new-${Date.now()}`,
+          type: "event" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
+          startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+          endDateTime: newActivity.endTime
+            ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+            : undefined,
+        }
+      : {
+          id: `new-${Date.now()}`,
+          type: "task" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
+          dueDate: newActivity.dueDate!,
+          status: newActivity.status,
+        }
 
     setActivities([activity, ...activities])
     setIsNewActivitySheetOpen(false)
@@ -975,7 +978,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.powerType === "diesel" ? "柴油"
                   : opportunity.powerType === "electric" ? "純電"
                   : opportunity.powerType === "hybrid" ? "混合動力"
-                  : opportunity.powerType === "mild-hybrid" ? "���效輕油電"
+                  : opportunity.powerType === "mild-hybrid" ? "高效輕油電"
                   : "未設定"}
               </p>
             )}
