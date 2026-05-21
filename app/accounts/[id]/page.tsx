@@ -11,6 +11,15 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -87,6 +96,7 @@ export default function AccountDetailPage() {
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
+  const [isOwnerRegistrationDialogOpen, setIsOwnerRegistrationDialogOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
@@ -562,9 +572,21 @@ export default function AccountDetailPage() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="font-medium mt-0.5">
-                    {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="font-medium">
+                      {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
+                    </p>
+                    {account.maintenanceStatus === "purchased" && account.lineStatus === "not-joined" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setIsOwnerRegistrationDialogOpen(true)}
+                      >
+                        完成車主註冊
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -1609,6 +1631,23 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
+
+      {/* 車主註冊完成提示彈窗 */}
+      <AlertDialog open={isOwnerRegistrationDialogOpen} onOpenChange={setIsOwnerRegistrationDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>車主綁定完成</AlertDialogTitle>
+            <AlertDialogDescription>
+              系統已協助此使用者完成車主綁定。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsOwnerRegistrationDialogOpen(false)}>
+              關閉
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
