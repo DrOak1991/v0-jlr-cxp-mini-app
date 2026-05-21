@@ -65,6 +65,7 @@ export interface Opportunity {
   orderDate?: Date // 訂單日期
   deliveryDate?: Date // 交車日期
   lostReason?: string // 流失原因（僅當 stage = lost）
+  notes?: string // 備註
   // 活動記錄
   activities?: Activity[]
   createdAt: Date
@@ -124,6 +125,7 @@ export interface Account {
   maintenanceStatus?: "purchased" | "interested" | "none"
   interests?: string[] // 興趣
   notes?: string
+  testDriveConsent?: TestDriveConsent
   // 活動記錄
   activities?: Activity[]
 }

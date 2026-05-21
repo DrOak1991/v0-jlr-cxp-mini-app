@@ -575,7 +575,7 @@ export default function AccountDetailPage() {
                     <div className="mt-1">
                       <DatePicker
                         date={account.birthday ?? undefined}
-                        onDateChange={(date) => setAccount({ ...account, birthday: date ?? null })}
+                        onDateChange={(date) => setAccount({ ...account, birthday: date ?? undefined })}
                       />
                     </div>
                   ) : (

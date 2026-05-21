@@ -96,8 +96,8 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
-  const [notes, setNotes] = useState(opportunityData?.notes || "")
-  const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
+  const [notes, setNotes] = useState("")
+  const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
@@ -975,7 +975,7 @@ export default function OpportunityDetailPage() {
                   : opportunity.powerType === "diesel" ? "柴油"
                   : opportunity.powerType === "electric" ? "純電"
                   : opportunity.powerType === "hybrid" ? "混合動力"
-                  : opportunity.powerType === "mild-hybrid" ? "高效輕油電"
+                  : opportunity.powerType === "mild-hybrid" ? "���效輕油電"
                   : "未設定"}
               </p>
             )}
