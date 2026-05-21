@@ -103,6 +103,7 @@ export default function OpportunityDetailPage() {
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
   const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [isCompetitorCarSheetOpen, setIsCompetitorCarSheetOpen] = useState(false)
   const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
   const [referrerSearch, setReferrerSearch] = useState("")
   const [referrer, setReferrer] = useState("")
@@ -1142,7 +1143,7 @@ export default function OpportunityDetailPage() {
               <div className="border-t pt-4 space-y-4">
                 {/* 是否購買競牌車輛 */}
                 <div className="space-y-2">
-                  <Label>是否購買競牌車輛？</Label>
+                  <Label>是否��買競牌車輛？</Label>
                   <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
                     <SelectTrigger>
                       <SelectValue placeholder="請選擇" />
