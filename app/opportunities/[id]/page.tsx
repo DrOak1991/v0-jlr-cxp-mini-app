@@ -654,7 +654,7 @@ export default function OpportunityDetailPage() {
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleCall}>
                   <PhoneCall className="h-4 w-4 mr-2" />
-                  撥打
+                  ��打
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleEmail}>
                   <MessageCircle className="h-4 w-4 mr-2" />
@@ -1168,7 +1168,7 @@ export default function OpportunityDetailPage() {
               <div className="border-t pt-4 space-y-4">
                 {/* 是否購買競牌車輛 */}
                 <div className="space-y-2">
-                  <Label>是否��買競牌車輛？</Label>
+                  <Label>是否購買競牌車輛？</Label>
                   <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
                     <SelectTrigger>
                       <SelectValue placeholder="請選擇" />
