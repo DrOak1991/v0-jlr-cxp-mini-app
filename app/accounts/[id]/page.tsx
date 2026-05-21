@@ -41,10 +41,13 @@ import {
   AlertCircle,
   FileText,
   Heart,
+  Search,
+  User,
+  ChevronDown,
 } from "lucide-react"
 import Image from "next/image"
 import type { Account, Activity } from "@/types"
-import { getAccountById, getOpportunitiesByAccountId } from "@/lib/mock-data"
+import { getAccountById, getOpportunitiesByAccountId, searchAccounts } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 
 export default function AccountDetailPage() {
@@ -58,6 +61,9 @@ export default function AccountDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])
   const [notes, setNotes] = useState("")
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
+  const [referrer, setReferrer] = useState("")
   const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
@@ -80,6 +86,7 @@ export default function AccountDetailPage() {
   // Activity sheet states
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
@@ -89,6 +96,19 @@ export default function AccountDetailPage() {
     dueDate: undefined as Date | undefined,
     status: "not-started" as "not-started" | "in-progress" | "completed",
   })
+
+  // 主題建議選項
+  const eventSubjectSuggestions = [
+    "邀約至展示中心賞車",
+    "客戶拜訪",
+    "討論報價",
+    "車輛抵購估價",
+  ]
+  const taskSubjectSuggestions = [
+    "電話聯繫",
+    "提供報價",
+    "發送簡訊或電子郵件",
+  ]
 
   const brandModels: Record<string, string[]> = {
     Jaguar: ["F-PACE", "E-PACE", "I-PACE", "F-TYPE", "XF", "XE"],
@@ -348,13 +368,13 @@ export default function AccountDetailPage() {
   }
 
   const leadSourceLabels: Record<string, string> = {
-    "walk-in": "來店客",
-    referral: "轉介紹",
-    "retailer-experience": "經銷商體驗",
-    "existing-customer": "既有客戶",
-    "phone-in": "電話詢問",
-    "line-booking": "LINE 預約",
-    "field-visit": "外訪",
+    "walk-in": "來店客 (Walk-in)",
+    referral: "轉介 (Referral)",
+    "retailer-experience": "經銷商外展 / 體驗活動 (Retailer Experience)",
+    "existing-customer": "既有客戶 (Existing Customer)",
+    "phone-in": "來電客 (Phone-in)",
+    "line-booking": "網路客預約 (LINE)",
+    "field-visit": "陌生開發 (Field Visit)",
   }
 
   const maintenanceStatusLabels: Record<string, string> = {
@@ -616,6 +636,26 @@ export default function AccountDetailPage() {
                       {account.leadSource ? leadSourceLabels[account.leadSource] : "未設定"}
                     </p>
                   )}
+                  {/* 轉介者欄位 - 當選擇 referral 時顯示 */}
+                  {account.leadSource === "referral" && (
+                    isEditing ? (
+                      <div className="mt-2">
+                        <span className="text-muted-foreground text-sm">轉介者</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsReferrerSheetOpen(true)}
+                          className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+                        >
+                          <span className={referrer ? "text-foreground" : "text-muted-foreground"}>
+                            {referrer || "點擊搜尋轉介者"}
+                          </span>
+                          <Search className="h-4 w-4 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ) : referrer && (
+                      <p className="text-sm text-muted-foreground mt-1">轉介者：{referrer}</p>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -723,7 +763,7 @@ export default function AccountDetailPage() {
               )}
             </div>
             <div>
-              <span className="text-muted-foreground">SV/V8 偏好</span>
+              <span className="text-muted-foreground text-sm">顧客想購買 SV / OCTA / V8 車款</span>
               {isEditing ? (
                 <div className="mt-1">
                   <Switch
@@ -1061,7 +1101,8 @@ export default function AccountDetailPage() {
               <div className="bg-muted/50 rounded-lg p-3">
                 {activityType === "event" ? (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                    任何需要與公司主管報備的行程，例如：客戶拜訪、邀約至展示中心賞車...等等，請將行程建立成事件。<br />
+                    若是試駕，請從「建立試駕同意書」單元新增。
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1075,11 +1116,40 @@ export default function AccountDetailPage() {
               <Label>
                 主題 <span className="text-destructive">*</span>
               </Label>
-              <Input
-                value={newActivity.subject}
-                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
-                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
-              />
+              <div className="relative">
+                <div className="relative">
+                  <Input
+                    value={newActivity.subject}
+                    onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                    placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：電話聯繫"}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isSubjectDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+                </div>
+                {isSubjectDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {(activityType === "event" ? eventSubjectSuggestions : taskSubjectSuggestions).map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+                        onClick={() => {
+                          setNewActivity({ ...newActivity, subject: suggestion })
+                          setIsSubjectDropdownOpen(false)
+                        }}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -1475,6 +1545,53 @@ export default function AccountDetailPage() {
               )}
             </div>
           )}
+        </SheetContent>
+      </Sheet>
+
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((acc) => (
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => {
+                    setReferrer(acc.cxpName)
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{acc.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{acc.phone || acc.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
 

@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, Car } from "lucide-react"
+import { ArrowLeft, Car, User, Phone, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +12,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
-import { getAccountById } from "@/lib/mock-data"
+import { getAccountById, searchAccounts } from "@/lib/mock-data"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import type { Account } from "@/types"
 
 function NewOpportunityContent() {
   const router = useRouter()
@@ -23,20 +25,19 @@ function NewOpportunityContent() {
   const accountId = searchParams.get("accountId")
 
   // Account data
-  const [accountName, setAccountName] = useState("")
+  const [account, setAccount] = useState<Account | null>(null)
 
   useEffect(() => {
     if (accountId) {
-      const account = getAccountById(accountId)
-      if (account) {
-        setAccountName(account.name)
+      const accountData = getAccountById(accountId)
+      if (accountData) {
+        setAccount(accountData)
       }
     }
   }, [accountId])
 
   // Form state
-  const [lastName, setLastName] = useState("")
-  const [firstName, setFirstName] = useState("")
+  const [opportunityName, setOpportunityName] = useState("")
   const [notes, setNotes] = useState("")
   const [stage, setStage] = useState<string>("contact")
   const [carType, setCarType] = useState<string>("")
@@ -49,6 +50,9 @@ function NewOpportunityContent() {
   const [orderDate, setOrderDate] = useState<string>("")
   const [deliveryDate, setDeliveryDate] = useState<string>("")
   const [leadSource, setLeadSource] = useState<string>("")
+  const [referrer, setReferrer] = useState("")
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
   const [interestedSvV8, setInterestedSvV8] = useState(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -56,11 +60,11 @@ function NewOpportunityContent() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!lastName.trim()) newErrors.lastName = "請輸入姓氏"
-    if (!firstName.trim()) newErrors.firstName = "請輸入名字"
+    if (!opportunityName.trim()) newErrors.opportunityName = "請輸入機會名稱"
     if (!carType) newErrors.carType = "請選擇購車方式"
     if (!interestedModel) newErrors.interestedModel = "請選擇主要興趣車款"
     if (!leadSource) newErrors.leadSource = "請選擇商機來源"
+    if (!orderDate) newErrors.orderDate = "請選擇訂購日期"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -78,12 +82,10 @@ function NewOpportunityContent() {
       return
     }
 
-    const fullName = `${lastName}${firstName}`
-
     // In real app, would call API to create opportunity
     toast({
       title: "機會已建立",
-      description: `已成功建立機會：${fullName}`,
+      description: `已成功建立機會：${opportunityName}`,
     })
 
     // Navigate back to account detail or opportunities list
@@ -104,6 +106,24 @@ function NewOpportunityContent() {
         <h1 className="text-lg font-semibold truncate">新增機會</h1>
       </header>
 
+      {/* 帳戶資訊區塊 */}
+      {account && (
+        <div className="bg-muted/50 border-b px-4 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <User className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm truncate">{account.cxpName}</p>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Phone className="h-3 w-3" />
+                <span>{account.phone}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,40 +131,18 @@ function NewOpportunityContent() {
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-base">基本資訊</h3>
 
-            {/* 關聯帳戶 */}
-            {accountName && (
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">關聯帳戶</Label>
-                <p className="text-foreground font-medium">{accountName}</p>
-              </div>
-            )}
-
-            {/* 姓氏 */}
+            {/* 機會名稱 */}
             <div className="space-y-2">
               <Label>
-                姓氏 <span className="text-red-500">*</span>
+                機會名稱 <span className="text-red-500">*</span>
               </Label>
               <Input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="請輸入姓氏"
-                className={errors.lastName ? "border-red-500" : ""}
+                value={opportunityName}
+                onChange={(e) => setOpportunityName(e.target.value)}
+                placeholder="請輸入機會名稱"
+                className={errors.opportunityName ? "border-red-500" : ""}
               />
-              {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
-            </div>
-
-            {/* 名字 */}
-            <div className="space-y-2">
-              <Label>
-                名字 <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="請輸入名字"
-                className={errors.firstName ? "border-red-500" : ""}
-              />
-              {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+              {errors.opportunityName && <p className="text-xs text-red-500">{errors.opportunityName}</p>}
             </div>
 
             {/* 機會階段 */}
@@ -170,13 +168,16 @@ function NewOpportunityContent() {
 
             {/* 訂購日期 */}
             <div className="space-y-2">
-              <Label>訂購日期</Label>
+              <Label>
+                訂購日期 <span className="text-red-500">*</span>
+              </Label>
               <input
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className={`w-full px-3 py-2 border rounded-md bg-background ${errors.orderDate ? "border-red-500" : "border-input"}`}
               />
+              {errors.orderDate && <p className="text-xs text-red-500">{errors.orderDate}</p>}
             </div>
 
             {/* 交車日期 */}
@@ -277,9 +278,9 @@ function NewOpportunityContent() {
               </Select>
             </div>
 
-            {/* 顧客想購買 SV / V8 車款 */}
+            {/* 顧客想購買 SV / OCTA / V8 車款 */}
             <div className="space-y-2">
-              <Label>顧客想購買 SV / V8 車款</Label>
+              <Label>顧客想購買 SV / OCTA / V8 車款</Label>
               <div className="mt-1">
                 <Switch
                   checked={interestedSvV8}
@@ -321,6 +322,22 @@ function NewOpportunityContent() {
                 </SelectContent>
               </Select>
               {errors.leadSource && <p className="text-xs text-red-500">{errors.leadSource}</p>}
+              {/* 轉介者欄位 - 當選擇 referral 時顯示 */}
+              {leadSource === "referral" && (
+                <div className="space-y-2 mt-3">
+                  <Label>轉介者</Label>
+                  <button
+                    type="button"
+                    onClick={() => setIsReferrerSheetOpen(true)}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+                  >
+                    <span className={referrer ? "text-foreground" : "text-muted-foreground"}>
+                      {referrer || "點擊搜尋轉介者"}
+                    </span>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 現有車輛品牌 */}
@@ -361,6 +378,53 @@ function NewOpportunityContent() {
           </Button>
         </form>
       </main>
+
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((acc) => (
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => {
+                    setReferrer(acc.cxpName)
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{acc.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{acc.phone || acc.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

@@ -43,6 +43,10 @@ import {
   Upload,
   Plus,
   ClipboardList,
+  ChevronLeft,
+  ChevronDown,
+  Search,
+  User,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -53,7 +57,7 @@ import { DatePicker } from "@/components/date-picker"
 import type { Opportunity, Account, Activity, TestDriveConsent } from "@/types"
 import { formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { getOpportunityById, getActivitiesByOpportunityId, getAccountById } from "@/lib/mock-data"
+import { getOpportunityById, getActivitiesByOpportunityId, getAccountById, searchAccounts } from "@/lib/mock-data"
 import { ActivityRecord } from "@/components/activity-record"
 import { TestDriveConsentCard } from "@/components/test-drive-consent-card"
 
@@ -98,11 +102,58 @@ export default function OpportunityDetailPage() {
 
   // Lost dialog
   const [isLostDialogOpen, setIsLostDialogOpen] = useState(false)
-  const [lostActiveTab, setLostActiveTab] = useState<"retailer" | "jlr">("retailer")
-  const [retailerLossReason, setRetailerLossReason] = useState("")
-  const [retailerLossDescription, setRetailerLossDescription] = useState("")
-  const [jlrLossReason, setJlrLossReason] = useState("")
-  const [jlrLossDescription, setJlrLossDescription] = useState("")
+  const [isExistingCarSheetOpen, setIsExistingCarSheetOpen] = useState(false)
+  const [isCompetitorCarSheetOpen, setIsCompetitorCarSheetOpen] = useState(false)
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
+  const [referrer, setReferrer] = useState("")
+  const [carBrandSearch, setCarBrandSearch] = useState("")
+  const [carModelSearch, setCarModelSearch] = useState("")
+
+  // 現有車品牌選項
+  const existingCarBrandOptions: Record<string, string[]> = {
+    "BMW": ["X1", "X3", "X5", "X7", "3 Series", "5 Series", "7 Series"],
+    "Mercedes-Benz": ["GLA", "GLC", "GLE", "GLS", "C-Class", "E-Class", "S-Class"],
+    "Audi": ["Q3", "Q5", "Q7", "Q8", "A4", "A6", "A8"],
+    "Volvo": ["XC40", "XC60", "XC90", "S60", "S90", "V60"],
+    "Porsche": ["Cayenne", "Macan", "Taycan", "911", "Panamera"],
+    "Tesla": ["Model 3", "Model Y", "Model S", "Model X"],
+    "Toyota": ["RAV4", "Camry", "Corolla Cross", "Land Cruiser"],
+    "Lexus": ["RX", "NX", "UX", "ES", "LS", "LX"],
+  }
+
+  // 篩選品牌列表
+  const filteredBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(carBrandSearch.toLowerCase())
+  )
+
+  // 篩選車款列表
+  const availableModels = opportunity.existingCarBrand ? existingCarBrandOptions[opportunity.existingCarBrand] || [] : []
+  const filteredModels = availableModels.filter(model =>
+    model.toLowerCase().includes(carModelSearch.toLowerCase())
+  )
+
+  const handleSelectBrand = (brand: string) => {
+    setOpportunity({ ...opportunity, existingCarBrand: brand, existingCarModel: "" })
+    setCarBrandSearch("")
+    setCarModelSearch("")
+  }
+
+  const handleSelectModel = (model: string) => {
+    setOpportunity({ ...opportunity, existingCarModel: model })
+    setIsExistingCarSheetOpen(false)
+    setCarBrandSearch("")
+    setCarModelSearch("")
+  }
+
+  // 流失原因表單狀態
+  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
+  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
+  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
+  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
+  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
+  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
+  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
 
   // Loss reason options (shared between Retailer and JLR)
   const lossReasonOptions = [
@@ -129,6 +180,7 @@ export default function OpportunityDetailPage() {
   // Activity sheet states
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
@@ -138,6 +190,19 @@ export default function OpportunityDetailPage() {
     dueDate: undefined as Date | undefined,
     status: "not-started" as "not-started" | "in-progress" | "completed",
   })
+
+  // 主題建議選項
+  const eventSubjectSuggestions = [
+    "邀約至展示中心賞車",
+    "客戶拜訪",
+    "討論報價",
+    "車輛抵購估價",
+  ]
+  const taskSubjectSuggestions = [
+    "電話聯繫",
+    "提供報價",
+    "發送簡訊或電子郵件",
+  ]
 
   // Test drive invite states
   const [testDriveStep, setTestDriveStep] = useState<"form" | "qrcode">("form")
@@ -208,10 +273,12 @@ export default function OpportunityDetailPage() {
       if (newOpportunityData.lostReason) {
         try {
           const lossInfo = JSON.parse(newOpportunityData.lostReason)
-          if (lossInfo.retailerLossReason) setRetailerLossReason(lossInfo.retailerLossReason)
-          if (lossInfo.retailerLossDescription) setRetailerLossDescription(lossInfo.retailerLossDescription)
-          if (lossInfo.jlrLossReason) setJlrLossReason(lossInfo.jlrLossReason)
-          if (lossInfo.jlrLossDescription) setJlrLossDescription(lossInfo.jlrLossDescription)
+          if (lossInfo.lostCategory) setLostCategory(lossInfo.lostCategory)
+          if (lossInfo.lostReason) setLostReason(lossInfo.lostReason)
+          if (lossInfo.lostNotes) setLostNotes(lossInfo.lostNotes)
+          if (lossInfo.boughtCompetitor) setBoughtCompetitor(lossInfo.boughtCompetitor)
+          if (lossInfo.competitorBrand) setCompetitorBrand(lossInfo.competitorBrand)
+          if (lossInfo.competitorModel) setCompetitorModel(lossInfo.competitorModel)
         } catch {
           // 如果不是 JSON 格式，忽略
         }
@@ -238,12 +305,14 @@ export default function OpportunityDetailPage() {
 
   const performSave = () => {
     // 如果在編輯流失原因，需要保存
-    if (opportunity.stage === "lost" && (retailerLossReason || jlrLossReason)) {
+    if (opportunity.stage === "lost" && (lostCategory || lostReason)) {
       const lossInfo = {
-        retailerLossReason,
-        retailerLossDescription: retailerLossDescription.trim(),
-        jlrLossReason,
-        jlrLossDescription: jlrLossDescription.trim(),
+        lostCategory,
+        lostReason: lostReason,
+        lostNotes: lostNotes.trim(),
+        boughtCompetitor,
+        competitorBrand,
+        competitorModel,
       }
       const updatedOpportunity = {
         ...opportunity,
@@ -264,22 +333,48 @@ export default function OpportunityDetailPage() {
   }
 
   const handleLostSave = () => {
-    // 至少需要填寫一種 Loss 原因
-    if (!retailerLossReason && !jlrLossReason) {
+    // 驗證必填欄位
+    if (!lostCategory || !lostReason || !boughtCompetitor) {
       toast({
-        title: "請選擇原因",
-        description: "請至少選擇一種流失原因（Retailer Loss 或 JLR Loss）",
+        title: "請填寫必填欄位",
+        description: "經銷商所失客戶類別、經銷商所失原因、是否購買競牌車輛為必填",
         variant: "destructive",
       })
       return
     }
 
+    // 根據「是否購買競牌車輛」的選擇，驗證條件必填欄位
+    if (boughtCompetitor === "yes") {
+      // 選「是的」：購買的品牌、購買的車款必填
+      if (!competitorBrand.trim() || !competitorModel.trim()) {
+        toast({
+          title: "請填寫購買資訊",
+          description: "已選擇購買競牌車輛，請填寫購買的品牌和車款",
+          variant: "destructive",
+        })
+        return
+      }
+    } else {
+      // 選「否」或「不清楚」：新目標日期必填
+      if (!newTargetDate) {
+        toast({
+          title: "請填寫新目標日期",
+          description: "請選擇新目標日期",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+
     // 組合流失原因資訊
     const lossInfo = {
-      retailerLossReason,
-      retailerLossDescription: retailerLossDescription.trim(),
-      jlrLossReason,
-      jlrLossDescription: jlrLossDescription.trim(),
+      lostCategory,
+      lostReason,
+      lostNotes: lostNotes.trim(),
+      boughtCompetitor,
+      competitorBrand: competitorBrand.trim(),
+      competitorModel: competitorModel.trim(),
+      newTargetDate: newTargetDate?.toISOString(),
     }
 
     const updatedOpportunity = { 
@@ -291,11 +386,13 @@ export default function OpportunityDetailPage() {
     setOriginalOpportunity({ ...updatedOpportunity })
     setIsLostDialogOpen(false)
     // Reset form
-    setRetailerLossReason("")
-    setRetailerLossDescription("")
-    setJlrLossReason("")
-    setJlrLossDescription("")
-    setLostActiveTab("retailer")
+    setLostCategory("")
+    setLostReason("")
+    setLostNotes("")
+    setBoughtCompetitor("")
+    setCompetitorBrand("")
+    setCompetitorModel("")
+    setNewTargetDate(undefined)
     setIsEditing(false)
     setHasFieldsChanged(false)
     toast({
@@ -410,7 +507,7 @@ export default function OpportunityDetailPage() {
 
     if (activityType === "task" && !newActivity.dueDate) {
       toast({
-        title: "請選擇截止日期",
+        title: "請選擇新目標日期",
         description: "請選擇工作的截止日期",
         variant: "destructive",
       })
@@ -484,41 +581,7 @@ export default function OpportunityDetailPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-36">
-        {/* 編輯模式 Header */}
-        {isEditing && (
-          <Card className="p-4 bg-primary/5 border-primary/20">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <Edit className="h-5 w-5" />
-                <span className="font-medium">編輯機會資料</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">姓氏</Label>
-                  <Input
-                    value={opportunity.name?.charAt(0) || ""}
-                    onChange={(e) => {
-                      const firstName = opportunity.name?.slice(1) || ""
-                      setOpportunity({ ...opportunity, name: e.target.value + firstName })
-                    }}
-                    placeholder="姓氏"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">名字</Label>
-                  <Input
-                    value={opportunity.name?.slice(1) || ""}
-                    onChange={(e) => {
-                      const lastName = opportunity.name?.charAt(0) || ""
-                      setOpportunity({ ...opportunity, name: lastName + e.target.value })
-                    }}
-                    placeholder="名字"
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
+
 
         {/* 基本資訊卡片 */}
         <Card className="p-4">
@@ -620,6 +683,18 @@ export default function OpportunityDetailPage() {
 
             {/* 機會狀態 */}
             <div className="space-y-3 pt-3 border-t">
+              {/* 機會名稱 - 僅編輯模式顯示 */}
+              {isEditing && (
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">機會名稱</Label>
+                  <Input
+                    value={opportunity.name || ""}
+                    onChange={(e) => setOpportunity({ ...opportunity, name: e.target.value })}
+                    placeholder="請輸入機會名稱"
+                  />
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
@@ -701,58 +776,49 @@ export default function OpportunityDetailPage() {
             {(() => {
               try {
                 const lossInfo = opportunity.lostReason ? JSON.parse(opportunity.lostReason) : null
-                if (lossInfo && (lossInfo.retailerLossReason || lossInfo.jlrLossReason)) {
+                if (lossInfo && lossInfo.lostCategory) {
+                  // 新格式：lostCategory, lostReason, lostNotes, boughtCompetitor, competitorBrand, competitorModel
+                  const categoryLabel = lossInfo.lostCategory === "product" ? "產品" : lossInfo.lostCategory === "service" ? "服務" : lossInfo.lostCategory
+                  const reasonLabel = lossInfo.lostReason === "design" ? "設計" : lossInfo.lostReason === "price" ? "價格" : lossInfo.lostReason
+                  const boughtLabel = lossInfo.boughtCompetitor === "yes" ? "是" : lossInfo.boughtCompetitor === "no" ? "否" : lossInfo.boughtCompetitor === "unknown" ? "不確定" : lossInfo.boughtCompetitor
+
                   return (
-                    <Tabs defaultValue={lossInfo.retailerLossReason ? "retailer" : "jlr"} className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
-                        <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
-                      </TabsList>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">經銷商所失客戶類別</Label>
+                          <p className="text-sm font-medium mt-1">{categoryLabel}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">經銷商所失原因</Label>
+                          <p className="text-sm font-medium mt-1">{reasonLabel}</p>
+                        </div>
+                      </div>
+                      
+                      {lossInfo.lostNotes && (
+                        <div>
+                          <Label className="text-sm text-muted-foreground">經銷商所失客戶注意事項</Label>
+                          <p className="text-sm font-medium mt-1">{lossInfo.lostNotes}</p>
+                        </div>
+                      )}
 
-                      {/* Retailer Loss Tab */}
-                      <TabsContent value="retailer" className="space-y-4 mt-4">
-                        {lossInfo.retailerLossReason ? (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label className="text-sm text-muted-foreground">Retailer Loss 原因</Label>
-                              <p className="text-sm font-medium">
-                                {lossReasonOptions.find(o => o.value === lossInfo.retailerLossReason)?.label || lossInfo.retailerLossReason}
+                      <div className="border-t pt-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-sm text-muted-foreground">是否購買競牌車輛</Label>
+                            <p className="text-sm font-medium mt-1">{boughtLabel}</p>
+                          </div>
+                          {lossInfo.boughtCompetitor === "yes" && lossInfo.competitorBrand && (
+                            <div>
+                              <Label className="text-sm text-muted-foreground">購買車輛</Label>
+                              <p className="text-sm font-medium mt-1">
+                                {lossInfo.competitorBrand}{lossInfo.competitorModel ? ` ${lossInfo.competitorModel}` : ""}
                               </p>
                             </div>
-                            {lossInfo.retailerLossDescription && (
-                              <div className="space-y-2">
-                                <Label className="text-sm text-muted-foreground">Retailer Loss 說明</Label>
-                                <p className="text-sm font-medium">{lossInfo.retailerLossDescription}</p>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">未記錄 Retailer Loss 原因</p>
-                        )}
-                      </TabsContent>
-
-                      {/* JLR Loss Tab */}
-                      <TabsContent value="jlr" className="space-y-4 mt-4">
-                        {lossInfo.jlrLossReason ? (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label className="text-sm text-muted-foreground">JLR Loss 原因</Label>
-                              <p className="text-sm font-medium">
-                                {lossReasonOptions.find(o => o.value === lossInfo.jlrLossReason)?.label || lossInfo.jlrLossReason}
-                              </p>
-                            </div>
-                            {lossInfo.jlrLossDescription && (
-                              <div className="space-y-2">
-                                <Label className="text-sm text-muted-foreground">JLR Loss 說明</Label>
-                                <p className="text-sm font-medium">{lossInfo.jlrLossDescription}</p>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">未記錄 JLR Loss 原因</p>
-                        )}
-                      </TabsContent>
-                    </Tabs>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   )
                 }
                 return <p className="text-sm text-muted-foreground">{opportunity.lostReason || "未記錄流失原因"}</p>
@@ -892,7 +958,7 @@ export default function OpportunityDetailPage() {
 
           {/* SV/V8 偏好 */}
           <div>
-            <Label className="text-sm text-muted-foreground">顧客想購買 SV / V8 車款</Label>
+            <Label className="text-sm text-muted-foreground">顧客想購買 SV / OCTA / V8 車款</Label>
             {isEditing ? (
               <div className="mt-1">
                 <Switch
@@ -939,56 +1005,91 @@ export default function OpportunityDetailPage() {
                 <SelectContent>
                   <SelectItem value="walk-in">來店客 (Walk-in)</SelectItem>
                   <SelectItem value="referral">轉介 (Referral)</SelectItem>
-                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動</SelectItem>
-                  <SelectItem value="existing-customer">既有客戶</SelectItem>
-                  <SelectItem value="phone-in">來電客</SelectItem>
+                  <SelectItem value="retailer-experience">經銷商外展 / 體驗活動 (Retailer Experience)</SelectItem>
+                  <SelectItem value="existing-customer">既有客戶 (Existing Customer)</SelectItem>
+                  <SelectItem value="phone-in">來電客 (Phone-in)</SelectItem>
                   <SelectItem value="line-booking">網路客預約 (LINE)</SelectItem>
-                  <SelectItem value="field-visit">陌生開發</SelectItem>
+                  <SelectItem value="field-visit">陌生開發 (Field Visit)</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <p className="text-foreground mt-1">
                 {opportunity.leadSource === "walk-in" ? "來店客 (Walk-in)"
                   : opportunity.leadSource === "referral" ? "轉介 (Referral)"
-                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動"
-                  : opportunity.leadSource === "existing-customer" ? "既有客戶"
-                  : opportunity.leadSource === "phone-in" ? "來電客"
+                  : opportunity.leadSource === "retailer-experience" ? "經銷商外展 / 體驗活動 (Retailer Experience)"
+                  : opportunity.leadSource === "existing-customer" ? "既有客戶 (Existing Customer)"
+                  : opportunity.leadSource === "phone-in" ? "來電客 (Phone-in)"
                   : opportunity.leadSource === "line-booking" ? "網路客預約 (LINE)"
-                  : opportunity.leadSource === "field-visit" ? "陌生開發"
+                  : opportunity.leadSource === "field-visit" ? "陌生開發 (Field Visit)"
                   : "未設定"}
               </p>
             )}
-          </div>
-
-          {/* 現有車輛品牌 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
-            {isEditing ? (
-              <Input
-                value={opportunity.existingCarBrand || ""}
-                onChange={(e) => setOpportunity({ ...opportunity, existingCarBrand: e.target.value })}
-                placeholder="請輸入品牌"
-                className="mt-1"
-              />
-            ) : (
-              <p className="text-foreground mt-1">{opportunity.existingCarBrand || "未設定"}</p>
+            {/* 轉介者欄位 - 當選擇 referral 時顯示 */}
+            {opportunity.leadSource === "referral" && (
+              isEditing ? (
+                <div className="mt-2">
+                  <Label className="text-sm text-muted-foreground">轉介者</Label>
+                  <button
+                    type="button"
+                    onClick={() => setIsReferrerSheetOpen(true)}
+                    className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+                  >
+                    <span className={referrer ? "text-foreground" : "text-muted-foreground"}>
+                      {referrer || "點擊搜尋轉介者"}
+                    </span>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              ) : referrer && (
+                <p className="text-sm text-muted-foreground mt-1">轉介者：{referrer}</p>
+              )
             )}
           </div>
 
-          {/* 現有車輛 */}
-          <div>
-            <Label className="text-sm text-muted-foreground">現有車輛</Label>
-            {isEditing ? (
-              <Input
-                value={opportunity.existingCarModel || ""}
-                onChange={(e) => setOpportunity({ ...opportunity, existingCarModel: e.target.value })}
-                placeholder="請輸入車款"
-                className="mt-1"
-              />
-            ) : (
-              <p className="text-foreground mt-1">{opportunity.existingCarModel || "未設定"}</p>
-            )}
-          </div>
+          {/* 現有車輛品牌 - 編輯模式下使用灰色匡包裝 */}
+          {isEditing && (
+            <div className="bg-muted rounded-lg p-4 space-y-3">
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <button
+                  onClick={() => setIsExistingCarSheetOpen(true)}
+                  className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                >
+                  {opportunity.existingCarBrand || "點擊選擇品牌"}
+                </button>
+              </div>
+
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <button
+                  onClick={() => opportunity.existingCarBrand && setIsExistingCarSheetOpen(true)}
+                  disabled={!opportunity.existingCarBrand}
+                  className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                    opportunity.existingCarBrand
+                      ? "border-input bg-background text-foreground hover:bg-accent"
+                      : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  {opportunity.existingCarModel || (opportunity.existingCarBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 檢視模式 */}
+          {!isEditing && (
+            <>
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛品牌</Label>
+                <p className="text-foreground mt-1">{opportunity.existingCarBrand || "未設定"}</p>
+              </div>
+
+              <div>
+                <Label className="text-sm text-muted-foreground">現有車輛</Label>
+                <p className="text-foreground mt-1">{opportunity.existingCarModel || "未設定"}</p>
+              </div>
+            </>
+          )}
         </Card>
 
         {/* 流失原因編輯區塊 - 僅在編輯模式且 stage 為 lost 時顯示 */}
@@ -998,68 +1099,94 @@ export default function OpportunityDetailPage() {
               <AlertCircle className="h-5 w-5" />
               流失原因
             </h3>
-            <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
-                <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
-              </TabsList>
+            <div className="space-y-4">
+              {/* 經銷商所失客戶類別 */}
+              <div className="space-y-2">
+                <Label>經銷商所失客戶類別</Label>
+                <Select value={lostCategory} onValueChange={setLostCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="請選擇" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="product">產品</SelectItem>
+                    <SelectItem value="service">服務</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Retailer Loss Tab */}
-              <TabsContent value="retailer" className="space-y-4 mt-4">
+              {/* 經銷商所失原因 */}
+              <div className="space-y-2">
+                <Label>經銷商所失原因</Label>
+                <Select value={lostReason} onValueChange={setLostReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="請選擇" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="design">設計</SelectItem>
+                    <SelectItem value="price">價格</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 經銷商所失客戶注意事項 */}
+              <div className="space-y-2">
+                <Label>經銷商所失客戶注意事項</Label>
+                <Textarea
+                  value={lostNotes}
+                  onChange={(e) => setLostNotes(e.target.value)}
+                  placeholder="請輸入注意事項..."
+                  className="min-h-[80px]"
+                />
+              </div>
+
+              {/* 分隔線與競牌車輛區塊 */}
+              <div className="border-t pt-4 space-y-4">
+                {/* 是否購買競牌車輛 */}
                 <div className="space-y-2">
-                  <Label>Retailer Loss 原因</Label>
-                  <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
+                  <Label>是否��買競牌車輛？</Label>
+                  <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
                     <SelectTrigger>
-                      <SelectValue placeholder="--None--" />
+                      <SelectValue placeholder="請選擇" />
                     </SelectTrigger>
                     <SelectContent>
-                      {lossReasonOptions.map((option) => (
-                        <SelectItem key={option.value || "none"} value={option.value || "none"}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="yes">是</SelectItem>
+                      <SelectItem value="no">否</SelectItem>
+                      <SelectItem value="unknown">不確定</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Retailer Loss 說明</Label>
-                  <Textarea
-                    value={retailerLossDescription}
-                    onChange={(e) => setRetailerLossDescription(e.target.value)}
-                    placeholder="請輸入詳細說明..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-              </TabsContent>
 
-              {/* JLR Loss Tab */}
-              <TabsContent value="jlr" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label>JLR Loss 原因</Label>
-                  <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="--None--" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lossReasonOptions.map((option) => (
-                        <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>JLR Loss 說明</Label>
-                  <Textarea
-                    value={jlrLossDescription}
-                    onChange={(e) => setJlrLossDescription(e.target.value)}
-                    placeholder="請輸入詳細說明..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
+                {/* 購買的品牌與車款 - 使用灰色匡包裝 */}
+                {boughtCompetitor === "yes" && (
+                  <div className="bg-muted rounded-lg p-4 space-y-3">
+                    <div>
+                      <Label className="text-sm">購買的品牌</Label>
+                      <button
+                        onClick={() => setIsCompetitorCarSheetOpen(true)}
+                        className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                      >
+                        {competitorBrand || "點擊選擇品牌"}
+                      </button>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm">購買的車款</Label>
+                      <button
+                        onClick={() => competitorBrand && setIsCompetitorCarSheetOpen(true)}
+                        disabled={!competitorBrand}
+                        className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                          competitorBrand
+                            ? "border-input bg-background text-foreground hover:bg-accent"
+                            : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                        }`}
+                      >
+                        {competitorModel || (competitorBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </Card>
         )}
 
@@ -1136,7 +1263,8 @@ export default function OpportunityDetailPage() {
               <div className="bg-muted/50 rounded-lg p-3">
                 {activityType === "event" ? (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    任何需要與公司主管報備的行程，例如：試駕、客戶拜訪、邀約客戶至展示中心...等等，請將行程建立成事件。
+                    任何需要與公司主管報備的行程，例如：客戶拜訪、邀約至展示中心賞車...等等，請將行程建立成事件。<br />
+                    若是試駕，請從「建立試駕同意書」單元新增。
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1151,11 +1279,40 @@ export default function OpportunityDetailPage() {
               <Label>
                 主題 <span className="text-destructive">*</span>
               </Label>
-              <Input
-                value={newActivity.subject}
-                onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
-                placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：準備報價單"}
-              />
+              <div className="relative">
+                <div className="relative">
+                  <Input
+                    value={newActivity.subject}
+                    onChange={(e) => setNewActivity({ ...newActivity, subject: e.target.value })}
+                    placeholder={activityType === "event" ? "例如：客戶拜訪" : "例如：電話聯繫"}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isSubjectDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+                </div>
+                {isSubjectDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {(activityType === "event" ? eventSubjectSuggestions : taskSubjectSuggestions).map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+                        onClick={() => {
+                          setNewActivity({ ...newActivity, subject: suggestion })
+                          setIsSubjectDropdownOpen(false)
+                        }}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -1256,89 +1413,275 @@ export default function OpportunityDetailPage() {
         </SheetContent>
       </Sheet>
 
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((account) => (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => {
+                    setReferrer(account.cxpName)
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{account.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{account.phone || account.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Existing Car Selection Sheet */}
+      <Sheet open={isExistingCarSheetOpen} onOpenChange={setIsExistingCarSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>
+              {!opportunity.existingCarBrand ? "選擇現有車輛品牌" : "選擇現有車輛"}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* 品牌選擇 */}
+            {!opportunity.existingCarBrand ? (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋品牌..."
+                    value={carBrandSearch}
+                    onChange={(e) => setCarBrandSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredBrands.length > 0 ? (
+                    filteredBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleSelectBrand(brand)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{brand}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的品牌</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 返回品牌選擇按鈕 */}
+                <button
+                  onClick={() => {
+                    setOpportunity({ ...opportunity, existingCarBrand: "" })
+                    setCarBrandSearch("")
+                    setCarModelSearch("")
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  返回選擇品牌
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{opportunity.existingCarBrand}</span>
+                    <span className="text-xs text-muted-foreground">已選擇</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋車款..."
+                    value={carModelSearch}
+                    onChange={(e) => setCarModelSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredModels.length > 0 ? (
+                    filteredModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => handleSelectModel(model)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{model}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的車款</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Lost Dialog */}
       <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>機會流失原因</DialogTitle>
-            <DialogDescription>請選擇並說明此機會流失的原因（至少填寫一種）</DialogDescription>
+            <DialogDescription>請填寫此機會流失的詳細資訊</DialogDescription>
           </DialogHeader>
           
-          <Tabs value={lostActiveTab} onValueChange={(v) => setLostActiveTab(v as "retailer" | "jlr")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="retailer">Retailer Loss</TabsTrigger>
-              <TabsTrigger value="jlr">JLR Loss</TabsTrigger>
-            </TabsList>
+          <div className="space-y-4">
+            {/* 經銷商所失客戶類別 */}
+            <div className="space-y-2">
+              <Label>經銷商所失客戶類別 <span className="text-destructive">*</span></Label>
+              <Select value={lostCategory} onValueChange={setLostCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="product">產品</SelectItem>
+                  <SelectItem value="service">服務</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Retailer Loss Tab */}
-            <TabsContent value="retailer" className="space-y-4 mt-4">
+            {/* 經銷商所失原因 */}
+            <div className="space-y-2">
+              <Label>經銷商所失原因 <span className="text-destructive">*</span></Label>
+              <Select value={lostReason} onValueChange={setLostReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="請選擇" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="design">設計</SelectItem>
+                  <SelectItem value="price">價格</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 經銷商所失客戶注意事項 */}
+            <div className="space-y-2">
+              <Label>經銷商所失客戶注意事項</Label>
+              <Textarea
+                value={lostNotes}
+                onChange={(e) => setLostNotes(e.target.value)}
+                placeholder="請輸入注意事項..."
+                className="min-h-[80px]"
+              />
+            </div>
+
+            {/* 分隔線與競牌車輛區塊 */}
+            <div className="border-t pt-4 space-y-4">
+              {/* 是否購買競牌車輛 */}
               <div className="space-y-2">
-                <Label>Retailer Loss 原因</Label>
-                <Select value={retailerLossReason} onValueChange={setRetailerLossReason}>
+                <Label>是否購買競牌車輛？ <span className="text-destructive">*</span></Label>
+                <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
                   <SelectTrigger>
-                    <SelectValue placeholder="--None--" />
+                    <SelectValue placeholder="請選擇" />
                   </SelectTrigger>
                   <SelectContent>
-                    {lossReasonOptions.map((option) => (
-                      <SelectItem key={option.value || "none"} value={option.value || "none"}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="yes">是的</SelectItem>
+                    <SelectItem value="no">否</SelectItem>
+                    <SelectItem value="unknown">不清楚</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Retailer Loss 說明</Label>
-                <Textarea
-                  value={retailerLossDescription}
-                  onChange={(e) => setRetailerLossDescription(e.target.value)}
-                  placeholder="請輸入詳細說明..."
-                  className="min-h-[100px]"
-                />
-              </div>
-            </TabsContent>
 
-            {/* JLR Loss Tab */}
-            <TabsContent value="jlr" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>JLR Loss 原因</Label>
-                <Select value={jlrLossReason} onValueChange={setJlrLossReason}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="--None--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lossReasonOptions.map((option) => (
-                      <SelectItem key={option.value || "none-jlr"} value={option.value || "none"}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>JLR Loss 說明</Label>
-                <Textarea
-                  value={jlrLossDescription}
-                  onChange={(e) => setJlrLossDescription(e.target.value)}
-                  placeholder="請輸入詳細說明..."
-                  className="min-h-[100px]"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          {/* 顯示已填寫的摘要 */}
-          {(retailerLossReason || jlrLossReason) && (
-            <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
-              <p className="font-medium text-muted-foreground">已填寫：</p>
-              {retailerLossReason && (
-                <p>Retailer Loss: {lossReasonOptions.find(o => o.value === retailerLossReason)?.label}</p>
+              {/* 未選擇時的提示 */}
+              {!boughtCompetitor && (
+                <div className="rounded-lg p-3 text-sm bg-muted border border-border">
+                  <p className="text-muted-foreground">請先選擇「是否購買競牌車輛」，以顯示後續填寫欄位</p>
+                </div>
               )}
-              {jlrLossReason && (
-                <p>JLR Loss: {lossReasonOptions.find(o => o.value === jlrLossReason)?.label}</p>
+
+              {/* 選擇後顯示的欄位區塊 */}
+              {boughtCompetitor && (
+                <>
+                  {/* 根據選擇顯示不同的必填提示 */}
+                  <div className={`rounded-lg p-3 text-sm ${boughtCompetitor === "yes" ? "bg-amber-50 border border-amber-200" : "bg-blue-50 border border-blue-200"}`}>
+                    {boughtCompetitor === "yes" ? (
+                      <p className="text-amber-700">客戶已購買競牌車輛，請填寫「購買的品牌」和「購買的車款」</p>
+                    ) : (
+                      <p className="text-blue-700">請填寫「新目標日期」以便後續追蹤</p>
+                    )}
+                  </div>
+
+                  {/* 購買的品牌與車款 - 使用灰色匡包裝 */}
+                  <div className="bg-muted rounded-lg p-4 space-y-3">
+                    <div>
+                      <Label className="text-sm">
+                        購買的品牌
+                        {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <button
+                        onClick={() => setIsCompetitorCarSheetOpen(true)}
+                        className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors"
+                      >
+                        {competitorBrand || "點擊選擇品牌"}
+                      </button>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm">
+                        購買的車款
+                        {boughtCompetitor === "yes" && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <button
+                        onClick={() => competitorBrand && setIsCompetitorCarSheetOpen(true)}
+                        disabled={!competitorBrand}
+                        className={`w-full mt-1 px-3 py-2 border rounded-md text-left transition-colors ${
+                          competitorBrand
+                            ? "border-input bg-background text-foreground hover:bg-accent"
+                            : "border-input bg-muted text-muted-foreground cursor-not-allowed"
+                        }`}
+                      >
+                        {competitorModel || (competitorBrand ? "點擊選擇車款" : "請先選擇品牌")}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 新目標日期 */}
+                  <div className="space-y-2">
+                    <Label>
+                      新目標日期
+                      {boughtCompetitor !== "yes" && <span className="text-destructive"> *</span>}
+                    </Label>
+                    <DatePicker
+                      date={newTargetDate}
+                      onDateChange={setNewTargetDate}
+                    />
+                  </div>
+                </>
               )}
             </div>
-          )}
+          </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setIsLostDialogOpen(false)} className="bg-transparent">
@@ -1348,6 +1691,95 @@ export default function OpportunityDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Competitor Car Selection Sheet */}
+      <Sheet open={isCompetitorCarSheetOpen} onOpenChange={setIsCompetitorCarSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>
+              {!competitorBrand ? "選擇購買的品牌" : "選擇購買的車款"}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* 品牌選擇 */}
+            {!competitorBrand ? (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋品牌..."
+                    value={competitorBrandSearch}
+                    onChange={(e) => setCompetitorBrandSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCompetitorBrands.length > 0 ? (
+                    filteredCompetitorBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleSelectCompetitorBrand(brand)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{brand}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的品牌</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 返回品牌選擇按鈕 */}
+                <button
+                  onClick={() => {
+                    setCompetitorBrand("")
+                    setCompetitorBrandSearch("")
+                    setCompetitorModelSearch("")
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  返回選擇品牌
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{competitorBrand}</span>
+                    <span className="text-xs text-muted-foreground">已選擇</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    placeholder="搜尋車款..."
+                    value={competitorModelSearch}
+                    onChange={(e) => setCompetitorModelSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pb-4">
+                  {filteredCompetitorModels.length > 0 ? (
+                    filteredCompetitorModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => handleSelectCompetitorModel(model)}
+                        className="p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left"
+                      >
+                        <p className="font-medium text-sm">{model}</p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground col-span-2 py-4 text-center">找不到符合的車款</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Invite Sheet */}
       <Sheet open={isInviteSheetOpen} onOpenChange={setIsInviteSheetOpen}>

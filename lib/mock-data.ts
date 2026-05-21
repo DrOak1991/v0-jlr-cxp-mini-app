@@ -574,7 +574,7 @@ export const mockOpportunities: Opportunity[] = [
     leadSource: "retailer-experience",
     existingCarBrand: "Tesla",
     existingCarModel: "Model 3",
-    lostReason: '{"retailerLossReason":"price","retailerLossDescription":"客戶預算調整，決定先購入 I-PACE","jlrLossReason":"lead-time","jlrLossDescription":"Range Rover 計畫延後，等待新款車型"}',
+    lostReason: '{"lostCategory":"product","lostReason":"price","lostNotes":"客戶預算調整，決定暫緩購車計畫","boughtCompetitor":"yes","competitorBrand":"BMW","competitorModel":"X5"}',
     createdAt: new Date("2024-01-25"),
     updatedAt: new Date("2024-02-20"),
   },
@@ -681,6 +681,18 @@ export function getActivitiesByOpportunityId(opportunityId: string): Activity[] 
 
 export function getAccountById(id: string): Account | undefined {
   return mockAccounts.find((account) => account.id === id)
+}
+
+export function searchAccounts(query: string): Account[] {
+  if (!query.trim()) return mockAccounts.slice(0, 10) // 無搜尋時返回前 10 筆
+  const lowerQuery = query.toLowerCase().trim()
+  return mockAccounts.filter(
+    (account) =>
+      account.cxpName?.toLowerCase().includes(lowerQuery) ||
+      account.phone?.includes(lowerQuery) ||
+      account.mobilePhone?.includes(lowerQuery) ||
+      account.email?.toLowerCase().includes(lowerQuery)
+  )
 }
 
 export function getLeadById(id: string): Lead | undefined {

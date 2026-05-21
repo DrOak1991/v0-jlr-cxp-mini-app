@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Car, Upload, QrCode } from "lucide-react"
+import { ArrowLeft, Car, Upload, QrCode, Search, Phone, ChevronLeft, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/date-picker"
 import { useToast } from "@/hooks/use-toast"
 import { MultiSelect } from "@/components/multi-select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { searchAccounts } from "@/lib/mock-data"
+import type { Account } from "@/types"
 
 export default function NewLeadPage() {
   const router = useRouter()
@@ -45,6 +48,9 @@ export default function NewLeadPage() {
   const [performancePreference, setPerformancePreference] = useState(false)
   const [leadSource, setLeadSource] = useState<string>("")
   const [referrer, setReferrer] = useState("")
+  const [referrerId, setReferrerId] = useState("")
+  const [isReferrerSheetOpen, setIsReferrerSheetOpen] = useState(false)
+  const [referrerSearch, setReferrerSearch] = useState("")
   const [interests, setInterests] = useState<string[]>([])
   const [existingCarBrand, setExistingCarBrand] = useState<string>("")
   const [existingCarModel, setExistingCarModel] = useState<string>("")
@@ -496,8 +502,17 @@ export default function NewLeadPage() {
           </Select>
           {leadSource === "referral" && (
             <div className="space-y-2 mt-3">
-              <Label htmlFor="referrer">轉介者 <span className="text-destructive">*</span></Label>
-              <Input id="referrer" value={referrer} onChange={(e) => setReferrer(e.target.value)} placeholder="請輸入轉介者姓名" />
+              <Label>轉介者 <span className="text-destructive">*</span></Label>
+              <button
+                type="button"
+                onClick={() => setIsReferrerSheetOpen(true)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-left hover:bg-accent transition-colors flex items-center justify-between"
+              >
+                <span className={referrer ? "text-foreground" : "text-muted-foreground"}>
+                  {referrer || "點擊搜尋轉介者"}
+                </span>
+                <Search className="h-4 w-4 text-muted-foreground" />
+              </button>
               {errors.referrer && <p className="text-sm text-destructive">{errors.referrer}</p>}
             </div>
           )}
@@ -749,6 +764,54 @@ export default function NewLeadPage() {
           </div>
         </div>
       )}
+
+      {/* 轉介者搜尋 Sheet */}
+      <Sheet open={isReferrerSheetOpen} onOpenChange={setIsReferrerSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto px-6">
+          <SheetHeader>
+            <SheetTitle>搜尋轉介者</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="輸入姓名或電話搜尋..."
+              value={referrerSearch}
+              onChange={(e) => setReferrerSearch(e.target.value)}
+              autoFocus
+            />
+
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto pb-4">
+              {searchAccounts(referrerSearch).map((account) => (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => {
+                    setReferrer(account.cxpName)
+                    setReferrerId(account.id)
+                    setIsReferrerSheetOpen(false)
+                    setReferrerSearch("")
+                  }}
+                  className="w-full p-3 border border-input rounded-lg hover:bg-accent hover:border-primary transition-colors text-left flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{account.cxpName}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{account.phone || account.mobilePhone || "無電話"}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {searchAccounts(referrerSearch).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">找不到符合的帳戶</p>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

@@ -22,24 +22,17 @@ import type { Activity, EventActivity, TaskActivity, TaskStatus } from "@/types"
 
 // 事件主題建議選項
 const eventSubjectSuggestions = [
-  "試駕",
+  "邀約至展示中心賞車",
   "客戶拜訪",
-  "來店賞車",
-  "邀約客戶至展示中心",
-  "電話諮詢",
-  "交車儀式",
-  "保養預約",
+  "討論報價",
+  "車輛抵購估價",
 ]
 
 // 工作主題建議選項
 const taskSubjectSuggestions = [
-  "電話聯繫跟進",
-  "發送報價單",
-  "準備車型目錄",
-  "活動邀約",
-  "生日祝福",
-  "保養提醒",
-  "跟進購車意願",
+  "電話聯繫",
+  "提供報價",
+  "發送簡訊或電子郵件",
 ]
 
 // 帶建議選項的主題輸入元件
