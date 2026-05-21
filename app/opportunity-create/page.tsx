@@ -109,6 +109,7 @@ function NewOpportunityContent() {
       {/* 帳戶資訊區塊 */}
       {account && (
         <div className="bg-muted/50 border-b px-4 py-3">
+          <p className="text-xs text-muted-foreground mb-2">為以下帳戶新增機會</p>
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
               <User className="h-5 w-5 text-primary" />
