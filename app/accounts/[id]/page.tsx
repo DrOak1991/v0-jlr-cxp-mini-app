@@ -576,14 +576,15 @@ export default function AccountDetailPage() {
                     <p className="font-medium">
                       {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
                     </p>
-                    {account.maintenanceStatus === "purchased" && account.lineStatus === "not-joined" && (
+                    {account.maintenanceStatus === "purchased" && (
                       <Button
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => setIsOwnerRegistrationDialogOpen(true)}
+                        disabled={account.lineStatus === "joined"}
+                        onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationDialogOpen(true)}
                       >
-                        完成車主註冊
+                        {account.lineStatus === "joined" ? "車主已加入" : "完成車主註冊"}
                       </Button>
                     )}
                   </div>
