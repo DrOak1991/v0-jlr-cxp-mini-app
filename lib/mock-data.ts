@@ -574,7 +574,7 @@ export const mockOpportunities: Opportunity[] = [
     leadSource: "retailer-experience",
     existingCarBrand: "Tesla",
     existingCarModel: "Model 3",
-    lostReason: '{"retailerLossReason":"price","retailerLossDescription":"客戶預算調整，決定先購入 I-PACE","jlrLossReason":"lead-time","jlrLossDescription":"Range Rover 計畫延後，等待新款車型"}',
+    lostReason: '{"lostCategory":"product","lostReason":"price","lostNotes":"客戶預算調整，決定暫緩購車計畫","boughtCompetitor":"yes","competitorBrand":"BMW","competitorModel":"X5"}',
     createdAt: new Date("2024-01-25"),
     updatedAt: new Date("2024-02-20"),
   },

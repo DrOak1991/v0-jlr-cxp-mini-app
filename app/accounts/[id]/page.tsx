@@ -763,7 +763,7 @@ export default function AccountDetailPage() {
               )}
             </div>
             <div>
-              <span className="text-muted-foreground">SV/V8 偏好</span>
+              <span className="text-muted-foreground text-sm">顧客想購買 SV / OCTA / V8 車款</span>
               {isEditing ? (
                 <div className="mt-1">
                   <Switch
