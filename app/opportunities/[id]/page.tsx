@@ -148,7 +148,16 @@ export default function OpportunityDetailPage() {
     setCarModelSearch("")
   }
 
-  // 競牌車輛篩選
+  // 流失原因表單狀態
+  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
+  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
+  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
+  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
+  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
+  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
+  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
+
+  // 競牌車輛篩選 (必須在 competitorBrand state 宣告之後)
   const filteredCompetitorBrands = Object.keys(existingCarBrandOptions).filter(brand =>
     brand.toLowerCase().includes(competitorBrandSearch.toLowerCase())
   )
@@ -170,15 +179,6 @@ export default function OpportunityDetailPage() {
     setCompetitorBrandSearch("")
     setCompetitorModelSearch("")
   }
-
-  // 流失原因表單狀態
-  const [lostCategory, setLostCategory] = useState("") // 經銷商所失客戶類別
-  const [lostReason, setLostReason] = useState("") // 經銷商所失原因
-  const [lostNotes, setLostNotes] = useState("") // 經銷商所失客戶注意事項
-  const [boughtCompetitor, setBoughtCompetitor] = useState("") // 是否購買競牌車輛
-  const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
-  const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
-  const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
 
   // Loss reason options (shared between Retailer and JLR)
   const lossReasonOptions = [
