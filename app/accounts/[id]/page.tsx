@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -96,6 +97,7 @@ export default function AccountDetailPage() {
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
+  const [isOwnerRegistrationConfirmOpen, setIsOwnerRegistrationConfirmOpen] = useState(false)
   const [isOwnerRegistrationDialogOpen, setIsOwnerRegistrationDialogOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
@@ -582,7 +584,7 @@ export default function AccountDetailPage() {
                         size="sm"
                         className="h-7 text-xs"
                         disabled={account.lineStatus === "joined"}
-                        onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationDialogOpen(true)}
+                        onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationConfirmOpen(true)}
                       >
                         {account.lineStatus === "joined" ? "車主已加入" : "完成車主註冊"}
                       </Button>
@@ -1632,6 +1634,27 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
+
+      {/* 車主註冊確認彈窗 */}
+      <AlertDialog open={isOwnerRegistrationConfirmOpen} onOpenChange={setIsOwnerRegistrationConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確認完成車主綁定</AlertDialogTitle>
+            <AlertDialogDescription>
+              此操作將正式發送車主綁定完成訊息給客戶，並自動為客戶完成車主綁定流程。完成後客戶將不需要再填寫車主註冊表單。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setIsOwnerRegistrationConfirmOpen(false)
+              setIsOwnerRegistrationDialogOpen(true)
+            }}>
+              完成綁定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* 車主註冊完成提示彈窗 */}
       <AlertDialog open={isOwnerRegistrationDialogOpen} onOpenChange={setIsOwnerRegistrationDialogOpen}>
