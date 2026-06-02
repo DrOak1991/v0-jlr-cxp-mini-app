@@ -559,38 +559,22 @@ export default function AccountDetailPage() {
               {/* 階段 — 獨立一列，在生日/性別上方 */}
               <div>
                 <Label className="text-sm text-muted-foreground">階段</Label>
-                {isEditing ? (
-                  <Select
-                    value={account.maintenanceStatus || ""}
-                    onValueChange={(value) => setAccount({ ...account, maintenanceStatus: value as any })}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="請選擇階段" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="purchased">已購</SelectItem>
-                      <SelectItem value="interested">有興趣</SelectItem>
-                      <SelectItem value="none">無</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="font-medium">
-                      {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
-                    </p>
-                    {account.maintenanceStatus === "purchased" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        disabled={account.lineStatus === "joined"}
-                        onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationConfirmOpen(true)}
-                      >
-                        {account.lineStatus === "joined" ? "車主已加入" : "完成車主註冊"}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="font-medium">
+                    {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
+                  </p>
+                  {!isEditing && account.maintenanceStatus === "purchased" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={account.lineStatus === "joined"}
+                      onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationConfirmOpen(true)}
+                    >
+                      {account.lineStatus === "joined" ? "車主已加入" : "完成車主註冊"}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -738,81 +722,21 @@ export default function AccountDetailPage() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">品牌偏好</span>
-              {isEditing ? (
-                <Select
-                  value={account.brandPreferences?.[0] || ""}
-                  onValueChange={(value) => setAccount({ ...account, brandPreferences: [value] })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="請選擇" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Land Rover">Land Rover</SelectItem>
-                    <SelectItem value="Jaguar">Jaguar</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium">
-                  {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
-                </p>
-              )}
+              <p className="font-medium">
+                {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">興趣車款</span>
-              {isEditing ? (
-                <Select
-                  value={account.interestedModel || ""}
-                  onValueChange={(value) => setAccount({ ...account, interestedModel: value })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="請選擇" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {account.brandPreferences?.[0] && brandModels[account.brandPreferences[0]]?.map((model) => (
-                      <SelectItem key={model} value={model}>{model}</SelectItem>
-                    ))}
-                    {!account.brandPreferences?.[0] && (
-                      <>
-                        {brandModels["Land Rover"].map((model) => (
-                          <SelectItem key={model} value={model}>{model}</SelectItem>
-                        ))}
-                        {brandModels["Jaguar"].map((model) => (
-                          <SelectItem key={model} value={model}>{model}</SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium">{account.interestedModel || "未設定"}</p>
-              )}
+              <p className="font-medium">{account.interestedModel || "未設定"}</p>
             </div>
             <div>
               <span className="text-muted-foreground text-sm">顧客想購買 SV / OCTA / V8 車款</span>
-              {isEditing ? (
-                <div className="mt-1">
-                  <Switch
-                    checked={account.performancePreference || false}
-                    onCheckedChange={(checked) => setAccount({ ...account, performancePreference: checked })}
-                  />
-                </div>
-              ) : (
-                <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
-              )}
+              <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">車輛數</span>
-              {isEditing ? (
-                <Input
-                  type="number"
-                  min="0"
-                  value={account.vehicleCount ?? ""}
-                  onChange={(e) => setAccount({ ...account, vehicleCount: parseInt(e.target.value) || 0 })}
-                  className="mt-1"
-                />
-              ) : (
-                <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
-              )}
+              <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
             </div>
           </div>
         </Card>
@@ -868,18 +792,9 @@ export default function AccountDetailPage() {
               </div>
               <div>
                 <span className="text-muted-foreground">有子女</span>
-                {isEditing ? (
-                  <div className="mt-1">
-                    <Switch
-                      checked={account.hasChildren || false}
-                      onCheckedChange={(checked) => setAccount({ ...account, hasChildren: checked })}
-                    />
-                  </div>
-                ) : (
-                  <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
-                )}
+                <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
               </div>
-              {(isEditing || (account.hasChildren && account.childrenCount)) && (
+              {account.hasChildren && account.childrenCount && (
                 <div>
                   <span className="text-muted-foreground">子女數</span>
                   {isEditing ? (
@@ -889,7 +804,6 @@ export default function AccountDetailPage() {
                       value={account.childrenCount ?? ""}
                       onChange={(e) => setAccount({ ...account, childrenCount: parseInt(e.target.value) || 0 })}
                       className="mt-1"
-                      disabled={!account.hasChildren}
                     />
                   ) : (
                     <p className="font-medium">{account.childrenCount}</p>
