@@ -526,31 +526,12 @@ export default function AccountDetailPage() {
               {/* 電話 */}
               <div className="flex items-start gap-2 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
-                {isEditing ? (
-                  <Input
-                    value={account.phone || ""}
-                    onChange={(e) => setAccount({ ...account, phone: e.target.value })}
-                    placeholder="請輸入電話號碼"
-                    className="flex-1"
-                  />
-                ) : (
-                  <span className="mt-0.5">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
-                )}
+                <span className="mt-0.5">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
               </div>
               {/* Email */}
               <div className="flex items-start gap-2 text-sm">
                 <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
-                {isEditing ? (
-                  <Input
-                    value={account.email || ""}
-                    onChange={(e) => setAccount({ ...account, email: e.target.value })}
-                    placeholder="請輸入 Email"
-                    type="email"
-                    className="flex-1"
-                  />
-                ) : (
-                  <span className="break-all mt-0.5">{account.email || "未設定"}</span>
-                )}
+                <span className="break-all mt-0.5">{account.email || "未設定"}</span>
               </div>
             </div>
 
@@ -820,7 +801,7 @@ export default function AccountDetailPage() {
                 <span className="text-muted-foreground">職業</span>
                 {isEditing ? (
                   <Select value={account.occupation || ""} onValueChange={(value) => setAccount({ ...account, occupation: value })}>
-                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇職業" /></SelectTrigger>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇行業" /></SelectTrigger>
                     <SelectContent>
                       {["企業主", "高階主管", "中階主管", "專業人士", "自由業", "軍公教", "退休人員", "學生", "其他"].map((o) => (
                         <SelectItem key={o} value={o}>{o}</SelectItem>
