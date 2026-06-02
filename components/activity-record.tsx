@@ -17,30 +17,42 @@ function ActivityItemCard({ activity, onClick }: ActivityItemCardProps) {
   const isEvent = activity.type === "event"
   const isTask = activity.type === "task"
 
-  // Status badge styling
+  // Status badge styling (only for tasks)
   let statusBadgeClass = "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
   let statusLabel = "未開始"
 
-  if (activity.status === "completed") {
-    statusBadgeClass = "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-    statusLabel = "已完成"
-  } else if (activity.status === "in-progress") {
-    statusBadgeClass = "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
-    statusLabel = "進行中"
-  } else if (activity.status === "waiting") {
-    statusBadgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
-    statusLabel = "等待別人"
+  if (isTask) {
+    const taskActivity = activity as import("@/types").TaskActivity
+    if (taskActivity.status === "completed") {
+      statusBadgeClass = "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+      statusLabel = "已完成"
+    } else if (taskActivity.status === "in-progress") {
+      statusBadgeClass = "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
+      statusLabel = "進行中"
+    } else if (taskActivity.status === "waiting") {
+      statusBadgeClass = "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
+      statusLabel = "等待別人"
+    }
   }
 
   // Format date range for events
   const getEventDateRange = () => {
-    if (!activity.startDateTime) return ""
-    const start = formatDateTime(activity.startDateTime)
-    if (activity.endDateTime) {
-      const end = formatDateTime(activity.endDateTime)
+    if (!isEvent) return ""
+    const eventActivity = activity as import("@/types").EventActivity
+    if (!eventActivity.startDateTime) return ""
+    const start = formatDateTime(eventActivity.startDateTime)
+    if (eventActivity.endDateTime) {
+      const end = formatDateTime(eventActivity.endDateTime)
       return `${start} - ${end}`
     }
     return start
+  }
+
+  // Get due date for tasks
+  const getTaskDueDate = () => {
+    if (!isTask) return ""
+    const taskActivity = activity as import("@/types").TaskActivity
+    return taskActivity.dueDate ? `到期：${formatDate(taskActivity.dueDate)}` : ""
   }
 
   return (
@@ -66,12 +78,12 @@ function ActivityItemCard({ activity, onClick }: ActivityItemCardProps) {
               事件
             </span>
           )}
-          {isTask && activity.status && (
+          {isTask && (
             <span className={`text-xs px-2 py-0.5 rounded ${statusBadgeClass}`}>{statusLabel}</span>
           )}
         </div>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {isEvent ? getEventDateRange() : activity.dueDate ? `到期：${formatDate(activity.dueDate)}` : ""}
+          {isEvent ? getEventDateRange() : getTaskDueDate()}
         </p>
       </div>
 

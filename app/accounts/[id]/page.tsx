@@ -11,6 +11,16 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -87,6 +97,8 @@ export default function AccountDetailPage() {
   const [isNewActivitySheetOpen, setIsNewActivitySheetOpen] = useState(false)
   const [activityType, setActivityType] = useState<"event" | "task">("event")
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false)
+  const [isOwnerRegistrationConfirmOpen, setIsOwnerRegistrationConfirmOpen] = useState(false)
+  const [isOwnerRegistrationDialogOpen, setIsOwnerRegistrationDialogOpen] = useState(false)
   const [newActivity, setNewActivity] = useState({
     subject: "",
     description: "",
@@ -514,31 +526,12 @@ export default function AccountDetailPage() {
               {/* 電話 */}
               <div className="flex items-start gap-2 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
-                {isEditing ? (
-                  <Input
-                    value={account.phone || ""}
-                    onChange={(e) => setAccount({ ...account, phone: e.target.value })}
-                    placeholder="請輸入電話號碼"
-                    className="flex-1"
-                  />
-                ) : (
-                  <span className="mt-0.5">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
-                )}
+                <span className="mt-0.5">{account.phone ? `886 ${account.phone}` : "未設定"}</span>
               </div>
               {/* Email */}
               <div className="flex items-start gap-2 text-sm">
                 <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
-                {isEditing ? (
-                  <Input
-                    value={account.email || ""}
-                    onChange={(e) => setAccount({ ...account, email: e.target.value })}
-                    placeholder="請輸入 Email"
-                    type="email"
-                    className="flex-1"
-                  />
-                ) : (
-                  <span className="break-all mt-0.5">{account.email || "未設定"}</span>
-                )}
+                <span className="break-all mt-0.5">{account.email || "未設定"}</span>
               </div>
             </div>
 
@@ -547,25 +540,22 @@ export default function AccountDetailPage() {
               {/* 階段 — 獨立一列，在生日/性別上方 */}
               <div>
                 <Label className="text-sm text-muted-foreground">階段</Label>
-                {isEditing ? (
-                  <Select
-                    value={account.maintenanceStatus || ""}
-                    onValueChange={(value) => setAccount({ ...account, maintenanceStatus: value as any })}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="請選擇階段" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="purchased">已購</SelectItem>
-                      <SelectItem value="interested">有興趣</SelectItem>
-                      <SelectItem value="none">無</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="font-medium mt-0.5">
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="font-medium">
                     {account.maintenanceStatus ? maintenanceStatusLabels[account.maintenanceStatus] : "未設定"}
                   </p>
-                )}
+                  {!isEditing && account.maintenanceStatus === "purchased" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={account.lineStatus === "joined"}
+                      onClick={() => account.lineStatus !== "joined" && setIsOwnerRegistrationConfirmOpen(true)}
+                    >
+                      {account.lineStatus === "joined" ? "車主已加入" : "完成車主註冊"}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -575,7 +565,7 @@ export default function AccountDetailPage() {
                     <div className="mt-1">
                       <DatePicker
                         date={account.birthday ?? undefined}
-                        onDateChange={(date) => setAccount({ ...account, birthday: date ?? null })}
+                        onDateChange={(date) => setAccount({ ...account, birthday: date ?? undefined })}
                       />
                     </div>
                   ) : (
@@ -713,81 +703,21 @@ export default function AccountDetailPage() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">品牌偏好</span>
-              {isEditing ? (
-                <Select
-                  value={account.brandPreferences?.[0] || ""}
-                  onValueChange={(value) => setAccount({ ...account, brandPreferences: [value] })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="請選擇" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Land Rover">Land Rover</SelectItem>
-                    <SelectItem value="Jaguar">Jaguar</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium">
-                  {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
-                </p>
-              )}
+              <p className="font-medium">
+                {account.brandPreferences?.length ? account.brandPreferences.join(", ") : "未設定"}
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">興趣車款</span>
-              {isEditing ? (
-                <Select
-                  value={account.interestedModel || ""}
-                  onValueChange={(value) => setAccount({ ...account, interestedModel: value })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="請選擇" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {account.brandPreferences?.[0] && brandModels[account.brandPreferences[0]]?.map((model) => (
-                      <SelectItem key={model} value={model}>{model}</SelectItem>
-                    ))}
-                    {!account.brandPreferences?.[0] && (
-                      <>
-                        {brandModels["Land Rover"].map((model) => (
-                          <SelectItem key={model} value={model}>{model}</SelectItem>
-                        ))}
-                        {brandModels["Jaguar"].map((model) => (
-                          <SelectItem key={model} value={model}>{model}</SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium">{account.interestedModel || "未設定"}</p>
-              )}
+              <p className="font-medium">{account.interestedModel || "未設定"}</p>
             </div>
             <div>
               <span className="text-muted-foreground text-sm">顧客想購買 SV / OCTA / V8 車款</span>
-              {isEditing ? (
-                <div className="mt-1">
-                  <Switch
-                    checked={account.performancePreference || false}
-                    onCheckedChange={(checked) => setAccount({ ...account, performancePreference: checked })}
-                  />
-                </div>
-              ) : (
-                <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
-              )}
+              <p className="font-medium">{account.performancePreference ? "是" : "否"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">車輛數</span>
-              {isEditing ? (
-                <Input
-                  type="number"
-                  min="0"
-                  value={account.vehicleCount ?? ""}
-                  onChange={(e) => setAccount({ ...account, vehicleCount: parseInt(e.target.value) || 0 })}
-                  className="mt-1"
-                />
-              ) : (
-                <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
-              )}
+              <p className="font-medium">{account.vehicleCount ?? "未設定"}</p>
             </div>
           </div>
         </Card>
@@ -843,18 +773,9 @@ export default function AccountDetailPage() {
               </div>
               <div>
                 <span className="text-muted-foreground">有子女</span>
-                {isEditing ? (
-                  <div className="mt-1">
-                    <Switch
-                      checked={account.hasChildren || false}
-                      onCheckedChange={(checked) => setAccount({ ...account, hasChildren: checked })}
-                    />
-                  </div>
-                ) : (
-                  <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
-                )}
+                <p className="font-medium">{account.hasChildren === undefined ? "未設定" : account.hasChildren ? "是" : "否"}</p>
               </div>
-              {(isEditing || (account.hasChildren && account.childrenCount)) && (
+              {account.hasChildren && account.childrenCount && (
                 <div>
                   <span className="text-muted-foreground">子女數</span>
                   {isEditing ? (
@@ -864,7 +785,6 @@ export default function AccountDetailPage() {
                       value={account.childrenCount ?? ""}
                       onChange={(e) => setAccount({ ...account, childrenCount: parseInt(e.target.value) || 0 })}
                       className="mt-1"
-                      disabled={!account.hasChildren}
                     />
                   ) : (
                     <p className="font-medium">{account.childrenCount}</p>
@@ -881,7 +801,7 @@ export default function AccountDetailPage() {
                 <span className="text-muted-foreground">職業</span>
                 {isEditing ? (
                   <Select value={account.occupation || ""} onValueChange={(value) => setAccount({ ...account, occupation: value })}>
-                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇職業" /></SelectTrigger>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="請選擇行業" /></SelectTrigger>
                     <SelectContent>
                       {["企業主", "高階主管", "中階主管", "專業人士", "自由業", "軍公教", "退休人員", "學生", "其他"].map((o) => (
                         <SelectItem key={o} value={o}>{o}</SelectItem>
@@ -922,7 +842,12 @@ export default function AccountDetailPage() {
               )}
             </div>
             <div className="text-sm">
-              <span className="text-muted-foreground">聯絡偏好</span>
+              <span className="text-muted-foreground">客戶願意接受 JLR 與經銷商聯絡的管道</span>
+              {isEditing && (
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  若客戶沒有特別說明，建議選全選，以讓我們跟客戶的聯絡可以行無阻。
+                </p>
+              )}
               {isEditing ? (
                 <div className="mt-2 space-y-2">
                   {[
@@ -1609,6 +1534,44 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
+
+      {/* 車主註冊確認彈窗 */}
+      <AlertDialog open={isOwnerRegistrationConfirmOpen} onOpenChange={setIsOwnerRegistrationConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確認完成車主綁定</AlertDialogTitle>
+            <AlertDialogDescription>
+              此操作將正式發送車主綁定完成訊息給客戶，並自動為客戶完成車主綁定流程。完成後客戶將不需要再填寫車主註冊表單。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setIsOwnerRegistrationConfirmOpen(false)
+              setIsOwnerRegistrationDialogOpen(true)
+            }}>
+              完成綁定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 車主註冊完成提示彈窗 */}
+      <AlertDialog open={isOwnerRegistrationDialogOpen} onOpenChange={setIsOwnerRegistrationDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>車主綁定完成</AlertDialogTitle>
+            <AlertDialogDescription>
+              系統已協助此使用者完成車主綁定。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsOwnerRegistrationDialogOpen(false)}>
+              關閉
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -285,24 +285,27 @@ export default function LeadDetailPage() {
     }
 
     // Create new activity
-    const activity: Activity = {
-      id: `new-${Date.now()}`,
-      type: activityType,
-      subject: newActivity.subject,
-      description: newActivity.description || undefined,
-      createdAt: new Date(),
-      ...(activityType === "event"
-        ? {
+    const activity: Activity = activityType === "event"
+      ? {
+          id: `new-${Date.now()}`,
+          type: "event" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
           startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
           endDateTime: newActivity.endTime
             ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
             : undefined,
         }
-        : {
-          dueDate: newActivity.dueDate,
+      : {
+          id: `new-${Date.now()}`,
+          type: "task" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
+          dueDate: newActivity.dueDate!,
           status: newActivity.status,
-        }),
-    }
+        }
 
     setActivities([activity, ...activities])
     setIsNewActivityOpen(false)
@@ -544,7 +547,7 @@ export default function LeadDetailPage() {
   }
 
   const handleCreateActivity = () => {
-    if (!newTask.subject || !newTask.dueDate) {
+    if (!newActivity.subject || !newActivity.dueDate) {
       toast({
         title: "請填寫必填欄位",
         description: "主題和到期日期為必填",
@@ -556,18 +559,21 @@ export default function LeadDetailPage() {
     const activity: TaskActivity = {
       id: Date.now().toString(),
       type: "task",
-      subject: newTask.subject,
-      description: newTask.description || undefined,
+      subject: newActivity.subject,
+      description: newActivity.description || undefined,
       createdAt: new Date(),
-      dueDate: newTask.dueDate,
-      status: newTask.status,
+      dueDate: newActivity.dueDate,
+      status: newActivity.status,
     }
 
     setActivities([activity, ...activities])
     setIsNewActivityOpen(false)
-    setNewTask({
+    setNewActivity({
       subject: "",
       description: "",
+      startDate: undefined,
+      startTime: "",
+      endTime: "",
       dueDate: undefined,
       status: "not-started",
     })

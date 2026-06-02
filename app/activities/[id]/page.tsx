@@ -277,7 +277,7 @@ export default function ActivityDetailPage() {
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">結束時間</Label>
-                  <p className="text-foreground mt-1">{formatDateTime(eventActivity.endDateTime)}</p>
+                  <p className="text-foreground mt-1">{eventActivity.endDateTime ? formatDateTime(eventActivity.endDateTime) : "未設定"}</p>
                 </div>
               </div>
             </>

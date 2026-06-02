@@ -96,8 +96,8 @@ export default function OpportunityDetailPage() {
   const [activities, setActivities] = useState<Activity[]>(activitiesData)
   const [hasFieldsChanged, setHasFieldsChanged] = useState(false)
   const [testDriveConsent, setTestDriveConsent] = useState<TestDriveConsent | null>(null)
-  const [notes, setNotes] = useState(opportunityData?.notes || "")
-  const [originalNotes, setOriginalNotes] = useState(opportunityData?.notes || "")
+  const [notes, setNotes] = useState("")
+  const [originalNotes, setOriginalNotes] = useState("")
   const [hasNotesChanged, setHasNotesChanged] = useState(false)
 
   // Lost dialog
@@ -109,6 +109,8 @@ export default function OpportunityDetailPage() {
   const [referrer, setReferrer] = useState("")
   const [carBrandSearch, setCarBrandSearch] = useState("")
   const [carModelSearch, setCarModelSearch] = useState("")
+  const [competitorBrandSearch, setCompetitorBrandSearch] = useState("")
+  const [competitorModelSearch, setCompetitorModelSearch] = useState("")
 
   // 現有車品牌選項
   const existingCarBrandOptions: Record<string, string[]> = {
@@ -154,6 +156,29 @@ export default function OpportunityDetailPage() {
   const [competitorBrand, setCompetitorBrand] = useState("") // 購買的品牌
   const [competitorModel, setCompetitorModel] = useState("") // 購買的車款
   const [newTargetDate, setNewTargetDate] = useState<Date | undefined>(undefined) // 新目標日期
+
+  // 競牌車輛篩選 (必須在 competitorBrand state 宣告之後)
+  const filteredCompetitorBrands = Object.keys(existingCarBrandOptions).filter(brand =>
+    brand.toLowerCase().includes(competitorBrandSearch.toLowerCase())
+  )
+  const availableCompetitorModels = competitorBrand ? existingCarBrandOptions[competitorBrand] || [] : []
+  const filteredCompetitorModels = availableCompetitorModels.filter(model =>
+    model.toLowerCase().includes(competitorModelSearch.toLowerCase())
+  )
+
+  const handleSelectCompetitorBrand = (brand: string) => {
+    setCompetitorBrand(brand)
+    setCompetitorModel("")
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
+  }
+
+  const handleSelectCompetitorModel = (model: string) => {
+    setCompetitorModel(model)
+    setIsCompetitorCarSheetOpen(false)
+    setCompetitorBrandSearch("")
+    setCompetitorModelSearch("")
+  }
 
   // Loss reason options (shared between Retailer and JLR)
   const lossReasonOptions = [
@@ -515,24 +540,27 @@ export default function OpportunityDetailPage() {
     }
 
     // Create new activity (mock)
-    const activity: Activity = {
-      id: `new-${Date.now()}`,
-      type: activityType,
-      subject: newActivity.subject,
-      description: newActivity.description || undefined,
-      createdAt: new Date(),
-      ...(activityType === "event"
-        ? {
-            startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
-            endDateTime: newActivity.endTime
-              ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
-              : undefined,
-          }
-        : {
-            dueDate: newActivity.dueDate,
-            status: newActivity.status,
-          }),
-    }
+    const activity: Activity = activityType === "event"
+      ? {
+          id: `new-${Date.now()}`,
+          type: "event" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
+          startDateTime: new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.startTime}`),
+          endDateTime: newActivity.endTime
+            ? new Date(`${newActivity.startDate?.toISOString().split("T")[0]}T${newActivity.endTime}`)
+            : undefined,
+        }
+      : {
+          id: `new-${Date.now()}`,
+          type: "task" as const,
+          subject: newActivity.subject,
+          description: newActivity.description || undefined,
+          createdAt: new Date(),
+          dueDate: newActivity.dueDate!,
+          status: newActivity.status,
+        }
 
     setActivities([activity, ...activities])
     setIsNewActivitySheetOpen(false)
@@ -1143,7 +1171,7 @@ export default function OpportunityDetailPage() {
               <div className="border-t pt-4 space-y-4">
                 {/* 是否購買競牌車輛 */}
                 <div className="space-y-2">
-                  <Label>是否��買競牌車輛？</Label>
+                  <Label>是否購買競牌車輛？</Label>
                   <Select value={boughtCompetitor} onValueChange={setBoughtCompetitor}>
                     <SelectTrigger>
                       <SelectValue placeholder="請選擇" />

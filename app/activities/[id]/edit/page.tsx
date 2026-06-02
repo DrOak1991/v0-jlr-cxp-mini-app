@@ -171,11 +171,11 @@ export default function ActivityEditPage() {
             minute: "2-digit",
             hour12: false,
           }),
-          endTime: event.endDateTime.toLocaleTimeString("zh-TW", {
+          endTime: event.endDateTime?.toLocaleTimeString("zh-TW", {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
-          }),
+          }) || "",
         })
       } else {
         const task = data.activity as TaskActivity
