@@ -842,7 +842,12 @@ export default function AccountDetailPage() {
               )}
             </div>
             <div className="text-sm">
-              <span className="text-muted-foreground">聯絡偏好</span>
+              <span className="text-muted-foreground">客戶願意接受 JLR 與經銷商聯絡的管道</span>
+              {isEditing && (
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  若客戶沒有特別說明，建議選全選，以讓我們跟客戶的聯絡可以行無阻。
+                </p>
+              )}
               {isEditing ? (
                 <div className="mt-2 space-y-2">
                   {[
